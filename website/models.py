@@ -1,8 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
 
 __all__ = [
-    "User",
     "Course",
     "Section",
     "ProblemSet",
@@ -16,19 +21,10 @@ __all__ = [
     "DictionaryEntry",
 ]
 
+
 class AccessLevel(models.TextChoices):
     ADMIN = "AD", _("ADMIN")
     VISITOR = "VI", _("VISITOR")
-
-
-class User(models.Model):
-    username = models.CharField(max_length=100)
-    email = models.EmailField(max_length=200)
-    password = models.CharField(max_length=100)
-    date_of_creation = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return self.username
 
 
 class VisibilityLevel(models.TextChoices):
@@ -36,7 +32,9 @@ class VisibilityLevel(models.TextChoices):
     PUBLIC = "PUB", _("PUBLIC")     # available on web
     LIMITER = "LIM", _("LIMITER")   # certain users only
 
-# The query sets below are used to sum the progress of all elements relevant to the course/section/problemset and return a percentage complete
+# The query sets below are used to sum the progress of all elements 
+# that are relevant to the course/section/problemset 
+# and return a percentage complete
 class CourseQuerySet(models.QuerySet):
     def user_progress_percent(self, user):
         return self.annotate(
@@ -91,7 +89,10 @@ class Course(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, related_name="created_courses"
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        related_name="created_courses"
     )
     visibility = models.CharField(
         max_length=50,
@@ -99,7 +100,7 @@ class Course(models.Model):
         default=VisibilityLevel.PUBLIC
     )
     access_users = models.ManyToManyField(
-        User,
+        settings.AUTH_USER_MODEL,
         through="UserCourseAccessLevel",
         related_name="course_access",
         blank=True,
@@ -125,7 +126,10 @@ class Section(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="created_sections"
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="created_sections"
     )
     visibility = models.CharField(
         max_length=50,
@@ -133,7 +137,7 @@ class Section(models.Model):
         default=VisibilityLevel.PUBLIC
     )
     access_users = models.ManyToManyField(
-        User,
+        settings.AUTH_USER_MODEL,
         through="UserSectionAccessLevel",
         related_name="section_access",
         blank=True,
@@ -166,7 +170,10 @@ class ProblemSet(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="created_problemsets"
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="created_problemsets"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
@@ -214,7 +221,7 @@ class Element(models.Model):
 
 
 class UserCourseAccessLevel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     access_level = models.CharField(
         max_length=50,
@@ -227,7 +234,7 @@ class UserCourseAccessLevel(models.Model):
 
 
 class UserSectionAccessLevel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
     access_level = models.CharField(
@@ -247,7 +254,7 @@ class Status(models.TextChoices):
 
 
 class ProgressOfElement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
     problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)
@@ -266,7 +273,7 @@ class ProgressOfElement(models.Model):
         return f"{self.user.username if self.user else 'Unknown'} → {self.problemset.title if self.problemset else 'No ProblemSet'} ({self.status})"
 
 class SavedProblem(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
     problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)

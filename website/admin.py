@@ -1,12 +1,6 @@
 from django.contrib import admin
-from .models import (
-    User, Course, Section, ProblemSet,
-    Element, UserCourseAccessLevel, UserSectionAccessLevel,
-    ProgressOfElement, Tag, SavedProblem, 
-    Dictionary, DictionaryEntry
-)
+from .models import *
 
-admin.site.register(User)
 admin.site.register(Course)
 admin.site.register(Section)
 admin.site.register(ProblemSet)
