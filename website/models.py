@@ -6,11 +6,10 @@ __all__ = [
     "Course",
     "Section",
     "ProblemSet",
-    "PointElement",
-    "PointlessElement",
+    "Element",
     "UserCourseAccessLevel",
     "UserSectionAccessLevel",
-    "ProgressOfProblem",
+    "ProgressOfElement",
     "Tag",
     "SavedProblem",
     "Dictionary",
@@ -37,10 +36,60 @@ class VisibilityLevel(models.TextChoices):
     PUBLIC = "PUB", _("PUBLIC")     # available on web
     LIMITER = "LIM", _("LIMITER")   # certain users only
 
+# The query sets below are used to sum the progress of all elements relevant to the course/section/problemset and return a percentage complete
+class CourseQuerySet(models.QuerySet):
+    def user_progress_percent(self, user):
+        return self.annotate(
+            total_elements=models.Count("sections__problemsets__elements", distinct=True),
+            completed_elements=models.Count(
+                "sections__problemsets__elements__progressofelement",
+                filter=models.Q(
+                    sections__problemsets__elements__progressofelement__user=user,
+                    sections__problemsets__elements__progressofelement__status=Status.COMPLE,
+                ),
+                distinct=True,
+            ),
+        ).annotate(
+            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+        )
+
+
+class SectionQuerySet(models.QuerySet):
+    def user_progress_percent(self, user):
+        return self.annotate(
+            total_elements=models.Count("problemsets__elements", distinct=True),
+            completed_elements=models.Count(
+                "problemsets__elements__progressofelement",
+                filter=models.Q(
+                    problemsets__elements__progressofelement__user=user,
+                    problemsets__elements__progressofelement__status=Status.COMPLE,
+                ),
+                distinct=True,
+            ),
+        ).annotate(
+            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+        )
+
+    
+class ProblemSetQuerySet(models.QuerySet):
+    def user_progress_percent(self, user):
+        return self.annotate(
+            total_elements=models.Count("elements", distinct=True),
+            completed_elements=models.Count(
+                "elements__progressofelement",
+                filter=models.Q(
+                    elements__progressofelement__user=user,
+                    elements__progressofelement__status=Status.COMPLE
+                ),
+                distinct=True,
+            ),
+        ).annotate(
+            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+        )
 
 class Course(models.Model):
-    title = models.CharField(max_length=50)
-    description = models.CharField(max_length=200)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, related_name="created_courses"
     )
@@ -62,6 +111,8 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+    
+    objects = CourseQuerySet.as_manager()
 
 
 class Section(models.Model):
@@ -71,8 +122,8 @@ class Section(models.Model):
         null=True,
         related_name="sections"
     )
-    title = models.CharField(max_length=50)
-    description = models.CharField(max_length=200)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     creator = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="created_sections"
     )
@@ -95,6 +146,8 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
+    
+    objects = SectionQuerySet.as_manager()
 
 
 class ProblemSet(models.Model):
@@ -110,8 +163,8 @@ class ProblemSet(models.Model):
         null=True,
         related_name="problemsets"
     )
-    title = models.CharField(max_length=50)
-    description = models.CharField(max_length=200)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     creator = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="created_problemsets"
     )
@@ -122,24 +175,14 @@ class ProblemSet(models.Model):
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
+    
+    objects = ProblemSetQuerySet.as_manager()
 
 
 class ProblemType(models.TextChoices):
     MCQ = "MCQ", _("MULTIPLE CHOICE QUESTION")
     FREERESP = "FREE", _("FREE RESPONSE QUESTION")
     # More types can be added later
-
-
-class PointlessElement(models.Model):
-    problemset = models.ForeignKey(
-        ProblemSet,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="pointless_elements"
-    )
-    content = models.JSONField(default=dict, blank=True)
-    interface_data = models.JSONField(default=dict, blank=True)
-    created_on = models.DateTimeField(auto_now_add=True)
 
 
 class Tag(models.Model):
@@ -149,12 +192,12 @@ class Tag(models.Model):
         return self.name
 
 
-class PointElement(models.Model):
+class Element(models.Model):
     problemset = models.ForeignKey(
         ProblemSet,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="point_elements"
+        related_name="elements"
     )
     content = models.JSONField(default=dict, blank=True)
     type = models.CharField(
@@ -162,9 +205,12 @@ class PointElement(models.Model):
         choices=ProblemType
     )
     tags = models.ManyToManyField(Tag)
-    point_value = models.IntegerField(default=1)
+    point_value = models.IntegerField(default=0)
     interface_data = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.problemset} - {self.type}"
 
 
 class UserCourseAccessLevel(models.Model):
@@ -200,11 +246,12 @@ class Status(models.TextChoices):
     COMPLE = "COMPLE", _("COMPLETED")
 
 
-class ProgressOfProblem(models.Model):
+class ProgressOfElement(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
     problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)
+    element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True)
     status = models.CharField(
         max_length=50,
         choices=Status,
@@ -223,7 +270,7 @@ class SavedProblem(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
     problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)
-    pointelement = models.ForeignKey(PointElement, on_delete=models.SET_NULL, null=True)
+    element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True)
     status = models.CharField(
         max_length=50,
         choices=Status,
@@ -233,7 +280,7 @@ class SavedProblem(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.pointelement if self.pointelement else 'No Saved Problems'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.element if self.element else 'No Saved Problems'} ({self.status})"
 
 class Dictionary(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)

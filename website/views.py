@@ -7,7 +7,11 @@ def home(request):
     all_mems = User.objects.all
     return render(request, 'home.html', {'all': all_mems})
 
-
+"""
+join: handles a form where one can enter user info and add it to the db, just used for testing
+@requst: handles GET and POST requests for user registration/input
+@return; render to template that displays a user form that will send the info to the db if valid
+"""
 def join(request):
     if request.method == 'POST':
         form = UserForm(request.POST or None)
