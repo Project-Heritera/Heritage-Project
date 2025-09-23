@@ -8,7 +8,7 @@ myproject/
 │   ├── manage.py
 │   ├── requirements.txt      # backend dependencies
 │   ├── Dockerfile            # optional, if containerizing
-│   ├── myproject/            # main Django project
+│   ├── heritage_project_backend/            # main Django project
 │   │   ├── settings/
 │   │   │   ├── base.py       # common settings
 │   │   │   ├── dev.py        # dev settings (SQLite)
