@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { login } from "../services/auth";
 
-const AuthLogin = () => {
-  const [username, setUsernmae] = useState("");
-  const [password, setPassword] = useState("");
+const CourseView = () => {
 
   // Function to handle sign in
-  async function handleLogin() {
+  async function loadUserCourses() {
+    /*
     if (username && password){
       try {
         const data = await login(username, password);
@@ -18,20 +16,24 @@ const AuthLogin = () => {
     else{
       console.warn("enter username and password");
     }
-  };
-
-  // Function to handle sign out
-  const handleSignOut = async () => {
-    try {
-      // TODO: send sign-out request to backend
-      console.log("Signing out:", username);
-    } catch (error) {
-      console.error("Sign out failed:", error);
-    }
+      */
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+    <>
+    <div className="courses-view" >
+        <div className="courses-view-header"></div>
+        <div className="course-view-body">
+            <div className="course-view-body-header">
+                <div className="search-bar"></div>
+            </div>
+            <div className="course-view-body-body">
+                <div className="course-container">
+                    <div className="course-title"></div>
+                    <div className="course-progress-bar"></div>
+                </div>
+            </div>
+        </div>
       <input
         type="username"
         placeholder="enter username"
@@ -44,12 +46,13 @@ const AuthLogin = () => {
         placeholder="Password..."
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-      />
+        />
 
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
     </div>
+        </>
   );
 };
 
-export default AuthLogin;
+export default CourseView;
