@@ -1,14 +1,15 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib import messages
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializer import UserSerializer, SignupSerializer, ChangePasswordSerializer
+from .serializer import UserSerializer
 # Create your views here.
 
-@api_view(["Post"])
+@api_view(["POST"])
 def login_user(request):
     '''
     login_user: logs user into db given their username and password. Uses login from django.contrib.auth  
@@ -17,25 +18,23 @@ def login_user(request):
             "username": "my_username",
             "password": "my_password123"
         }
+        where identifier is the username of email
     @return: 
         * HTTP 202 if login succeeds
         * HTTP 401 if credentials are invalid
         * HTTP 400 with validation errors if request data is malformed
     '''
-    serializer = UserSerializer(data=request.data) 
-    if serializer.is_valid():
-        username = serializer.validated_data["username"]
-        password = serializer.validated_data["password"]
-        #check if user exists in database
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return Response({"message": "Login Successful"}, status=status.HTTP_202_ACCEPTED)
-        else:
-            #no user found. could be typo or non existant
-            return Response({"message": "Login Failed"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    username = request.POST["username"]
+    password = request.POST["password"]
+    user = authenticate(request, username=username, password=password)
+    if user:
+        login(request, user)
+        return Response({"message": "Login Successful"}, status=status.HTTP_202_ACCEPTED)
     else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Invalid username or password", status=status.HTTP_401_UNAUTHORIZED)
+        ...
+
 
 @api_view(["POST"])
 def logout_user(request):
@@ -69,35 +68,17 @@ def signup_user(request):
         * HTTP 400 with validation errors if username/email already exists
         or if request body fails serializer validation
     '''
-    serializer = SignupSerializer(data=request.data)
-    if serializer.is_valid(): # calls create() method in UserSerializerWithPasswordAccess. That method may throw sa serializatio nerror if usrename or email already exists
-        serializer.save()  
+    username = request.POST["username"]
+    email = request.POST["email"]
+    password = request.POST["password"]
+    user = User.objects.create_user(username, email, password)
+    if user:
+        user.save()
         return Response({"message": "Signup Successful"}, status=status.HTTP_201_CREATED)
     else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def change_password(request):
-    '''
-    change_password:Allows authenticated user to update their account password. Uses ChangePasswordSerializer to validate old password and set new password.
-    @request:
-        {
-            "old_password": "current_password",
-            "password": "new_secure_password"
-        }
-    @return:
-        * HTTP 200 if update succeeds
-        * HTTP 400 with validation errors if:
-            - old_password does not match the user’s current password
-            - new password fails validation (e.g., too short)
-    '''
-    serializer = ChangePasswordSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.update_password(request.user, serializer.validated_data)
-        return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Invalid username or password", status=status.HTTP_401_UNAUTHORIZED)
     
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
@@ -108,11 +89,11 @@ def delete_account(request):
         * HTTP 200 if deletion succeeds
         * HTTP 400 if deletion fails
     '''
-    try:
+    if request.user.is_authenticated:
         user = request.user
         username = user.username 
-        logout(request) 
+        logout(request)  
         user.delete()
         return Response({"message": f"User '{username}' has been deleted"}, status=status.HTTP_200_OK)
-    except:
-        return Response({"error": f"Unable to remove user"}, status=status.http)
+    else:
+        return Response({"error": f"Unable to remove user"}, status=status.HTTP_400_BAD_REQUEST)
