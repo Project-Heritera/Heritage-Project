@@ -1,16 +1,22 @@
 import { useState } from "react";
+import { login } from "../api_calls/auth";
 
 const AuthLogin = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsernmae] = useState("");
   const [password, setPassword] = useState("");
 
   // Function to handle sign in
-  const signIn = async () => {
-    try {
-      // TODO: send email and password to backend authentication service
-      console.log("Signing in with:", email, password);
-    } catch (error) {
-      console.error("Sign in failed:", error);
+  async function handleLogin() {
+    if (username && password){
+      try {
+        const data = await login(username, password);
+        console.log("Login success:", data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    else{
+      console.warn("enter username and password");
     }
   };
 
@@ -18,7 +24,7 @@ const AuthLogin = () => {
   const handleSignOut = async () => {
     try {
       // TODO: send sign-out request to backend
-      console.log("Signing out:", email);
+      console.log("Signing out:", username);
     } catch (error) {
       console.error("Sign out failed:", error);
     }
@@ -27,10 +33,10 @@ const AuthLogin = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       <input
-        type="email"
-        placeholder="Email..."
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="username"
+        placeholder="enter username"
+        value={username}
+        onChange={(e) => setUsernmae(e.target.value)}
       />
 
       <input
@@ -40,7 +46,7 @@ const AuthLogin = () => {
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button onClick={signIn}>Sign In</button>
+      <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
     </div>
   );
