@@ -1,7 +1,6 @@
 import { useState } from "react";
-
+import { List } from "lucide-react";
 const CourseView = () => {
-
   // Function to handle sign in
   async function loadUserCourses() {
     /*
@@ -17,41 +16,113 @@ const CourseView = () => {
       console.warn("enter username and password");
     }
       */
-  };
+  }
 
   return (
     <>
-    <div className="courses-view" >
-        <div className="courses-view-header"></div>
-        <div className="course-view-body">
-            <div className="course-view-body-header">
-                <div className="search-bar"></div>
-            </div>
-            <div className="course-view-body-body">
-                <div className="course-container">
-                    <div className="course-title"></div>
-                    <div className="course-progress-bar"></div>
-                </div>
-            </div>
+      <div className="courses-view flex flex-col">
+        <div className="courses-view-header flex justify-center ">
+          <img src="./src/assets/logos/temp_logo.png" />
+          <h1>Courses</h1>
+          <button>
+            <List />
+          </button>
         </div>
-      <input
-        type="username"
-        placeholder="enter username"
-        value={username}
-        onChange={(e) => setUsernmae(e.target.value)}
-      />
-
-      <input
-        type="password"
-        placeholder="Password..."
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        />
-
-      <button onClick={handleLogin}>Sign In</button>
-      <button onClick={handleSignOut}>Sign Out</button>
-    </div>
-        </>
+        <div className="course-view-body flex flex-col">
+          <div className="course-view-body-header">
+            <div className="search-bar">
+              <input type="search" placeholder="Search Courses" />
+            </div>
+          </div>
+          <div className="course-view-body-body grid grid-cols-3 gap-4">
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_1.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  Creole | Kouri-Vini Language
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_2.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  Standard Hawaiian Language
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_3.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  Lantern Building
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_4.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  Ancestry Tree Cutout
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_5.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  Lost Icons | Louisiana
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+            <div className="course-container">
+              <div className="course-image">
+                <img src="./src/assets/course_image_placeholder_6.png" />
+              </div>
+              <div className="course-title">
+                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
+                  History of Recycling
+                </a>
+              </div>
+              <div className="course-progress-bar flex flex-row">
+                <p>30%</p>
+                <progress value={0.3} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

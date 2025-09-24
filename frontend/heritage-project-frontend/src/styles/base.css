@@ -1,9 +1,6 @@
 /* base.css */
 
-/* Import Tailwind if using PostCSS/Tailwind setup */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* ----- Custom Colors ----- */
 :root {
