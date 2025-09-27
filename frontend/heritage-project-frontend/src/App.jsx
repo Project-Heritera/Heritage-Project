@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import AuthLogin from './components/auth'
-import CourseView from './components/course_view'
+import {BrowserRouter, Routes, Route} from "react-router-dom"
+import AuthLogin from './pages/auth'
+import CourseView from './pages/course_view'
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <AuthLogin/>
-        <CourseView />
-      </div>
-    </>
-  )
+ return (
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<AuthLogin />} />
+        <Route path='/course_view' element={<CourseView />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App
