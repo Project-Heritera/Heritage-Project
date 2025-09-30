@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { List } from "lucide-react";
+import "../styles/pages/course_view.css";
+
 const CourseView = () => {
   // Function to handle sign in
   async function loadUserCourses() {
