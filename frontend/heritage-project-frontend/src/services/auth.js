@@ -1,4 +1,5 @@
 import api from './api'
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../services/LocalStorage'; 
 
 export async function login(username, password) {
 	try {
@@ -11,8 +12,8 @@ export async function login(username, password) {
 		//Check and store access token and refresh token
 		if (response.data && response.data.access && response.data.refresh) {
 			//Store to local storage
-			localStorage.setItem('ACCESS_TOKEN', response.data.access);
-			localStorage.setItem('REFRESH_TOKEN', response.data.refresh);
+			localStorage.setItem(ACCESS_TOKEN, response.data.access);
+			localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
 		}
 		console.log('Login successful', response.data);
 		return response.data

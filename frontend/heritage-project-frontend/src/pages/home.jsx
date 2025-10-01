@@ -1,6 +1,6 @@
 // Home.jsx
 function Home() {
-  return <h1>Home</h1>;
+  return <Navigate to="/" replace />;
 }
 
 export default Home;

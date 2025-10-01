@@ -26,7 +26,10 @@ api.interceptors.request.use(
 
 //set up interceptor for inbound requests
 api.interceptors.response.use(
-    (response) => response,//Normal success so just return the response as is
+    (response) => {
+        console.log("Valid access token used");
+        return response;
+    },//Normal success so just return the response as is
     //Error occured so check token refresh
     async (error) => {
         const ogRequest = error.config;//Origional request sent before the response
@@ -48,6 +51,7 @@ api.interceptors.response.use(
                 ogRequest.headers.Authorization = `Bearer ${access}`;
 
                 //Send response back for a second time and return its response
+                console.log("Got new token from refresh!");
                 return api(ogRequest);
             } catch (refError) {
                 //Failed to get new token. Refresh token most likely expired.
