@@ -1,7 +1,5 @@
 import api from './api'
 
-
-
 export async function login(username, password) {
 	try {
 		//Attempt to request tokens from backend
