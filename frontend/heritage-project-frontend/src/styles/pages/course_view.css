@@ -1,0 +1,128 @@
+/* course_view.css */
+
+/* ----- Header ----- */
+.courses-view-header {
+  background-color: var(--green-mid);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  text-align: center;
+}
+
+/* ----- Search Bar ----- */
+.search-bar input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 2px solid var(--green-accent);
+  background-color: var(--green-light);
+  color: var(--green-dark);
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--yellow-accent);
+  box-shadow: 0 0 5px var(--yellow-accent);
+}
+
+/* ----- Course Container ----- */
+.course-container {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.course-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* ----- Course Title ----- */
+.course-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--green-dark);
+  margin-bottom: 0.5rem;
+}
+
+/* ----- Course Progress Bar ----- */
+.course-progress-bar {
+  height: 12px;
+  background-color: var(--green-accent);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.course-progress-bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 50%; /* Example progress */
+  background-color: var(--yellow-accent);
+  border-radius: 8px;
+  transition: width 0.3s ease-in-out;
+}
+
+/* ----- Inputs and Buttons (playful overrides) ----- */
+.courses-view input[type="username"],
+.courses-view input[type="password"] {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 12px;
+  border: 2px solid var(--green-accent);
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.courses-view input:focus {
+  outline: none;
+  border-color: var(--yellow-accent);
+  box-shadow: 0 0 5px var(--yellow-accent);
+}
+
+.courses-view button {
+  background-color: var(--green-mid);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  transition: all 0.2s;
+}
+
+.courses-view button:hover {
+  background-color: var(--green-accent);
+  transform: scale(1.05);
+}
+
+/* ----- Body ----- */
+.course-view-body {
+  padding: 2rem;
+}
+
+.course-view-body-body {
+  margin-top: 1rem;
+}
+
+/* ----- Optional playful accent utility ----- */
+.text-playful {
+  color: var(--pink-accent);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.bg-playful {
+  background-color: var(--yellow-accent);
+  border-radius: 10px;
+  padding: 0.5em;
+}
