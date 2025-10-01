@@ -1,12 +1,11 @@
-import axios from "axios";
-const BASE_URL = import.meta.env.VITE_API_URL_FOR_TEST;
+import api from './api'
 
 
 
 export async function login(username, password) {
 	try {
 		//Attempt to request tokens from backend
-		const response = await axios.post(`${BASE_URL}/accounts/token/`, {
+		const response = await api.post(`/accounts/token/`, {
 			 username,
 			 password
 		});
