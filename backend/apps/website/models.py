@@ -187,14 +187,6 @@ class Room(models.Model):
     objects = RoomQuerySet.as_manager()
 
 
-class TaskType(models.TextChoices):
-    MCQ = "MCQ", _("MULTIPLE CHOICE QUESTION")
-    FREERESP = "FREERESP", _("FREE RESPONSE QUESTION")
-    FILL = "FILL", _("FILL IN THE BLANK QUESTION")
-    TEXT = "TEXT", _("TEXT ONLY")
-    # More types can be added later
-
-
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -209,10 +201,6 @@ class Task(OrderedModel):
         null=True,
         related_name="tasks"
     )
-    type = models.CharField(
-        max_length=50,
-        choices=TaskType
-    )
     tags = models.ManyToManyField(Tag)
     point_value = models.IntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -224,9 +212,10 @@ class Task(OrderedModel):
 
 
 class TaskComponentType(models.TextChoices):
-    OPTION = "OPTION", _("QUESTION OPTION CHOICE")
+    OPTION = "OPTION", _("MULTIPLE CHOICE OPTION")
     IMAGE = "IMAGE", _("IMAGE")
     TEXT = "TEXT", _("TEXT")
+    FILL = "FILL", _("FILL IN THE BLANK QUESTION")
     # will add more or change labels as needed
 
 
@@ -241,7 +230,6 @@ class TaskComponent(OrderedModel):
         max_length=50,
         choices=TaskComponentType
     )
-    position = models.PositiveIntegerField(default=0)
     content = models.JSONField(default=dict, blank=True) # the format of this JSON will depend on the TaskComponent.type
     created_on = models.DateTimeField(auto_now_add=True)
 
