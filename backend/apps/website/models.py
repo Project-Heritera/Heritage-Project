@@ -98,7 +98,7 @@ class Course(models.Model):
     visibility = models.CharField(
         max_length=50,
         choices=VisibilityLevel,
-        default=VisibilityLevel.PUBLIC
+        default=VisibilityLevel.PRIVATE
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -136,7 +136,7 @@ class Section(models.Model):
     visibility = models.CharField(
         max_length=50,
         choices=VisibilityLevel,
-        default=VisibilityLevel.PUBLIC
+        default=VisibilityLevel.PRIVATE
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -177,6 +177,18 @@ class Room(models.Model):
         on_delete=models.SET_NULL, 
         null=True, 
         related_name="created_rooms"
+    )
+    visibility = models.CharField(
+        max_length=50,
+        choices=VisibilityLevel,
+        default=VisibilityLevel.PRIVATE
+    )
+    access_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="UserRoomAccessLevel",
+        related_name="room_access",
+        blank=True,
+        help_text="Users who can access the room when visibility is set to LIMITER"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
