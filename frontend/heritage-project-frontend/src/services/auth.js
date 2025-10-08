@@ -1,6 +1,8 @@
 import api from './api'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../services/LocalStorage'; 
 
+//This function/service handles login requests for JWT tokens during a login attempt. Requires input of username and password of user.
+//Tokens are stored in local storage.
 export async function login(username, password) {
 	try {
 		//Attempt to request tokens from backend

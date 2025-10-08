@@ -3,6 +3,7 @@ import axios from "axios";
 
 import {ACCESS_TOKEN, REFRESH_TOKEN} from "./LocalStorage"
 
+//Create api object and default link for it to backend.
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL_FOR_TEST//Link appended before all requests
 })
