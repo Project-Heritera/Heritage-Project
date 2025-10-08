@@ -110,6 +110,7 @@ class Course(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -148,6 +149,7 @@ class Section(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -180,6 +182,7 @@ class Room(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
