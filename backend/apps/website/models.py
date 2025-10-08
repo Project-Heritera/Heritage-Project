@@ -281,6 +281,21 @@ class UserSectionAccessLevel(models.Model):
         return f"{self.user.username if self.user else 'Unknown'} → {self.section.title if self.section else 'No Section'} ({self.access_level})"
 
 
+class UserRoomAccessLevel(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    access_level = models.CharField(
+        max_length=50,
+        choices=AccessLevel,
+        default=AccessLevel.VISITOR
+    )
+
+    def __str__(self):
+        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.room else 'No Room'} ({self.access_level})"
+
+
 class Status(models.TextChoices):
     NOSTAR = "NOSTAR", _("NOT STARTED")
     INPROG = "INPROG", _("IN-PROGRESS")

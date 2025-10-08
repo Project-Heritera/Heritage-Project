@@ -11,6 +11,7 @@ from .models import (
     Section,
     UserCourseAccessLevel,
     UserSectionAccessLevel,
+    UserRoomAccessLevel,
     VisibilityLevel,
     AccessLevel,
 )
@@ -69,13 +70,13 @@ def edit_room(request, course_id, section_id, room_id):
         course_id=course_id,
     )
 
-    # --- ACCESS CHECK ---
+    # --- ACCESS CHECK --- # the access stuff is messy as fuck rn ngl
     has_access = False
 
     # 1. Creator always has access
     if room.creator == user:
         has_access = True
-    
+
     # 2. Course-level admin access
     elif UserCourseAccessLevel.objects.filter(
         user=user, course_id=course_id, access_level=AccessLevel.ADMIN
@@ -88,15 +89,22 @@ def edit_room(request, course_id, section_id, room_id):
     ).exists():
         has_access = True
 
-    # 4. Public visibility
+    # 4. Room-level admin access
+    elif UserRoomAccessLevel.objects.filter(
+        user=user, room_id=room_id, access_level=AccessLevel.ADMIN
+    ).exists():
+        has_access = True
+
+    # 5. Public visibility
     elif getattr(room, "visibility", None) == VisibilityLevel.PUBLIC:
         has_access = True
 
-    # 5. Limited access check — if room visibility == LIMITER,
+    # 6. Limited access check — if room visibility == LIMITER,
     # check if user is in the course or section access list
     elif getattr(room, "visibility", None) == VisibilityLevel.LIMITER:
         if UserCourseAccessLevel.objects.filter(user=user, course_id=course_id).exists() or \
-           UserSectionAccessLevel.objects.filter(user=user, section_id=section_id).exists():
+           UserSectionAccessLevel.objects.filter(user=user, section_id=section_id).exists() or \
+           UserRoomAccessLevel.objects.filter(user=user, room_id=room_id).exists():
             has_access = True
 
     if not has_access:
