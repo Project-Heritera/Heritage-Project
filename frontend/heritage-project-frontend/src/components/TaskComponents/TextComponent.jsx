@@ -1,10 +1,10 @@
 import React from 'react';
+import Markdown from "../Utilities/Markdown"
 
-const TextComponent = () => {
-    
+const TextComponent = ({text}) => {
     return (
         <div>
-            <h1>Hello Preview.js!</h1>
+            <Markdown content={text}/>
         </div>
     );
 };
