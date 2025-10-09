@@ -2,7 +2,7 @@
 
 import React from 'react';
 // Note the import syntax is different because you used "export default"
-import TextComponent from '../components/TaskComponents/TextComponent';
+import TextComponent from '../components/TaskComponents/TextComponent/TextComponent';
 
 // This default export describes your component for Storybook
 export default {
@@ -44,4 +44,5 @@ Here are some things to check:
 
 Check out the official [Markdown Guide](https://www.markdownguide.org) for more info.
 `,
+edit: false,
 };
