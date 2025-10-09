@@ -6,11 +6,11 @@ import MarkdownArea from "./MarkdownArea"
 
 const EditTextComponent = ({text}) => {
 
-    const [content, setContent] = useState(text)
+    //Handle toggle for render
+    const [isRenderd, setIsRenderd] = useState(true);
 
-    //Handle update event
-    const updateContent = (event) => {
-        setContent(event.target.value);
+    const toggleRender = () => {
+        setIsRenderd(!isRenderd);
     }
     
     //Toolbar Functions
@@ -33,9 +33,14 @@ const EditTextComponent = ({text}) => {
                 <MarkdownButton onClick={bulletpoint}>
                     bulletpoint
                 </MarkdownButton>
+
+                <MarkdownButton onClick={toggleRender}>
+                    toggle render
+                </MarkdownButton>
+
             </Toolbar>
             {/*Display text that can be easily editable and be able to select where to edit with cursor*/}
-            <MarkdownArea initText={text} />
+            <MarkdownArea initText={text} isRenderd={isRenderd} />
         </div>
     );
 };

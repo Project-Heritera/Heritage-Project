@@ -1,11 +1,12 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { marked } from 'marked';
 import { Markdown } from 'tiptap-markdown';
+import { useState, useEffect } from 'react';
 
-const MarkdownArea = ({initText}) => {
-    //Convert mark down text into html to render right at start
-    const initHtml = marked(initText)
+//This componet supports viewing the markdown as renderd and as raw markdown
+const MarkdownArea = ({ initText, isRenderd }) => {
+    //Save state of markdown when changes occur for toggle
+    const [rawMarkdown, setRawMarkdown] = useState(initText);
 
     const editor = useEditor({
         extensions: [
@@ -17,12 +18,32 @@ const MarkdownArea = ({initText}) => {
                 transformPastedText: true,
             }),
         ],//Include extensios
-        content: initHtml//Initial text
-    })
+        content: initText,//Initial text
+        //Listen for updates to editor
+        onUpdate: ({ editor }) => {
+            setRawMarkdown(editor.storage.markdown.getMarkdown());
+            console.log(rawMarkdown);
+        }
+    });
 
-    return(
+    //Create text area view for non renderd mode
+    const textAreaChange = (e) => {
+        const newText = e.target.value;
+        setRawMarkdown(newText);
+        //Update editor as well for renderd
+        editor.commands.setContent(newText)
+    }
+
+    return (
         <>
-            <EditorContent editor={editor} />
+            {/* If render is toggled used render editor, else use normal markdown text */}
+            {isRenderd ? (
+                //Render if true
+                <EditorContent editor={editor} />
+            ) : (
+                //render is false
+                <textarea value={rawMarkdown} onChange={textAreaChange} />
+            )}
         </>
     )
 }
