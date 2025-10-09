@@ -8,8 +8,12 @@ const AuthLogin = () => {
   // Function to handle sign in
   async function handleLogin() {
     if (username && password){
+      const loginData = { 
+        username,
+        password
+      };
       try {
-        const data = await login(username, password);
+        const data = await login(loginData);
         console.log("Login success:", data);
       } catch (error) {
         console.error(error);
