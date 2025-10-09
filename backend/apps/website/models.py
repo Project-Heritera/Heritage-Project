@@ -2,21 +2,22 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.contrib.auth import get_user_model
-
+from ordered_model.models import OrderedModel # this handles auto-reordering when something is deleted
 
 User = get_user_model()
 
-
+# this does *not* include the TextChoices or QuerySet models
 __all__ = [
     "Course",
     "Section",
-    "ProblemSet",
-    "Element",
+    "Room",
+    "Task",
+    "TaskComponent",
     "UserCourseAccessLevel",
     "UserSectionAccessLevel",
-    "ProgressOfElement",
+    "ProgressOfTask",
     "Tag",
-    "SavedProblem",
+    "SavedTask",
     "Dictionary",
     "DictionaryEntry",
 ]
@@ -32,57 +33,57 @@ class VisibilityLevel(models.TextChoices):
     PUBLIC = "PUB", _("PUBLIC")     # available on web
     LIMITER = "LIM", _("LIMITER")   # certain users only
 
-# The query sets below are used to sum the progress of all elements 
-# that are relevant to the course/section/problemset 
+# The query sets below are used to sum the progress of all tasks 
+# that are relevant to the course/section/room 
 # and return a percentage complete
 class CourseQuerySet(models.QuerySet):
     def user_progress_percent(self, user):
         return self.annotate(
-            total_elements=models.Count("sections__problemsets__elements", distinct=True),
-            completed_elements=models.Count(
-                "sections__problemsets__elements__progressofelement",
+            total_tasks=models.Count("sections__rooms__tasks", distinct=True),
+            completed_tasks=models.Count(
+                "sections__rooms__tasks__progressoftask",
                 filter=models.Q(
-                    sections__problemsets__elements__progressofelement__user=user,
-                    sections__problemsets__elements__progressofelement__status=Status.COMPLE,
+                    sections__rooms__tasks__progressoftask__user=user,
+                    sections__rooms__tasks__progressoftask__status=Status.COMPLE,
                 ),
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
 
 class SectionQuerySet(models.QuerySet):
     def user_progress_percent(self, user):
         return self.annotate(
-            total_elements=models.Count("problemsets__elements", distinct=True),
-            completed_elements=models.Count(
-                "problemsets__elements__progressofelement",
+            total_tasks=models.Count("rooms__tasks", distinct=True),
+            completed_tasks=models.Count(
+                "rooms__tasks__progressoftask",
                 filter=models.Q(
-                    problemsets__elements__progressofelement__user=user,
-                    problemsets__elements__progressofelement__status=Status.COMPLE,
+                    rooms__tasks__progressoftask__user=user,
+                    rooms__tasks__progressoftask__status=Status.COMPLE,
                 ),
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
     
-class ProblemSetQuerySet(models.QuerySet):
+class RoomQuerySet(models.QuerySet):
     def user_progress_percent(self, user):
         return self.annotate(
-            total_elements=models.Count("elements", distinct=True),
-            completed_elements=models.Count(
-                "elements__progressofelement",
+            total_tasks=models.Count("tasks", distinct=True),
+            completed_tasks=models.Count(
+                "tasks__progressoftask",
                 filter=models.Q(
-                    elements__progressofelement__user=user,
-                    elements__progressofelement__status=Status.COMPLE
+                    tasks__progressoftask__user=user,
+                    tasks__progressoftask__status=Status.COMPLE
                 ),
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_elements") / models.F("total_elements")
+            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
 class Course(models.Model):
@@ -90,7 +91,7 @@ class Course(models.Model):
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        on_delete=models.SET_NULL, 
         null=True, 
         related_name="created_courses"
     )
@@ -119,7 +120,7 @@ class Course(models.Model):
 class Section(models.Model):
     course = models.ForeignKey(
         Course,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         related_name="sections"
     )
@@ -154,18 +155,18 @@ class Section(models.Model):
     objects = SectionQuerySet.as_manager()
 
 
-class ProblemSet(models.Model):
+class Room(models.Model):
     course = models.ForeignKey(
         Course,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
-        related_name="problemsets"
+        related_name="rooms"
     )
     section = models.ForeignKey(
         Section,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
-        related_name="problemsets"
+        related_name="rooms"
     )
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
@@ -173,7 +174,7 @@ class ProblemSet(models.Model):
         settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
         null=True, 
-        related_name="created_problemsets"
+        related_name="created_rooms"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
@@ -183,13 +184,7 @@ class ProblemSet(models.Model):
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
     
-    objects = ProblemSetQuerySet.as_manager()
-
-
-class ProblemType(models.TextChoices):
-    MCQ = "MCQ", _("MULTIPLE CHOICE QUESTION")
-    FREERESP = "FREE", _("FREE RESPONSE QUESTION")
-    # More types can be added later
+    objects = RoomQuerySet.as_manager()
 
 
 class Tag(models.Model):
@@ -199,30 +194,54 @@ class Tag(models.Model):
         return self.name
 
 
-class Element(models.Model):
-    problemset = models.ForeignKey(
-        ProblemSet,
-        on_delete=models.SET_NULL,
+class Task(OrderedModel):
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
         null=True,
-        related_name="elements"
-    )
-    content = models.JSONField(default=dict, blank=True)
-    type = models.CharField(
-        max_length=50,
-        choices=ProblemType
+        related_name="tasks"
     )
     tags = models.ManyToManyField(Tag)
     point_value = models.IntegerField(default=0)
-    interface_data = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    order_with_respect_to = "room" # this creates a 'order' int column in the model table
+
     def __str__(self):
-        return f"{self.problemset} - {self.type}"
+        return f"{self.room} - {self.type}"
+
+
+class TaskComponentType(models.TextChoices):
+    OPTION = "OPTION", _("MULTIPLE CHOICE OPTION")
+    IMAGE = "IMAGE", _("IMAGE")
+    TEXT = "TEXT", _("TEXT")
+    FILL = "FILL", _("FILL IN THE BLANK QUESTION")
+    # will add more or change labels as needed
+
+
+class TaskComponent(OrderedModel):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="components"
+    )
+    type = models.CharField(
+        max_length=50,
+        choices=TaskComponentType
+    )
+    content = models.JSONField(default=dict, blank=True) # the format of this JSON will depend on the TaskComponent.type
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    order_with_respect_to = "task"  # this creates a 'order' int column in the model table
+
+    def __str__(self):
+        return f"{self.task} - {self.type}"
 
 
 class UserCourseAccessLevel(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
         choices=AccessLevel,
@@ -234,9 +253,9 @@ class UserCourseAccessLevel(models.Model):
 
 
 class UserSectionAccessLevel(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-    section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
         choices=AccessLevel,
@@ -253,12 +272,12 @@ class Status(models.TextChoices):
     COMPLE = "COMPLE", _("COMPLETED")
 
 
-class ProgressOfElement(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-    section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
-    problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)
-    element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True)
+class ProgressOfTask(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     status = models.CharField(
         max_length=50,
         choices=Status,
@@ -270,14 +289,15 @@ class ProgressOfElement(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.problemset.title if self.problemset else 'No ProblemSet'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.Room else 'No Room'} ({self.status})"
 
-class SavedProblem(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-    section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
-    problemset = models.ForeignKey(ProblemSet, on_delete=models.SET_NULL, null=True)
-    element = models.ForeignKey(Element, on_delete=models.SET_NULL, null=True)
+
+class SavedTask(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     status = models.CharField(
         max_length=50,
         choices=Status,
@@ -287,7 +307,8 @@ class SavedProblem(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.element if self.element else 'No Saved Problems'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.task if self.task else 'No Saved Problems'} ({self.status})"
+
 
 class Dictionary(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
@@ -295,6 +316,7 @@ class Dictionary(models.Model):
 
     def __str__(self):
         return f"{self.language} Dictionary"
+
 
 class DictionaryEntry(models.Model):
     language = models.ForeignKey(Dictionary, on_delete=models.SET_NULL, null=True)
