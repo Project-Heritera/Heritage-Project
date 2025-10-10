@@ -5,6 +5,7 @@ import MarkdownButton from "./MarkdownButton"
 import MarkdownArea from "./MarkdownArea"
 
 const EditTextComponent = ({text}) => {
+    const [areaApi, setAreaApi] = useState(null);
 
     //Handle toggle for render
     const [isRenderd, setIsRenderd] = useState(true);
@@ -14,24 +15,21 @@ const EditTextComponent = ({text}) => {
     }
     
     //Toolbar Functions
-    const italacize = () => {
-        console.log("You did an italazize!");
-    };
-
-    const bulletpoint = () => {
-        console.log("You did a bulletpoint!");
-    };
 
     return (
         <div>
             {/*Display tool bar at top*/}
             <Toolbar>
-                <MarkdownButton onClick={italacize}>
+                <MarkdownButton onClick={() => areaApi?.italacize()}>
                     italacize
                 </MarkdownButton>
 
-                <MarkdownButton onClick={bulletpoint}>
+                <MarkdownButton onClick={() => areaApi?.bulletpoint()}>
                     bulletpoint
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.bold()}>
+                    bold
                 </MarkdownButton>
 
                 <MarkdownButton onClick={toggleRender}>
@@ -40,7 +38,7 @@ const EditTextComponent = ({text}) => {
 
             </Toolbar>
             {/*Display text that can be easily editable and be able to select where to edit with cursor*/}
-            <MarkdownArea initText={text} isRenderd={isRenderd} />
+            <MarkdownArea initText={text} isRenderd={isRenderd} setAreaApi={setAreaApi} />
         </div>
     );
 };
