@@ -138,15 +138,14 @@ class RoomSerializer(serializers.ModelSerializer):
             if not (course_access and section_access and room_access):
                 return False
 
-            # If editing, visitors are NOT allowed
-            if edit:
-                if (
-                    course_access.access_level == AccessLevel.VISITOR
-                    or section_access.access_level == AccessLevel.VISITOR
-                    or room_access.access_level == AccessLevel.VISITOR
-                ):
-                    return False
-            return True
+        # If editing, visitors are NOT allowed
+        if edit:
+            if (
+                course_access.access_level == AccessLevel.VISITOR
+                or section_access.access_level == AccessLevel.VISITOR
+                or room_access.access_level == AccessLevel.VISITOR
+            ):
+                return False
 
         # --- PUBLIC ---
         return True
