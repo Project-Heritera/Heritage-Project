@@ -2,18 +2,16 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from .serializers import RoomSerializer
 from .models import (
-    Room,
-    Course, 
+    Course,
     Section,
-    UserCourseAccessLevel,
-    UserSectionAccessLevel,
-    UserRoomAccessLevel,
-    VisibilityLevel,
-    AccessLevel,
+    Room,
+    VisibilityLevel
 )
 
 
@@ -58,110 +56,30 @@ def create_room(request, course_id, section_id):
 def edit_room(request, course_id, section_id, room_id):
     """
     Retrieve full editable room data.
-    Checks if user has access or admin rights.
-    Returns ordered tasks and components.
+    Visitors can view but not save/publish.
     """
-    user = request.user
+    room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
+    serializer = RoomSerializer(room, context={"request": request})
 
-    room = get_object_or_404(
-        Room,
-        id=room_id,
-        section_id=section_id,
-        course_id=course_id,
-    )
+    # Only require view-level access (edit=False)
+    if not serializer._user_has_access(room, request.user, edit=False):
+        raise PermissionDenied("You do not have permission to view this room.")
 
-    # --- ACCESS CHECK --- # the access stuff is messy as fuck rn ngl
-    has_access = False
-
-    # 1. Creator always has access
-    if room.creator == user:
-        has_access = True
-
-    # 2. Course-level admin access
-    elif UserCourseAccessLevel.objects.filter(
-        user=user, course_id=course_id, access_level=AccessLevel.ADMIN
-    ).exists():
-        has_access = True
-
-    # 3. Section-level admin access
-    elif UserSectionAccessLevel.objects.filter(
-        user=user, section_id=section_id, access_level=AccessLevel.ADMIN
-    ).exists():
-        has_access = True
-
-    # 4. Room-level admin access
-    elif UserRoomAccessLevel.objects.filter(
-        user=user, room_id=room_id, access_level=AccessLevel.ADMIN
-    ).exists():
-        has_access = True
-
-    # 5. Public visibility
-    elif getattr(room, "visibility", None) == VisibilityLevel.PUBLIC:
-        has_access = True
-
-    # 6. Limited access check — if room visibility == LIMITER,
-    # check if user is in the course or section access list
-    elif getattr(room, "visibility", None) == VisibilityLevel.LIMITER:
-        if UserCourseAccessLevel.objects.filter(user=user, course_id=course_id).exists() or \
-           UserSectionAccessLevel.objects.filter(user=user, section_id=section_id).exists() or \
-           UserRoomAccessLevel.objects.filter(user=user, room_id=room_id).exists():
-            has_access = True
-
-    if not has_access:
-        return Response(
-            {"detail": "You do not have permission to access this room."},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-    # --- Serialize and return data ---
-    tasks_data = []
-    for task in room.tasks.all().order_by("order"):
-        components_data = [
-            {
-                "task_component_id": comp.id,
-                "type": comp.type,
-                "content": comp.content,
-            }
-            for comp in task.components.all().order_by("order")
-        ]
-
-        tasks_data.append({
-            "task_id": task.id,
-            "point_value": task.point_value,
-            "tags": list(task.tags.values_list("name", flat=True)),
-            "components": components_data,
-        })
-
-    return Response(
-        {
-            "status": "success",
-            "room_id": room.id,
-            "is_published": room.is_published,
-            "tasks": tasks_data,
-        },
-        status=status.HTTP_200_OK,
-    )
+    return Response(serializer.data)
 
 
 # helper for reuse in save and publish
 def _save_room_logic(request, course_id, section_id, room_id):
     """
-    Handles validation and full overwrite of a room's data.
-    Returns (room, errors).
+    Handles full validation + save of a room and its nested tasks/components.
+    Ensures atomic writes and permission checks.
+    Returns (room, None) if success, (None, errors) if validation fails.
     """
     room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
-
-    serializer = RoomSerializer(room, data=request.data)
+    serializer = RoomSerializer(room, data=request.data, context={"request": request})
     if serializer.is_valid():
-        # Delete old data AFTER validation (cascade deletes tasks & components)
-        # i think progress and access will/should also be deleted thru cascade
-        room.tasks.all().delete()
-
-        # Save new data (including nested tasks/components)
-        room = serializer.save()
-
-        return room, None
-
+        with transaction.atomic():
+            return serializer.save(), None
     return None, serializer.errors
 
 
