@@ -7,7 +7,6 @@ TextTaskComponent.propTypes = {
   jsonData: PropTypes.string,
   isEditing: PropTypes.bool,
 };
-{text: "hi"}
 
 function TextTaskComponent({ serialize, jsonData, isEditing}) {
   const [localText, setLocaltext] = useState("");

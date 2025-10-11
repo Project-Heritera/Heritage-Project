@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import { safeParse } from "zod";
 import TextTaskComponent from "./textTaskComponent";
+import mcq
+import TextTaskComponent from "./textTaskComponent";
 import {taskComponentTypes, getComponentTypeSchema, getDefaultComponentJson} from "../../utils/taskComponentTypes";
 import { useEffect, useState } from "react";
 TaskComponent.propTypes = {

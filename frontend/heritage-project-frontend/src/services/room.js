@@ -96,7 +96,7 @@ export async function publish_room(room_id, publish_room_data) {
 
 export async function get_test_room(){
 	//for testing purposes
-	test_room  = {
+	const test_room  = {
 		"course_id": 1,
 		"section_id": 12,
 		"room_id": 123,
@@ -114,13 +114,13 @@ export async function get_test_room(){
 					"task_components": [
 						{
 							"task_component_id": 432,
-							"type": "text",
-							"data": { "text": "this is text data to display" }
+							"type": "TEXT",
+							"metadata": { "text": "this is text data to display" }
 						},
 						{
 							"task_component_id": 43212,
-							"type": "mcq",
-							"data": { "...": "..." }
+							"type": "MCQ",
+							"metadata": { "text": "" }
 						}
 					]
 				},
@@ -131,8 +131,8 @@ export async function get_test_room(){
 					"task_components": [
 						{
 							"task_component_id": 41232,
-							"type": "text",
-							"data": { "text": "text for question 2" }
+							"type": "TEXT",
+							"metadata": { "text": "text for question 2" }
 						}
 					]
 				}
