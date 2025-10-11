@@ -53,7 +53,7 @@ def create_room(request, course_id, section_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def edit_room(request, course_id, section_id, room_id):
+def get_room(request, course_id, section_id, room_id):
     """
     Retrieve full editable room data.
     Visitors can view but not save/publish.
