@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import { safeParse } from "zod";
 import TextTaskComponent from "./textTaskComponent";
-import mcq
-import TextTaskComponent from "./textTaskComponent";
+import MCQTaskComponent from "./mcqTaskComponent";
+import ImageTaskComponent from "./imageTaskComponent";
 import {taskComponentTypes, getComponentTypeSchema, getDefaultComponentJson} from "../../utils/taskComponentTypes";
 import { useEffect, useState } from "react";
 TaskComponent.propTypes = {
@@ -40,11 +40,11 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
     {(() => {
       switch (componentType) {
         case "MCQ":
-          return <StepOne />;
+          return <MCQTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing}/>;
         case "TEXT":
           return <TextTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing}/>;
         case "IMAGE":
-          return <StepThree />;
+          return <ImageTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing} />;
         default:
           return (<p>Error did not provide component type</p>);
       }

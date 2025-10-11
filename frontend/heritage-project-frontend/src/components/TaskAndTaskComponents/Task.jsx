@@ -19,7 +19,7 @@ function Task({ pointValue=0, tags, children }) {
 
     const saveChildren = () => {
         const serialized = childRefs.current.map((ref) => ref?.serialize());
-        console.log("Serialized children:", serialized);
+        Debug.log("Serialized children:", serialized);
         return serialized;
     };
 
@@ -34,7 +34,6 @@ function Task({ pointValue=0, tags, children }) {
                 <CirclePlus />
                 Add task component
               </button>
- 
     </div>
   );
 }

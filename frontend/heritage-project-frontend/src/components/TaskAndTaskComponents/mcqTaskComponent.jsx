@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { taskComponentTypes, getComponentTypeSchema } from "../../utils/taskComponentTypes";
 
-TextTaskComponent.propTypes = {
+MCQTaskComponent.propTypes = {
   serialize: PropTypes.func.isRequired,
   jsonData: PropTypes.string,
   isEditing: PropTypes.bool,

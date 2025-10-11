@@ -44,7 +44,6 @@ function TextTaskComponent({ serialize, jsonData, isEditing}) {
         value={localText}  
         onChange={(e) => setLocaltext(e.target.value)}
         />
-        <button onClick={handleSerialize}>Save</button>
         </div>
       ) : (
         <p>{localText}</p>
