@@ -18,11 +18,27 @@ from .models import (
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_room(request, course_id, section_id):
-    """
-    Create a new room for a given course and section.
-    POST body should include: title, description
-    The authenticated user will automatically be set as the creator.
-    """
+    '''
+    create_room: Creates a new room for a specific course and section.
+    @NOTE: The authenticated user is automatically set as the room creator.
+    @request:
+        {
+            "title": "Room Title",
+            "description": "Optional description of the room"
+        }
+    @path params:
+        course_id: ID of the course to which the room belongs
+        section_id: ID of the section under the course
+    @return:
+        * HTTP 201 with room details if creation succeeds:
+            {
+                "status": "success",
+                "room_id": <int>,
+                "creator_id": <int>,
+                "creator_username": <str>
+            }
+        * HTTP 400 if validation fails (serializer errors)
+    '''
     course = get_object_or_404(Course, id=course_id)
     section = get_object_or_404(Section, id=section_id, course=course)
 
@@ -54,10 +70,18 @@ def create_room(request, course_id, section_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_room(request, course_id, section_id, room_id):
-    """
-    Retrieve full editable room data.
-    Visitors can view but not save/publish.
-    """
+    '''
+    get_room: Retrieves the full editable room data for a given room.
+    @NOTE: Users with only view permissions can see the room but not modify or publish it.
+    @path params:
+        course_id: ID of the course the room belongs to
+        section_id: ID of the section the room belongs to
+        room_id: ID of the room to retrieve
+    @return:
+        * HTTP 200 with serialized room data if the user has view access
+        * HTTP 403 if the user does not have permission to view the room
+        * HTTP 404 if the room, course, or section is not found
+    '''
     room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
     serializer = RoomSerializer(room, context={"request": request})
 
@@ -70,11 +94,15 @@ def get_room(request, course_id, section_id, room_id):
 
 # helper for reuse in save and publish
 def _save_room_logic(request, course_id, section_id, room_id):
-    """
-    Handles full validation + save of a room and its nested tasks/components.
-    Ensures atomic writes and permission checks.
-    Returns (room, None) if success, (None, errors) if validation fails.
-    """
+    '''
+    _save_room_logic: Internal helper to handle validation and saving of a room
+    (including nested tasks and components) within a single transaction.
+    @NOTE: Used by both `save_room` and `publish_room`.
+    @request: Expects Full room JSON structure (see note at bottom) in request.data for overwrite.
+    @return:
+        (room, None) if validation and save succeed,
+        (None, errors) if serializer validation fails.
+    '''
     room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
     serializer = RoomSerializer(room, data=request.data, context={"request": request})
     if serializer.is_valid():
@@ -86,10 +114,27 @@ def _save_room_logic(request, course_id, section_id, room_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_room(request, course_id, section_id, room_id):
-    """
-    Overwrite the room (and its tasks/components) with new data.
-    Cascade deletes old tasks/components.
-    """
+    '''
+    save_room: Overwrites an existing room (and its nested tasks/components) with new data.
+    @NOTE:
+        * Performs full validation before saving.
+        * Deletes any removed tasks/components via cascade.
+        * Uses `_save_room_logic` to ensure atomic save.
+    @request:
+        Full room JSON structure (see note at bottom) with updated fields.
+    @path params:
+        course_id: ID of the parent course
+        section_id: ID of the parent section
+        room_id: ID of the room being updated
+    @return:
+        * HTTP 200 if room saved successfully
+            {
+                "status": "success",
+                "room_id": <int>,
+                "message": "Room saved successfully."
+            }
+        * HTTP 400 if serializer validation fails
+    '''
     room, errors = _save_room_logic(request, course_id, section_id, room_id)
 
     if errors:
@@ -108,10 +153,31 @@ def save_room(request, course_id, section_id, room_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def publish_room(request, course_id, section_id, room_id):
-    """
-    Validate and publish the room.
-    Makes room visible to the public if valid.
-    """
+    '''
+    publish_room: Validates and publishes a room, making it publicly visible.
+    @NOTE:
+        * First performs a save/update using `_save_room_logic`.
+        * Ensures the room has at least one task before publishing.
+        * Sets visibility to PUBLIC and marks `is_published=True`.
+    @request:
+        Full room JSON structure (see note at bottom) to validate and publish.
+    @path params:
+        course_id: ID of the parent course
+        section_id: ID of the parent section
+        room_id: ID of the room to publish
+    @return:
+        * HTTP 200 if publish succeeds:
+            {
+                "status": "success",
+                "room_id": <int>,
+                "published": True,
+                "message": "Room published successfully."
+            }
+        * HTTP 400 if:
+            - Validation fails
+            - The room has no tasks
+            - Serializer errors occur
+    '''
     # first update/save room with incoming data
     room, errors = _save_room_logic(request, course_id, section_id, room_id)
     if errors:
@@ -141,3 +207,55 @@ def publish_room(request, course_id, section_id, room_id):
         },
         status=status.HTTP_200_OK,
     )
+
+
+"""
+@NOTE: When it says *full room JSON structure* above, it means the following:
+{
+  "title": "Introduction to Python",
+  "description": "A practice room for basic Python exercises.",
+  "metadata": {
+    "estimated_time": "15 minutes",
+    "notes": "Example note."
+  },
+  "visibility": "PRIVATE", 
+  "is_published": false,
+  "tasks": [
+    {
+      "task_id": 1, 
+      "point_value": 10,
+      "tags": ["syntax", "variables"], 
+      "components": [
+        {
+          "task_component_id": 11,
+          "type": "text",
+          "content": {
+            "text": "What is a variable in Python?"
+          }
+        },
+        {
+          "task_component_id": 12,
+          "type": "image",
+          "content": {
+            "url": example.com
+          }
+        }
+      ]
+    },
+    {
+      "task_id": 2,
+      "point_value": 5,
+      "tags": ["functions"],
+      "components": [
+        {
+          "task_component_id": 21,
+          "type": "text",
+          "content": {
+            "text": "Define a function that returns the square of a number."
+          }
+        }
+      ]
+    }
+  ]
+}
+"""
