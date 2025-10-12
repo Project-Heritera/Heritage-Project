@@ -1,0 +1,103 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$HtoAGOM4bSBuLILr1MHnWQ$vNhPifkzIq9NIvfgGf4AtDJh4/c7NF7IIvJ3hpilJNY=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "testuser",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@example.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-10-12T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "website.tag",
+    "pk": 1,
+    "fields": {
+      "name": "room"
+    }
+  },
+  {
+    "model": "website.course",
+    "pk": 1,
+    "fields": {
+      "title": "Test Room Course",
+      "description": "Course for room editor testing",
+      "creator": 4,
+      "visibility": "PUB",
+      "access_users": [],
+      "metadata": {}
+      ,
+      "created_on": "2025-10-10T00:00:00Z",
+      "last_updated": "2025-10-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "website.section",
+    "pk": 1,
+    "fields": {
+      "course": 1,
+      "title": "Main Room Section",
+      "description": "Section for room editor",
+      "creator": 4,
+      "visibility": "PUB",
+      "access_users": [],
+      "number_of_problems": 2,
+      "metadata": {}
+      ,
+      "created_on": "2025-10-10T00:00:00Z",
+      "last_updated": "2025-10-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "website.problemset",
+    "pk": 1,
+    "fields": {
+      "course": 1,
+      "section": 1,
+      "title": "Room ProblemSet",
+      "description": "Tasks for the room editor",
+      "creator": 4,
+      "number_of_problems": 2,
+      "metadata": {}
+      ,
+      "created_on": "2025-10-10T00:00:00Z",
+      "last_updated": "2025-10-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "website.element",
+    "pk": 1,
+    "fields": {
+      "problemset": 1,
+      "content": {"taskTitle": "Place Artifact", "details": "Drag an artifact into the room", "position": 1},
+      "type": "FREE",
+      "tags": [1],
+      "point_value": 0,
+      "interface_data": {}
+      ,
+      "created_on": "2025-10-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "website.element",
+    "pk": 2,
+    "fields": {
+      "problemset": 1,
+      "content": {"taskTitle": "Label Artifact", "details": "Edit the label of the placed artifact", "position": 2},
+      "type": "FREE",
+      "tags": [1],
+      "point_value": 0,
+      "interface_data": {}
+      ,
+      "created_on": "2025-10-10T00:00:00Z"
+    }
+  }
+]
