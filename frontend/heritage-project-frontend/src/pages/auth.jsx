@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { login } from "../services/auth";
 
+//Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
   const [password, setPassword] = useState("");
 
   // Function to handle sign in
   async function handleLogin() {
+    //Check if username and password are not empty
     if (username && password){
       try {
-        const data = await login(username, password);
+        const data = await login(username, password);//Wait for external login function reply
         console.log("Login success:", data);
       } catch (error) {
-        console.error(error);
+        //If somthing in try failed, default to here
+        console.error(error);//log error
       }
     }
     else{
