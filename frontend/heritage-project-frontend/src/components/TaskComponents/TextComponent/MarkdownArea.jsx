@@ -100,7 +100,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
     }
 
     //Create toolbar functions
-    const italacize = () => {
+    const italicize = () => {
         if (isRenderd) {
             editor?.chain().focus().toggleItalic().run();
             console.log("You did an renderd italazize!");
@@ -128,6 +128,58 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         }
     }
 
+    //Handle headers
+    const heading1 = () => {
+        if (isRenderd) {
+            editor?.chain().focus().toggleHeading({ level: 1 }).run();
+        } else {
+            addLineMarks("#");
+        }
+    }
+
+    const heading2 = () => {
+        if (isRenderd) {
+            editor?.chain().focus().toggleHeading({ level: 2 }).run();
+        } else {
+            addLineMarks("##");
+        }
+    }
+
+    const heading3 = () => {
+        if (isRenderd) {
+            editor?.chain().focus().toggleHeading({ level: 3 }).run();
+        } else {
+            addLineMarks("###");
+        }
+    }
+
+    //Strikethrough
+    const strike = () => {
+        if (isRenderd) {
+            editor?.chain().focus().toggleStrike().run();
+        } else {
+            wrapSelection("~~");
+        }
+    }
+
+    //Link work in progress.
+    const link = () => {
+        if (isRenderd) {
+            editor?.chain().focus().setLink().run();
+        } else {
+            wrapSelection("[", "]");
+        }
+    }
+
+    //Blockquote
+    const blockquote = () => {
+        if (isRenderd) {
+            editor?.chain().focus().toggleBlockquote().run();
+        } else {
+            addLineMarks(">");
+        }
+    }
+
 
     //Create text area view for non renderd mode
     const textAreaChange = (e) => {
@@ -141,9 +193,15 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
     useEffect(() => {
         if (setAreaApi) {
             setAreaApi({
-                italacize,
+                italicize,
                 bulletpoint,
                 bold,
+                heading1,
+                heading2,
+                heading3,
+                strike,
+                link,
+                blockquote
             })
         }
     }, [editor, setAreaApi, isRenderd])

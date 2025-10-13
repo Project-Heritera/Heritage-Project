@@ -20,8 +20,8 @@ const EditTextComponent = ({text}) => {
         <div>
             {/*Display tool bar at top*/}
             <Toolbar>
-                <MarkdownButton onClick={() => areaApi?.italacize()}>
-                    italacize
+                <MarkdownButton onClick={() => areaApi?.italicize()}>
+                    italicize
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bulletpoint()}>
@@ -30,6 +30,26 @@ const EditTextComponent = ({text}) => {
 
                 <MarkdownButton onClick={() => areaApi?.bold()}>
                     bold
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.heading1()}>
+                    heading1
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.heading2()}>
+                    heading2
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.heading3()}>
+                    heading3
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.strike()}>
+                    strike
+                </MarkdownButton>
+
+                <MarkdownButton onClick={() => areaApi?.blockquote()}>
+                    blockquote
                 </MarkdownButton>
 
                 <MarkdownButton onClick={toggleRender}>
