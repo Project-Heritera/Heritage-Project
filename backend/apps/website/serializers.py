@@ -91,6 +91,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "tasks",
             "creator", # as above, this is just a str
             "created_on",
+            "last_updated"
         ]
         read_only_fields = ["course_id", "section_id", "room_id", "creator", "created_on"]
 
@@ -151,7 +152,7 @@ class RoomSerializer(serializers.ModelSerializer):
         # --- PUBLIC ---
         return True
 
-    def get_editing_mode(self, obj):
+    def get_can_edit(self, obj):
         """
         Whether the current user can edit this room.
         True only if user has edit-level (non-visitor) access.
