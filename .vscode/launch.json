@@ -9,7 +9,7 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}\\backend\\manage.py",
-      "args": ["test", "accounts.tests.LoginSystemAPITestCase"],
+      "args": ["test", "apps.website.tests.RoomAPITestCase"],
       "django": true
     },
 
@@ -20,6 +20,14 @@
       "program": "${workspaceFolder}\\backend\\manage.py",
       "args": ["runserver", "9000"],
       "django": true
+    },
+    {
+      "name": "React Chrome debug home page",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}\\frontend\\heritage-project-frontend",
+      "sourceMaps": true
     }
   ]
 }

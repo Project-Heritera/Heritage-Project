@@ -170,19 +170,6 @@ class Room(models.Model):
         null=True,
         related_name="rooms"
     )
-    title = models.CharField(max_length=100)
-    description = models.CharField(max_length=255)
-    creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        related_name="created_rooms"
-    )
-    visibility = models.CharField(
-        max_length=50,
-        choices=VisibilityLevel,
-        default=VisibilityLevel.PRIVATE
-    )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through="UserRoomAccessLevel",
@@ -190,11 +177,24 @@ class Room(models.Model):
         blank=True,
         help_text="Users who can access the room when visibility is set to LIMITER"
     )
-    number_of_problems = models.IntegerField(default=0)
+    can_edit = models.BooleanField(default=True)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     metadata = models.JSONField(default=dict, blank=True)
+    visibility = models.CharField(
+        max_length=50,
+        choices=VisibilityLevel,
+        default=VisibilityLevel.PRIVATE
+    )
+    is_published = models.BooleanField(default=False)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="created_rooms"
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"

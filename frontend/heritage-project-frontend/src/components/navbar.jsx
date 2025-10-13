@@ -11,6 +11,9 @@ export default function Navbar() {
       <Link to="/course_view">
         <button>Courses</button>
       </Link>
+      <Link to="/room_editor">
+        <button>Room Editor</button>
+      </Link>
         <button>
           <List />
         </button>
