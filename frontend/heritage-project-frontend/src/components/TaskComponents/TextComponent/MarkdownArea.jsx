@@ -43,11 +43,21 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         const endText = text.substring(end);
 
         //Create updated text: {text before highlight}{prefix}{highlightedtext}{suffix}{text after highlight}
-        const updatedText = `${prevText}${prefix}${selectedText}${suffix}${endText}`
+        let updatedText = null;
+        if (start === end) {
+            //Then just add the characters dont "wrap" since nothing highlight
+            updatedText = `${prefix}${suffix}`;
+            console.log("start is equal to end!");
+            console.log(prefix);
+            console.log(suffix);
+        } else {
+            console.log("Doing normal wrap!");
+            updatedText = `${prevText}${prefix}${selectedText}${suffix}${endText}`;
+        }
+        console.log(updatedText);
 
         //Update text for editor and textarea
         setRawMarkdown(updatedText);
-        editor?.commands.setContent(updatedText);
 
         //Adjust cursor to be after what we just wrapped. Load after react rerender
         setTimeout(() => {
