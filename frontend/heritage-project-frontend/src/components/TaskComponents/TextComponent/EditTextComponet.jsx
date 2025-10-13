@@ -3,6 +3,7 @@ import Markdown from "../../Utilities/Markdown"
 import Toolbar from "./MarkdownToolbar"
 import MarkdownButton from "./MarkdownButton"
 import MarkdownArea from "./MarkdownArea"
+import "../../../styles/Components/TaskComponents/TextComponent.css"
 
 const EditTextComponent = ({text}) => {
     const [areaApi, setAreaApi] = useState(null);
@@ -17,43 +18,43 @@ const EditTextComponent = ({text}) => {
     //Toolbar Functions
 
     return (
-        <div>
+        <div className="EditTextComponent">
             {/*Display tool bar at top*/}
             <Toolbar>
                 <MarkdownButton onClick={() => areaApi?.italicize()}>
-                    italicize
+                    it
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bulletpoint()}>
-                    bulletpoint
+                    bu
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bold()}>
-                    bold
+                    bo
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading1()}>
-                    heading1
+                    he1
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading2()}>
-                    heading2
+                    he2
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading3()}>
-                    heading3
+                    he3
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.strike()}>
-                    strike
+                    str
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.blockquote()}>
-                    blockquote
+                    blq
                 </MarkdownButton>
 
                 <MarkdownButton onClick={toggleRender}>
-                    toggle render
+                    tog
                 </MarkdownButton>
 
             </Toolbar>

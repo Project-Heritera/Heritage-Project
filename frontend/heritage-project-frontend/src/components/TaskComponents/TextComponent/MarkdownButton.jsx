@@ -1,9 +1,10 @@
 import React from 'react';
 import Markdown from "../../Utilities/Markdown"
+import "../../../styles/Components/TaskComponents/TextComponent.css"
 
 const MarkdownButton = ({onClick, children}) => {
     return (
-        <button onClick={onClick}>
+        <button className="button" onClick={onClick}>
             {children}
         </button>
     );

@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import { useState, useEffect, useRef } from 'react';
+import "../../../styles/Components/TaskComponents/TextComponent.css"
 
 //This componet supports viewing the markdown as renderd and as raw markdown
 const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
@@ -211,10 +212,10 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
             {/* If render is toggled used render editor, else use normal markdown text */}
             {isRenderd ? (
                 //Render if true
-                <EditorContent editor={editor} />
+                <EditorContent className="ProseMirror" editor={editor} />
             ) : (
                 //render is false
-                <textarea value={rawMarkdown} onChange={textAreaChange} ref={textAreaRef} />
+                <textarea className="text-area" value={rawMarkdown} onChange={textAreaChange} ref={textAreaRef} />
             )}
         </>
     )
