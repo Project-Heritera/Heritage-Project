@@ -1,9 +1,10 @@
 import React from 'react';
 import Markdown from "../../Utilities/Markdown"
+import "../../../styles/Components/TaskComponents/TextComponent.css"
 
 const Markdowntoolbar = ({children}) => {
     return (
-        <div>
+        <div className="toolbar">
             {children}
         </div>
     );
