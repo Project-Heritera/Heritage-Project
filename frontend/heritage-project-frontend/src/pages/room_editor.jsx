@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
 import { CirclePlus, List } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import {DndContext} from "@dnd-kit/core";
@@ -7,6 +8,9 @@ import { taskComponentTypes } from "../utils/taskComponentTypes";
 import TaskComponent from "../components/TaskAndTaskComponents/TaskComponent";
 import {get_room_data, get_test_room} from "../services/room";
 const RoomEditor = () => {
+  //get ids fro url
+  const { course_id, section_id, room_id } = useParams();
+  //locals
   const [roomTitle,setRoomTitle] = useState("Untitled Room");
   const [roomDesc,setRoomDesc] = useState("No Description");
   const [roomCreator,setRoomCreator] = useState("No Creator");
@@ -16,20 +20,30 @@ const RoomEditor = () => {
   useEffect(()=>{
     const loadRoom = async () => {
       try {
-        const room_data = await get_test_room();
+        const room_data = await get_room_data(course_id, section_id, room_id);
         if (!room_data) {
           console.error("Room editing page entered but room id has no is editing field");
           return;
         }
         Debug.log("room data: ", room_data); 
+        //dont load page if room dosent have can edit set to true
         if (room_data["can_edit"] !== true) {
-          console.warn("Editing page reached and room data doesn't have editing_mode set to true");
+          console.error("Editing page reached and room data doesn't have editing_mode set to true");
         }
         if (room_data.title){
           setRoomTitle(room_data.title);
         }
         if (room_data.description){
           setRoomDesc(room_data.description);
+        }
+        if (room_data.last_updated){
+          setRoomLastEdited(room_data.last_updated);
+        }
+        if (room_data.created_on){
+          setRoomCreationDate(room_data.created_on);
+        }
+        if (room_data.creator){
+          setRoomCreator(room_data.creator);
         }
         //load username from creator field and set room creater state
         //else set state to user_unavailable 
@@ -53,8 +67,8 @@ const RoomEditor = () => {
       <div className="room-editor flex flex-col">
         <div className="room-editor-header flex flex-col justify-center">
             <h1>Editor for Room: {roomTitle}</h1>
-            <p>{roomDesc}</p>
-            <p>{roomCreator}</p>
+            <p>Description: {roomDesc}</p>
+            <p>Created by: {roomCreator}</p>
         </div>
         <div className="room-editor-body">
           <div className="task-editor flex flex-col gap-4">

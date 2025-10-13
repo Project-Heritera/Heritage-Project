@@ -16,7 +16,7 @@ import { Debug } from "../utils/debugLog";
  */
 export async function create_room(create_room_data) {
 	try {
-		const response = await api.post(`courses/${course_id}/sections/${section_id}/create_room/`, create_room_data);
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/create_room/`, create_room_data);
 		Debug.log('room create successful', response.data);
 		return response.data
 	} 
@@ -33,10 +33,10 @@ export async function create_room(create_room_data) {
  * @return:
  *  * HTTP 200 with full room data if found.
  *  * HTTP 404 if the room ID does not exist.
- */
-export async function get_room_data(room_id) {
+*/
+export async function get_room_data(course_id, section_id, room_id) {
 	try {
-		const response = await api.get(`courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
+		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
 		Debug.log('room fetch successful', response.data);
 		return response.data
 	} 
@@ -60,7 +60,7 @@ export async function get_room_data(room_id) {
  */
 export async function save_room(room_id, new_room_data) {
 	try {
-		const response = await api.post(`courses/${course_id}/sections/${section_id}/rooms/${room_id}/save`, new_room_data);
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/save`, new_room_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
@@ -84,7 +84,7 @@ export async function save_room(room_id, new_room_data) {
  */
 export async function publish_room(course_id, section_id, room_id, publish_room_data) {
 	try {
-		const response = await api.post(`courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish`,publish_data);
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish`,publish_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
