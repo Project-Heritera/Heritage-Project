@@ -13,21 +13,28 @@ function TextTaskComponent({ serialize, jsonData, isEditing}) {
 
   // Load jsonData into local state on component creation
   useEffect(() => {
-    if (jsonData) {
-      try {
-        const schema = getComponentTypeSchema(taskComponentTypes.TEXT);
-        const parsed = schema.parse(JSON.parse(jsonData));
-        if (!("text" in parsed)) {
-          throw new Error("Text field missing in unserialized data.");
-        }
-        setLocaltext(parsed.text);
-      } catch (err) {
-        console.error("Failed to load TextEditor:", err);
-        // Kill component
-        setLocaltext("");
+  if (jsonData) {
+    try {
+      const schema = getComponentTypeSchema(taskComponentTypes.TEXT);
+      
+      // Handle both string and object
+      let parsed = jsonData;
+      if (typeof jsonData === 'string') {
+        parsed = JSON.parse(jsonData);
       }
+      
+      parsed = schema.parse(parsed);
+      
+      if (!("text" in parsed)) {
+        throw new Error("Text field missing in unserialized data.");
+      }
+      setLocaltext(parsed.text);
+    } catch (err) {
+      console.error("Failed to load TextEditor:", err);
+      setLocaltext("");
     }
-  }, []);
+  }
+}, [jsonData]);
   //create json from localText state and pass to serialize in parent
   function handleSerialize() {
     const jsonToSerialize = JSON.stringify({
