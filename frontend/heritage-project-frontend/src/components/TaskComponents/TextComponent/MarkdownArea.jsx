@@ -188,6 +188,10 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         }
     }
 
+    //retrieve text
+    const getContent = () => {
+        return rawMarkdown;
+    }
 
     //Create text area view for non renderd mode. Handles when the text area changes
     const textAreaChange = (e) => {
@@ -209,7 +213,8 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
                 heading3,
                 strike,
                 link,
-                blockquote
+                blockquote,
+                getContent,
             })
         }
     }, [editor, setAreaApi, isRenderd])

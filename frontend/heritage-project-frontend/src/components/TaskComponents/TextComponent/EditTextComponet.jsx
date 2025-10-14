@@ -18,8 +18,7 @@ import {
 } from 'lucide-react';
 
 //Commponet used to render the edit version of the text componet
-const EditTextComponent = ({ text }) => {
-    const [areaApi, setAreaApi] = useState(null);//Used to provide fucntions to parent of MarkdownArea
+const EditTextComponent = ({ text, areaApi, setAreaApi }) => {
 
     //Handle toggle for render
     const [isRenderd, setIsRenderd] = useState(true);//Holds bool for render toggle
