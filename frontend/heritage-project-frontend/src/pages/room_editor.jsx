@@ -16,6 +16,8 @@ const RoomEditor = () => {
   const [roomCreationDate, setRoomCreationDate] = useState("Unavailable");
   const [roomLastEdited, setRoomLastEdited] = useState("Unavailable");
 
+  const [draggedIndex, setDraggedIndex] = useState(null);
+
   // Store refs for all task components
   const taskComponentRefs = useRef({});
 
@@ -48,11 +50,11 @@ const RoomEditor = () => {
           : [];
         const normalizedTasks = tasks.map((task) => ({
           ...task,
-          task_id: task.task_id || uuidv4(), 
+          task_id: task.task_id || uuidv4(),
           task_components: Array.isArray(task.task_components)
-            ? task.task_components.map(tc => ({
+            ? task.task_components.map((tc) => ({
                 ...tc,
-                task_component_id: tc.task_component_id || uuidv4() // sometimes task doesn't have id
+                task_component_id: tc.task_component_id || uuidv4(), // sometimes task doesn't have id
               }))
             : [],
         }));
@@ -76,9 +78,36 @@ const RoomEditor = () => {
   };
 
   const deleteTask = (taskId) => {
-    setRoomTasks(prev => prev.filter(task => task.task_id !== taskId));
+    setRoomTasks((prev) => prev.filter((task) => task.task_id !== taskId));
   };
 
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    const newCards = [...roomTasks];
+    const draggedCard = newCards[draggedIndex];
+
+    newCards.splice(draggedIndex, 1);
+    newCards.splice(dropIndex, 0, draggedCard);
+
+    setRoomTasks(newCards);
+    setDraggedIndex(null);
+  };
   // Function to serialize everything to ever exist
   const serializeAllTasks = () => {
     try {
@@ -88,7 +117,7 @@ const RoomEditor = () => {
         creator: roomCreator,
         creationDate: roomCreationDate,
         lastEdited: new Date().toISOString(),
-        tasks: []
+        tasks: [],
       };
 
       // go through all tasks
@@ -97,13 +126,14 @@ const RoomEditor = () => {
           task_id: task.task_id,
           pointValue: task.pointValue,
           tags: task.tags,
-          task_components: []
+          task_components: [],
         };
 
         //go through each task component
         for (const taskComponent of task.task_components) {
-          const ref = taskComponentRefs.current[taskComponent.task_component_id];
-          
+          const ref =
+            taskComponentRefs.current[taskComponent.task_component_id];
+
           if (ref && ref.serialize) {
             try {
               const serializedData = ref.serialize();
@@ -111,11 +141,14 @@ const RoomEditor = () => {
                 serializedTask.task_components.push({
                   task_component_id: taskComponent.task_component_id,
                   type: serializedData.componentType,
-                  metadata: serializedData.data
+                  metadata: serializedData.data,
                 });
               }
             } catch (err) {
-              console.error(`Failed to serialize component ${taskComponent.task_component_id}:`, err);
+              console.error(
+                `Failed to serialize component ${taskComponent.task_component_id}:`,
+                err
+              );
             }
           }
         }
@@ -127,7 +160,6 @@ const RoomEditor = () => {
 
       alert("Room serialized successfully! Check console for details.");
       return serializedRoom;
-      
     } catch (err) {
       console.error("Failed to serialize room:", err);
       alert("Failed to serialize room. Check console for errors.");
@@ -137,7 +169,6 @@ const RoomEditor = () => {
 
   return (
     <div className="room-editor flex flex-col px-8 py-6 gap-6">
-
       <div className="room-editor-header space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -145,8 +176,8 @@ const RoomEditor = () => {
             <p className="text-base">{roomDesc}</p>
             <p className="text-sm italic">{roomCreator}</p>
           </div>
-          
-          <button 
+
+          <button
             onClick={serializeAllTasks}
             className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
           >
@@ -158,23 +189,33 @@ const RoomEditor = () => {
 
       <div className="room-editor-body">
         <div className="task-editor flex flex-col gap-6">
-          {roomTasks.map((task) => (
+          {roomTasks.map((task, taskIndex) => (
             <div
               key={task.task_id}
               className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
             >
-              <Task 
-                pointValue={task.pointValue} 
-                tags={task.tags}>
-
+              <Task
+                index={taskIndex}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                pointValue={task.pointValue}
+                tags={task.tags}
+              >
                 <div className="flex flex-col gap-4">
-
-                  {task.task_components.map((taskComponent) => (
+                  {task.task_components.map((taskComponent, index) => (
                     <TaskComponent
+                      index={index}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      isDragging={draggedIndex}
                       key={taskComponent.task_component_id}
                       ref={(el) => {
                         if (el) {
-                          taskComponentRefs.current[taskComponent.task_component_id] = el;
+                          taskComponentRefs.current[
+                            taskComponent.task_component_id
+                          ] = el;
                         }
                       }}
                       componentType={taskComponent.type}
@@ -182,22 +223,22 @@ const RoomEditor = () => {
                       isEditing={true}
                     />
                   ))}
-                  
-                  
                 </div>
               </Task>
 
-              <button 
+              <button
                 onClick={() => deleteTask(task.task_id)}
                 className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
               >
                 Delete Task
               </button>
-
             </div>
           ))}
 
-          <button className="add-task flex items-center gap-2 rounded-md px-4 py-2 border border-dashed hover:border-gray-600 transition" onClick={addNewTask}>
+          <button
+            className="add-task flex items-center gap-2 rounded-md px-4 py-2 border border-dashed hover:border-gray-600 transition"
+            onClick={addNewTask}
+          >
             <CirclePlus className="w-5 h-5" />
             <span className="text-sm font-medium">Add Task</span>
           </button>
