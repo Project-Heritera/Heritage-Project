@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { safeParse } from "zod";
-import TextTaskComponent from "./textTaskComponent";
+import TextTaskComponent from "../TaskComponents/TextComponent/TextComponent";
 import MCQTaskComponent from "./mcqTaskComponent";
 import ImageTaskComponent from "./imageTaskComponent";
 import {taskComponentTypes, getComponentTypeSchema, getDefaultComponentJson} from "../../utils/taskComponentTypes";
