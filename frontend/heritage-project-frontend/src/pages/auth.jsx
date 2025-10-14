@@ -10,6 +10,10 @@ const AuthLogin = () => {
   async function handleLogin() {
     //Check if username and password are not empty
     if (username && password){
+      const loginData = { 
+        username,
+        password
+      };
       try {
         const data = await login(username, password);//Wait for external login function reply
         console.log("Login success:", data);

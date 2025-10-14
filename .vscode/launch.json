@@ -20,6 +20,22 @@
       "program": "${workspaceFolder}\\backend\\manage.py",
       "args": ["runserver", "9000"],
       "django": true
+    },
+    {
+      "name": "React Chrome debug home page",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    },
+    {
+      "name": "React Chrome debug room editor page",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173/room_editor",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
     }
   ]
 }
