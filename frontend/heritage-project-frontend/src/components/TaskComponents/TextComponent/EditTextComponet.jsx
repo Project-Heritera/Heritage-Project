@@ -17,17 +17,17 @@ import {
     ScrollText
 } from 'lucide-react';
 
+//Commponet used to render the edit version of the text componet
 const EditTextComponent = ({ text }) => {
-    const [areaApi, setAreaApi] = useState(null);
+    const [areaApi, setAreaApi] = useState(null);//Used to provide fucntions to parent of MarkdownArea
 
     //Handle toggle for render
-    const [isRenderd, setIsRenderd] = useState(true);
+    const [isRenderd, setIsRenderd] = useState(true);//Holds bool for render toggle
 
+    //Toggles between render and non render view
     const toggleRender = () => {
         setIsRenderd(!isRenderd);
     }
-
-    //Toolbar Functions
 
     return (
         <div className="EditTextComponent">

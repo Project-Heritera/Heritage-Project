@@ -4,7 +4,10 @@ import { Markdown } from 'tiptap-markdown';
 import { useState, useEffect, useRef } from 'react';
 import "../../../styles/Components/TaskComponents/TextComponent.css"
 
-//This componet supports viewing the markdown as renderd and as raw markdown
+//This componet supports viewing the markdown as renderd and as raw markdown.
+//initText is the initial text to load in
+//isRenderd is the state used to represent if the render is activated for the markdown
+//setAreaApi us a state used in parent to have the api functions passed up to it.
 const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
     //Save state of markdown when changes occur for toggle
     const [rawMarkdown, setRawMarkdown] = useState(initText);
@@ -30,6 +33,8 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
     const textAreaRef = useRef(null);
 
     //Function for wraping selected text in a notation. suffix becomes prefix if one is not provided
+    //prefix is the first and left side of a wraped notation
+    //suffix is the last and right side of a wraped notation character
     const wrapSelection = (prefix, suffix = prefix) => {
         const textArea = textAreaRef.current;//Retrieve text area once its made
         if (!textArea) return;
@@ -68,6 +73,8 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         }, 0);
     }
 
+    //Adds markdown notation that needs to be at the start of the current line like headers
+    //lineMark is the notation you want to add
     const addLineMarks = (lineMark) => {
         const textArea = textAreaRef.current;//Retrieve text area once its made
         if (!textArea) return;
@@ -182,7 +189,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
     }
 
 
-    //Create text area view for non renderd mode
+    //Create text area view for non renderd mode. Handles when the text area changes
     const textAreaChange = (e) => {
         const newText = e.target.value;
         setRawMarkdown(newText);
