@@ -65,8 +65,9 @@ class TaskSerializer(serializers.ModelSerializer):
 # -------------------------------
 
 class RoomSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(source="course", read_only=True)
-    section_id = serializers.IntegerField(source="section", read_only=True)
+    # use the related object's id so DRF gets a primitive int when serializing
+    course_id = serializers.IntegerField(source="course.id", read_only=True)
+    section_id = serializers.IntegerField(source="section.id", read_only=True)
     room_id = serializers.IntegerField(source="id", read_only=True)
     can_edit = serializers.SerializerMethodField()
     tasks = TaskSerializer(many=True, required=False)
@@ -158,6 +159,10 @@ class RoomSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         return self._user_has_access(obj, user, edit=True)
+
+    # back-compat for field name used in serializer
+    def get_can_edit(self, obj):
+        return self.get_editing_mode(obj)
 
 
     # -------------------------------
