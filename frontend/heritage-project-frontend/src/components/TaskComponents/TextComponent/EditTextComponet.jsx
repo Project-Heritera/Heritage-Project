@@ -1,11 +1,23 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Markdown from "../../Utilities/Markdown"
 import Toolbar from "./MarkdownToolbar"
 import MarkdownButton from "./MarkdownButton"
 import MarkdownArea from "./MarkdownArea"
 import "../../../styles/Components/TaskComponents/TextComponent.css"
+//Import icons
+import {
+    Bold,
+    Italic,
+    List,
+    Heading1,
+    Heading2,
+    Heading3,
+    Strikethrough,
+    TextQuote,
+    ScrollText
+} from 'lucide-react';
 
-const EditTextComponent = ({text}) => {
+const EditTextComponent = ({ text }) => {
     const [areaApi, setAreaApi] = useState(null);
 
     //Handle toggle for render
@@ -14,7 +26,7 @@ const EditTextComponent = ({text}) => {
     const toggleRender = () => {
         setIsRenderd(!isRenderd);
     }
-    
+
     //Toolbar Functions
 
     return (
@@ -22,39 +34,39 @@ const EditTextComponent = ({text}) => {
             {/*Display tool bar at top*/}
             <Toolbar>
                 <MarkdownButton onClick={() => areaApi?.italicize()}>
-                    it
+                    <Italic size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bulletpoint()}>
-                    bu
+                    <List size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bold()}>
-                    bo
+                    <Bold size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading1()}>
-                    he1
+                    <Heading1 size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading2()}>
-                    he2
+                    <Heading2 size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading3()}>
-                    he3
+                    <Heading3 size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.strike()}>
-                    str
+                    <Strikethrough size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.blockquote()}>
-                    blq
+                    <TextQuote size={18} />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={toggleRender}>
-                    tog
+                    <ScrollText size={18} />
                 </MarkdownButton>
 
             </Toolbar>

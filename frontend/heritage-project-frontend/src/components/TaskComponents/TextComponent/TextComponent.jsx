@@ -3,7 +3,7 @@ import Edit from "./EditTextComponet"
 import Read from "./ReadTextComponent"
 import "../../../styles/Components/TaskComponents/TextComponent.css"
 
-const TextComponent = ({text, edit}) => {
+const TextComponent = ({text, edit, contentApi}) => {
     return (
         <div className='text-componet'>
             {edit ? (
@@ -11,7 +11,7 @@ const TextComponent = ({text, edit}) => {
                 <Edit text={text}/>
             ) : (
                 //Edit is false
-                <Edit text={text}/>
+                <Read text={text}/>
             )}
         </div>
     );
