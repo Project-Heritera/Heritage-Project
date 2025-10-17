@@ -5,16 +5,21 @@ import { DndContext } from "@dnd-kit/core";
 import Task from "../components/TaskAndTaskComponents/Task";
 import { taskComponentTypes } from "../utils/taskComponentTypes";
 import TaskComponent from "../components/TaskAndTaskComponents/TaskComponent";
-import { get_room_data, get_test_room } from "../services/room";
+import { useParams } from 'react-router-dom';
+import { get_room_data, get_test_room, save_room } from "../services/room";
 import { v4 as uuidv4 } from "uuid";
 
 const RoomEditor = () => {
+  //get ids from url
+  const { course_id, section_id, room_id } = useParams();
+
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
   const [roomDesc, setRoomDesc] = useState("No Description");
   const [roomCreator, setRoomCreator] = useState("No Creator");
   const [roomTasks, setRoomTasks] = useState([]);
   const [roomCreationDate, setRoomCreationDate] = useState("Unavailable");
   const [roomLastEdited, setRoomLastEdited] = useState("Unavailable");
+  const [roomVisibility, setRoomVisibility] = useState("PRI");
 
   // Store refs for all task components
   const taskComponentRefs = useRef({});
@@ -49,6 +54,10 @@ const RoomEditor = () => {
         if (room_data.creator){
           setRoomCreator(room_data.creator);
         }
+        if (room_data.visibility){
+          setRoomVisibility(room_data.visibility);
+        }
+
         //load username from creator field and set room creater state
         //else set state to user_unavailable 
         const tasks = Array.isArray(room_data.tasks) ? room_data.tasks: [];
@@ -81,15 +90,19 @@ const RoomEditor = () => {
   };
 
   // Function to serialize everything to ever exist
-  const serializeAllTasks = () => {
+  const serializeAllTasks = async () => {
     try {
       const serializedRoom = {
+        can_edit: true,
         title: roomTitle,
         description: roomDesc,
+        metadata: {},
+        visibility: roomVisibility,
+        is_published: false,
+        tasks: [],
         creator: roomCreator,
-        creationDate: roomCreationDate,
-        lastEdited: new Date().toISOString(),
-        tasks: []
+        created_on: roomCreationDate,
+        last_updated: new Date().toISOString(),
       };
 
       // go through all tasks
@@ -122,8 +135,8 @@ const RoomEditor = () => {
       }
 
       Debug.log("Serialized Room Data:", serializedRoom);
-
-      return serializedRoom;
+      const room_status = await save_room(course_id, section_id, room_id, serializedRoom);
+      return room_status;
       
     } catch (err) {
       console.error("Failed to serialize room:", err);

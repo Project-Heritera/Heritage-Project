@@ -28,7 +28,6 @@ function Task({ pointValue=0, tags, children }) {
     <h3>Task</h3>
       <p>Tags: {tags.join(", ")}</p>
       <p>Point Value: {pointValue}</p>
-      <button onClick={saveChildren}>Save Children</button>
       <div className="task-body">{childrenWithRefs}</div>
               <button className="add-task-component">
                 <CirclePlus />

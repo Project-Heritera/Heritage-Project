@@ -50,17 +50,26 @@ export async function get_room_data(course_id, section_id, room_id) {
  * @room_id :
  *  ID of room to seek data fromNone (room_id is provided as a URL parameter)
  * @new_room_data :
- *  {
- *    todo: add json layout here
- *  }
+ *{
+   "can_edit": true,
+   "title": "Analyzing Fronchetti Behaviors",
+    "description": "Dive deep into the mysterious habits, gestures, and vocal inflections of Professor Fronchetti. From his signature “hmm” of approval to the legendary mid-lecture coffee sip, this section helps students recognize, interpret, and perhaps even predict",
+    "metadata": {},
+    "visibility": "PRI",
+    "is_published": false,
+    "tasks": [],
+    "creator": "mmalik",
+    "created_on": "2025-10-13T02:24:27.838625Z",
+    "last_updated": "2025-10-13T02:24:27.838625Z"
+} 
  *
  * @return:
  *  * HTTP 200 with updated room data if successful.
  *  * HTTP 400 with validation errors if update fails.
  */
-export async function save_room(room_id, new_room_data) {
+export async function save_room(course_id, section_id, room_id, new_room_data) {
 	try {
-		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/save`, new_room_data);
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/save/`, new_room_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 

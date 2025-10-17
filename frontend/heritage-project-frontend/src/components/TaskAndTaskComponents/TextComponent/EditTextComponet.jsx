@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Markdown from "../../Utilities/Markdown"
+import Markdown from '../../Utilities/Markdown';
 import Toolbar from "./MarkdownToolbar"
 import MarkdownButton from "./MarkdownButton"
 import MarkdownArea from "./MarkdownArea"
