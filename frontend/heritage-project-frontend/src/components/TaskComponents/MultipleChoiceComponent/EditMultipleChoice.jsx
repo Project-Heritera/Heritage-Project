@@ -42,8 +42,8 @@ const EditMultipleChoice = ({choiceArray, setChoiceArray, choiceApi, setChoiceAp
             <div>
                 {choiceArray.map(choice => (
                     <div key={choice.id}>
-                        <input type = "text" onChange={(event) => updateText(event.target.value, choice.id)}/>
-                        <input type = "checkbox" onChange={(event) => updateCheckmark(event.target, choice.id)}/>
+                        <input type = "text" value={choice.text} onChange={(event) => updateText(event.target.value, choice.id)}/>
+                        <input type = "checkbox" checked={choice.correct} onChange={(event) => updateCheckmark(event.target, choice.id)}/>
                     </div>
                 ))}
             </div>
