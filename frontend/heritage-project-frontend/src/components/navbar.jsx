@@ -8,7 +8,7 @@ export default function Navbar() {
       <Link to="/">
         <button>Login/Logout</button>
       </Link>
-      <Link to="/course_view">
+      <Link to="/courses">
         <button>Courses</button>
       </Link>
         <button>
