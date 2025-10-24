@@ -3,11 +3,18 @@ import { login } from "../services/auth";
 import TaskComponentSelectionMenu from "../components/TaskAndTaskComponents/TaskComponentSelecionMenu";
 import PublicationForm from "../components/PublicationForm";
 import { useErrorStore } from "../stores/ErrorStore";
+import Modal from "../components/Modal";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
   const [password, setPassword] = useState("");
 const showError = useErrorStore((state) => state.showError);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const handleTemplateSelect = (templateKey) => {
+    console.log("Selected template:", templateKey);
+    // do whatever you need with the selected template
+  };
+  const handleClose = () => setModalOpen(false);
 
 
   // Function to handle sign in
@@ -59,6 +66,19 @@ const showError = useErrorStore((state) => state.showError);
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
 <div>
+      <button
+        onClick={() => setModalOpen(true)}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Open Template Selector
+      </button>
+
+      <Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
+        <TaskComponentSelectionMenu
+          onSelectTemplate={handleTemplateSelect}
+          onClose={handleClose} 
+        />
+      </Modal>
     </div>
     </div>
   );
