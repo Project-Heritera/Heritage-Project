@@ -93,7 +93,7 @@ export async function save_room(course_id, section_id, room_id, new_room_data) {
  */
 export async function publish_room(course_id, section_id, room_id, publish_room_data) {
 	try {
-		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish`,publish_data);
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish/`,publish_room_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
