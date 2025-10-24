@@ -8,6 +8,7 @@ from django.dispatch import receiver
 
 User = get_user_model()
 
+
 class AccessLevel(models.TextChoices):
     ADMIN = "AD", _("ADMIN")
     VISITOR = "VI", _("VISITOR")
@@ -71,7 +72,27 @@ class RoomQuerySet(models.QuerySet):
             progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
+
+def default_badge_image():
+    return "badges/default.png" # change to whatever the path is to the image, rn theres no actual image here
+
+
+class Badge(models.Model):
+    image = models.ImageField(upload_to="badges/", default=default_badge_image)
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
+
+
 class Course(models.Model):
+    badge = models.OneToOneField(
+        Badge,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="course"
+    )
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
@@ -105,6 +126,13 @@ class Course(models.Model):
 
 
 class Section(models.Model):
+    badge = models.OneToOneField(
+        Badge,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="section"
+    )
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
@@ -141,19 +169,6 @@ class Section(models.Model):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
     
     objects = SectionQuerySet.as_manager()
-
-
-def default_badge_image():
-    return "badges/default.png" # change to whatever the path is to the image
-
-class Badge(models.Model):
-    image = models.ImageField(upload_to="badges/", default=default_badge_image)
-    title = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.title
-# Each room should have a badge saved that has its image and title saved. 
-# If none is provided, then generate a default image and make the title the name of the room.
 
 
 class Room(models.Model):
