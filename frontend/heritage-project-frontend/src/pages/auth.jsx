@@ -34,6 +34,7 @@ const showError = useErrorStore((state) => state.showError);
     try {
       // TODO: send sign-out request to backend
       console.log("Signing out:", username);
+        showError("Logout success", "success");
     } catch (error) {
       console.error("Sign out failed:", error);
     }

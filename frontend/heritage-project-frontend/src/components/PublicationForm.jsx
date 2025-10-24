@@ -3,6 +3,7 @@ import { React, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Debug } from "../utils/debugLog";
 import { publish_room } from "../services/room";
+import { useErrorStore } from "../stores/ErrorStore";
 PublicationForm.propTypes = {
   FormType: PropTypes.oneOf(["Course", "Section", "Room"]).isRequired,
   course_id: PropTypes.number.isRequired,
@@ -22,6 +23,10 @@ function PublicationForm({ FormType, course_id, section_id, room_id }) {
     control,
     name: "Access_To",
   });
+
+ //for displaying status like error popup
+  const showError = useErrorStore((state) => state.showError);
+
   const handleClose = () => {
     // close modal. Logic should be provided by parent
   };
@@ -44,9 +49,8 @@ function PublicationForm({ FormType, course_id, section_id, room_id }) {
       setIsPublished(true)
       return room_status;
     } catch (err) {
-      console.error("Failed to publish room:", err);
-      alert("Failed to publish room. Check console for errors.");
-      //add error popup
+      Debug.error("Error in room.js or in pbulish room api at backend:", err);
+      showError("Failed to publish room") 
       return null;
     }
   };

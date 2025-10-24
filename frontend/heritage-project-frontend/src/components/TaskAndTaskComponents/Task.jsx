@@ -19,6 +19,7 @@ function Task({ pointValue=0, tags, children }) {
 
     const saveChildren = () => {
         const serialized = childRefs.current.map((ref) => ref?.serialize());
+        //no need to error check here since serialize all in editor page does so
         Debug.log("Serialized children:", serialized);
         return serialized;
     };
