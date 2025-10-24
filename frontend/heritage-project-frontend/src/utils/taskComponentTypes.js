@@ -1,9 +1,9 @@
 import * as z from "zod";
 // Universal enum for task components
 const taskComponentTypes = Object.freeze({
-  MCQ: "MCQ",
-  TEXT: "TEXT",
-  IMAGE: "IMAGE",
+  MCQ: "Multiple Choice Question",
+  TEXT: "Text Box",
+  IMAGE: "Image",
   // Add more components as needed
 });
 
