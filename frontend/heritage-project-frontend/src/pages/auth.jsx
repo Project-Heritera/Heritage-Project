@@ -53,8 +53,6 @@ const AuthLogin = () => {
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
 <div>
-      <PublicationForm/>
-      <TaskComponentSelectionMenu></TaskComponentSelectionMenu>
     </div>
     </div>
   );
