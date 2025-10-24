@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import PlusButton from './PlusButton';
+import DeleteButton from './DeleteButton';
+import '../../../styles/Components/MultipleChoiceComponet/MultipleChoiceComponet.css'
 
 //Commponet used to render the edit version of the text componet
 const EditMultipleChoice = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi} ) => {
@@ -42,11 +45,14 @@ const EditMultipleChoice = ({choiceArray, setChoiceArray, choiceApi, setChoiceAp
             <div>
                 {choiceArray.map(choice => (
                     <div key={choice.id}>
-                        <input type = "text" value={choice.text} onChange={(event) => updateText(event.target.value, choice.id)}/>
+                        <DeleteButton choiceArray={choiceArray} setChoiceArray={setChoiceArray} choiceId={choice.id}></DeleteButton>
+                        {choice.id}.
+                        <input className='textInput' type = "text" value={choice.text} onChange={(event) => updateText(event.target.value, choice.id)}/>
                         <input type = "checkbox" checked={choice.correct} onChange={(event) => updateCheckmark(event.target, choice.id)}/>
                     </div>
                 ))}
             </div>
+            <PlusButton choiceArray={choiceArray} setChoiceArray={setChoiceArray}></PlusButton>
             
         </div>
     );
