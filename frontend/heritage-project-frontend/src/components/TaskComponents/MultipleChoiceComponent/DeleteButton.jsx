@@ -19,7 +19,7 @@ const DeleteButton = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi, cho
     };
 
     return (
-        <button onClick={deleteChoice}>Delete</button>
+        <button className='deleteButton' onClick={deleteChoice}>Delete</button>
     );
 };
 

@@ -1,8 +1,14 @@
 .textInput {
     background-color: #D9D9D9;
     border-radius: 17px;
-    height: 50.49px;
+    min-height: 50.49px;
     width: 100%;
+    field-sizing: content; /* grow as text is added*/
+    resize: none;/*dont allow suer to resize*/
+    overflow-y: hidden;
+    font-size: 1.3rem;
+    padding: 10px 12px;
+    box-sizing: border-box;
 }
 
 .checkBox {
@@ -21,14 +27,32 @@
     justify-content: center;
 }
 
+.choiceDiv {
+    display: grid;
+    grid-column: 1 / -1; /* adopt the size of the parent div */
+    grid-template-columns: subgrid; /* adopt the grid of the parent div */
+    align-items: center;
+}
+
 .addButton {
     width: 63px;
     height: 64px;
     background-color: #E9B24C;
     border-radius: 13px;
     display: flex;
-  justify-content: center; /* Centers horizontally */
-  align-items: center;   /* Centers vertically */
+    justify-content: center; /* Centers horizontally */
+    align-items: center;   /* Centers vertically */
+}
+
+.deleteButton {
+    opacity: 0;
+    pointer-events: none; /* make unclickable while hidden */
+}
+
+/*handles deleteButton when a user hovers over choiceDiv*/
+.choiceDiv:hover .deleteButton {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .addIcon {
