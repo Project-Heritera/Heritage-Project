@@ -2,5 +2,47 @@
     background-color: #D9D9D9;
     border-radius: 17px;
     height: 50.49px;
-    width: 316px;
+    width: 100%;
+}
+
+.checkBox {
+    background-color: #FFFFFF;
+    width: 40px;
+    height: 40px;
+}
+
+.choicesHolder {
+    display: grid;
+    row-gap: 16px; /* Spacing between rows */
+    grid-template-columns: 50px 30px 400px auto; /* define 4 columbs: auto, auto, 1fr, auto */
+    align-items: center; /* Vertically center items in each row */
+    row-gap: 16px; /* Spacing between rows */
+    column-gap: 10px; /* Spacing between columns */
+    justify-content: center;
+}
+
+.addButton {
+    width: 63px;
+    height: 64px;
+    background-color: #E9B24C;
+    border-radius: 13px;
+    display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;   /* Centers vertically */
+}
+
+.addIcon {
+    width: 43px;
+    height: 38px;
+    background-color: #F4F4F4;
+    border-radius: 12px;
+    display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;   /* Centers vertically */
+}
+
+.choiceComponet {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }

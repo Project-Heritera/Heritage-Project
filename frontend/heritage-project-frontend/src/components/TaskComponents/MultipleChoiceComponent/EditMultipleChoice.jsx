@@ -40,16 +40,16 @@ const EditMultipleChoice = ({choiceArray, setChoiceArray, choiceApi, setChoiceAp
     };
 
     return (
-        <div>
+        <div className='choiceComponet'>
             {/*Create multiple choice editable form*/}
-            <div>
+            <div className='choicesHolder'>
                 {choiceArray.map(choice => (
-                    <div key={choice.id}>
+                    <React.Fragment  key={choice.id}>
                         <DeleteButton choiceArray={choiceArray} setChoiceArray={setChoiceArray} choiceId={choice.id}></DeleteButton>
-                        {choice.id}.
+                        <h1>{choice.id}.</h1>
                         <input className='textInput' type = "text" value={choice.text} onChange={(event) => updateText(event.target.value, choice.id)}/>
-                        <input type = "checkbox" checked={choice.correct} onChange={(event) => updateCheckmark(event.target, choice.id)}/>
-                    </div>
+                        <input className='checkBox' type = "checkbox" checked={choice.correct} onChange={(event) => updateCheckmark(event.target, choice.id)}/>
+                    </React.Fragment>
                 ))}
             </div>
             <PlusButton choiceArray={choiceArray} setChoiceArray={setChoiceArray}></PlusButton>

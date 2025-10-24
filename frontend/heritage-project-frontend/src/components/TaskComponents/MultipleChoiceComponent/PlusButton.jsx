@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../../../styles/Components/MultipleChoiceComponet/MultipleChoiceComponet.css'
+import {Plus} from 'lucide-react';
 
 //Commponet used to render the edit version of the text componet
 const PlusButton = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi} ) => {
@@ -20,7 +22,11 @@ const PlusButton = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi} ) => 
     }
 
     return (
-        <button onClick={addChoice}>Add</button>
+        <button className='addButton' onClick={addChoice}>
+            <div className='addIcon'>
+                <Plus size={18} />
+            </div>
+        </button>
     );
 };
 
