@@ -1,11 +1,10 @@
 import { useErrorStore } from "../stores/ErrorStore";
 import { AlertCircle, AlertTriangle, CheckCircle } from "lucide-react";
-import {  motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ErrorPopup = () => {
   const errorData = useErrorStore((state) => state.errorData);
   const clearError = useErrorStore((state) => state.clearError);
-
 
   const Icon =
     errorData?.type === "error"
@@ -18,7 +17,7 @@ const ErrorPopup = () => {
     <AnimatePresence>
       {errorData && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={clearError}
         >
           <motion.div
