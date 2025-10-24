@@ -98,7 +98,7 @@ class Course(models.Model):
     visibility = models.CharField(
         max_length=50,
         choices=VisibilityLevel,
-        default=VisibilityLevel.PUBLIC
+        default=VisibilityLevel.PRIVATE
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -110,6 +110,7 @@ class Course(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -135,7 +136,7 @@ class Section(models.Model):
     visibility = models.CharField(
         max_length=50,
         choices=VisibilityLevel,
-        default=VisibilityLevel.PUBLIC
+        default=VisibilityLevel.PRIVATE
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -148,6 +149,7 @@ class Section(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -176,10 +178,23 @@ class Room(models.Model):
         null=True, 
         related_name="created_rooms"
     )
+    visibility = models.CharField(
+        max_length=50,
+        choices=VisibilityLevel,
+        default=VisibilityLevel.PRIVATE
+    )
+    access_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="UserRoomAccessLevel",
+        related_name="room_access",
+        blank=True,
+        help_text="Users who can access the room when visibility is set to LIMITER"
+    )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -264,6 +279,21 @@ class UserSectionAccessLevel(models.Model):
 
     def __str__(self):
         return f"{self.user.username if self.user else 'Unknown'} → {self.section.title if self.section else 'No Section'} ({self.access_level})"
+
+
+class UserRoomAccessLevel(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    access_level = models.CharField(
+        max_length=50,
+        choices=AccessLevel,
+        default=AccessLevel.VISITOR
+    )
+
+    def __str__(self):
+        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.room else 'No Room'} ({self.access_level})"
 
 
 class Status(models.TextChoices):
