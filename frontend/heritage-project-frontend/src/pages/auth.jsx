@@ -52,7 +52,7 @@ const AuthLogin = () => {
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
 <div>
-      <PublicationForm/>
+      <PublicationForm FormType={"Room"} room_id={1} section_id={1} course_id={1}/>
     </div>
     </div>
   );
