@@ -4,6 +4,7 @@ import { LifeBuoy,List } from "lucide-react";
 
 export default function Navbar() {
   return (
+<<<<<<< HEAD
     <nav className="flex items-center justify-between bg-gray-900 px-6 py-3 shadow-md">
       {/* Left: Brand Name */}
       <div className="flex items-center space-x-2">
@@ -12,6 +13,20 @@ export default function Navbar() {
             
         </span>
          <LifeBuoy className="h-6 w-6 text-white" />
+=======
+    <>
+      <div className="navbar flex justify-center ">
+        <img src="./src/assets/logos/heritera_white_logo.png" />
+      <Link to="/">
+        <button>Login/Logout</button>
+      </Link>
+      <Link to="/courses">
+        <button>Courses</button>
+      </Link>
+        <button>
+          <List />
+        </button>
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
       </div>
       
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { login } from "../services/auth";
-
+import PublicationForm from "../components/PublicationForm";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
@@ -55,6 +55,9 @@ const AuthLogin = () => {
 
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
+<div>
+      <PublicationForm/>
+    </div>
     </div>
   );
 };

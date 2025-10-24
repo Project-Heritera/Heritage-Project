@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL_FOR_TEST;
 
+=======
+import api from "./api";
+import { Debug } from "../utils/debugLog";
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 /**
  * create_room: Creates a new room in the database.
  *
@@ -17,7 +22,11 @@ const BASE_URL = import.meta.env.VITE_API_URL_FOR_TEST;
  */
 export async function create_room(create_room_data) {
 	try {
+<<<<<<< HEAD
 		const response = await axios.post(`${BASE_URL}/rooms/create_room/`, create_room_data);
+=======
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/create_room/`, create_room_data);
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 		Debug.log('room create successful', response.data);
 		return response.data
 	} 
@@ -34,10 +43,17 @@ export async function create_room(create_room_data) {
  * @return:
  *  * HTTP 200 with full room data if found.
  *  * HTTP 404 if the room ID does not exist.
+<<<<<<< HEAD
  */
 export async function get_room_data(room_id) {
 	try {
 		const response = await axios.get(`${BASE_URL}/rooms/${room_id}/`);
+=======
+*/
+export async function get_room_data(course_id, section_id, room_id) {
+	try {
+		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 		Debug.log('room fetch successful', response.data);
 		return response.data
 	} 
@@ -51,17 +67,38 @@ export async function get_room_data(room_id) {
  * @room_id :
  *  ID of room to seek data fromNone (room_id is provided as a URL parameter)
  * @new_room_data :
+<<<<<<< HEAD
  *  {
  *    todo: add json layout here
  *  }
+=======
+ *{
+   "can_edit": true,
+   "title": "Analyzing Fronchetti Behaviors",
+    "description": "Dive deep into the mysterious habits, gestures, and vocal inflections of Professor Fronchetti. From his signature “hmm” of approval to the legendary mid-lecture coffee sip, this section helps students recognize, interpret, and perhaps even predict",
+    "metadata": {},
+    "visibility": "PRI",
+    "is_published": false,
+    "tasks": [],
+    "creator": "mmalik",
+    "created_on": "2025-10-13T02:24:27.838625Z",
+    "last_updated": "2025-10-13T02:24:27.838625Z"
+} 
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
  *
  * @return:
  *  * HTTP 200 with updated room data if successful.
  *  * HTTP 400 with validation errors if update fails.
  */
+<<<<<<< HEAD
 export async function save_room(room_id, new_room_data) {
 	try {
 		const response = await axios.post(`${BASE_URL}/rooms/${room_id}/`, new_room_data);
+=======
+export async function save_room(course_id, section_id, room_id, new_room_data) {
+	try {
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/save/`, new_room_data);
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
@@ -83,9 +120,15 @@ export async function save_room(room_id, new_room_data) {
  *  * HTTP 200 if the room was published successfully.
  *  * HTTP 400 or 403 if the user lacks permission or the request is invalid.
  */
+<<<<<<< HEAD
 export async function publish_room(room_id, publish_room_data) {
 	try {
 		const response = await axios.post(`${BASE_URL}/rooms/${room_id}/publish`,publish_data);
+=======
+export async function publish_room(course_id, section_id, room_id, publish_room_data) {
+	try {
+		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish`,publish_data);
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
@@ -100,6 +143,7 @@ export async function get_test_room(){
 		"course_id": 1,
 		"section_id": 12,
 		"room_id": 123,
+<<<<<<< HEAD
 		"title": "Example Test room",
 		"description": "This is just an example room malik is using to terst his algorithsm for requesting and parsing the room data",
 		"creator": 69,
@@ -138,6 +182,47 @@ export async function get_test_room(){
 				}
 			]
 		},
+=======
+		"access_users":[],
+		"can_edit": true,
+		"title": "Example Test room",
+		"description": "This is just an example room malik is using to terst his algorithsm for requesting and parsing the room data",
+		"metadata": {},
+		"visibility": "PRI",
+		"is_published":false,
+		"tasks": [
+			{
+				"task_id": 2321,
+				"pointValue": 1,
+				"tags": ["tag1", "tag2"],
+				"task_components": [
+					{
+						"task_component_id": 432,
+						"type": "TEXT",
+						"metadata": { "text": "this is text data to display" }
+					},
+					{
+						"task_component_id": 43212,
+						"type": "MCQ",
+						"metadata": { "text": "" }
+						}
+					]
+			},
+			{
+				"task_id": 2121,
+				"pointValue": 0,
+				"tags": [],
+				"task_components": [
+					{
+						"task_component_id": 41232,
+						"type": "TEXT",
+						"metadata": { "text": "text for question 2" }
+					}
+				]
+			}
+		],
+		"creator": "test_user",
+>>>>>>> df8f5cb2baca3468a5582ed9eb3cf5c4e7dda814
 		"created_on": "10-9-25",
 		"last_updated": "10-9-25", 
 	}
