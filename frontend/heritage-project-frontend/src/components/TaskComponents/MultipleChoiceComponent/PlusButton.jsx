@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../../../styles/Components/MultipleChoiceComponet/MultipleChoiceComponet.css'
 import {Plus} from 'lucide-react';
 
-//Commponet used to render the edit version of the text componet
+//Commponet used to render and add functionality to the plus button that adds a choice
 const PlusButton = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi} ) => {
 
     //add choice

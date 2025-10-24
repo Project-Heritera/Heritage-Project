@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-//Commponet used to render the edit version of the text componet
+//Commponet used to render and add functionality to the delete button associated with a choice
 const DeleteButton = ({choiceArray, setChoiceArray, choiceApi, setChoiceApi, choiceId} ) => {
 
     //Delete choice

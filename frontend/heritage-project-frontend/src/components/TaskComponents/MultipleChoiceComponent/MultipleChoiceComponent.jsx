@@ -27,8 +27,8 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
         ]
     }
 
-    //Handle non edit case where user submits their choice
     const [choiceArray, setChoiceArray] = useState(initChoiceArray);
+    //Handle non edit case where user submits their choice
     const [answerdCorrect, setAnswerdCorrect] = useState(false);
     
     console.log('Am I editing?', isEditing);

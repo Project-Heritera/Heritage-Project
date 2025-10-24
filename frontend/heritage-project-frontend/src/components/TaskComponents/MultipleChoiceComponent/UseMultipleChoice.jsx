@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ChoiceButton from './ChoiceButton';
 
-//Commponet used to render the edit version of the text componet
+//Commponet used to render the user side of the component
 const UseMultipleChoice = ({choiceArray, setChoiceArray, answerdCorrect, setAnswerdCorrect}) => {
 
     return (

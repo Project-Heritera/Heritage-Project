@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-//Commponet used to render the edit version of the text componet
+//Commponet used to render the choice button for the reading side of the componet
 const ChoiceButton = ({choiceId, text, isCorrect}) => {
 
     return (
