@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { taskComponentTypes, getComponentTypeSchema } from "../../utils/taskComponentTypes";
+import { taskComponentTypes} from "../../utils/taskComponentTypes";
 
 MCQTaskComponent.propTypes = {
   serialize: PropTypes.func.isRequired,

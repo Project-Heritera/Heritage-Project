@@ -1,70 +1,43 @@
 import * as z from "zod";
+import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
+import ImageTaskComponent from "../components/TaskAndTaskComponents/imageTaskComponent";
+import MCQTaskComponent from "../components/TaskAndTaskComponents/mcqTaskComponent";
 // Universal enum for task components
+//Label is just its name
+//component is its corresponding component foudn in components/TaskAndTaskComponents 
+//schema is a schema that the jsonData field of the task compnent must followed in order to be saved to database. Called in serialization function for basetaskcomponent editor component
+//defaultValue jsons to be given to newly created component types that still fulfil schemas
 const taskComponentTypes = Object.freeze({
-  MCQ: "Multiple Choice Question",
-  TEXT: "Text Box",
-  IMAGE: "Image",
+  TEXT: {
+    label: "Text Box",
+    component: TextTaskComponent,
+    schema: z.object({ text: z.string() }),
+    defaultValue: { text: "" },
+  },
+  IMAGE: {
+    label: "Image",
+    component: ImageTaskComponent,
+    schema: z.object({ url: z.string(), alt: z.string() }),
+    defaultValue: { url: "", alt: "" },
+  },
+  MCQ: {
+    label: "Multiple Choice Question",
+    component: MCQTaskComponent,
+    schema: z
+      .object({
+        options: z.record(z.boolean()),
+        hints: z.array(z.string()),
+      })
+      .refine(
+        (data) => Object.values(data.options).some((val) => val === true),
+        {
+          message: "At least one answer must be marked as correct",
+          path: ["options"],
+        }
+      ),
+    defaultValue: { options: { "Option 1": false, "Option 2": false }, hints: [] },
+  },
   // Add more components as needed
 });
 
-//Contains schemas for all jsons that must be followed in order to be saved to database. Called in serialization function for basetaskcomponent editor component
-const TEXT_JSON_SCHEMA = z.object({
-  text: z.string()
-});
-const IMAGE_JSON_SCHEMA = z.object({
-  url: z.string(),
- alt: z.string(),
-});
-
-const MCQ_JSON_SCHEMA = z.object({
-  options: z.record(z.boolean()), // dictionary: { "option1": true, "option2": false }
-  hints: z.array(z.string()),     // list of string hints
-}).refine((data) => {
-    return Object.values(data.options).some((val) => val === true); //ensure that at least one option is correct
-}, {
-    message: "At least one of the answer choices must marked as correct",path: ["options"]
-});
-
-function getComponentTypeSchema(componentType) {
-  switch (componentType) {
-    case taskComponentTypes.TEXT:
-      return TEXT_JSON_SCHEMA;
-    case taskComponentTypes.IMAGE:
-      return IMAGE_JSON_SCHEMA;
-    case taskComponentTypes.MCQ:
-      return MCQ_JSON_SCHEMA;
-    default:
-      throw new Error(`Unknown component type: ${componentType}`);
-  }
-}
-
-//default jsons to be given to newly created component types that still fulfil schemas
-const DEFAULT_TEXT_JSON = {
-    text: ""
-};
-
-const DEFAULT_IMAGE_JSON = {
-    url: "",
-    alt: ""
-};
-
-const DEFAULT_MCQ_JSON = {
-    options: { "Option 1": false, "Option 2": false},
-    hints: []
-};
-
-// Getter for default JSONs
-function getDefaultComponentJson(componentType) {
-    switch (componentType) {
-        case taskComponentTypes.TEXT:
-            return { ...DEFAULT_TEXT_JSON };
-        case taskComponentTypes.IMAGE:
-            return { ...DEFAULT_IMAGE_JSON };
-        case taskComponentTypes.MCQ:
-            return { ...DEFAULT_MCQ_JSON };
-        default:
-            throw new Error(`Unknown component type: ${componentType}`);
-    }
-}
-
-export {taskComponentTypes, getComponentTypeSchema, getDefaultComponentJson};
+export {taskComponentTypes};

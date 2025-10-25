@@ -14,17 +14,16 @@ const componentKeys = Object.keys(taskComponentTypes);
           </button>
         </div>
         <div className="space-y-2">
-          {componentKeys.map((type) => (
+          {componentKeys.map((type, index) => (
             <button
-              key={type.id}
+              key={index}
               onClick={() => {
                 onSelect(type);
                 onClose();
               }}
               className="w-full text-left p-4"
             >
-            {taskComponentTypes[type]}
-              <div className="font-semibold ">{type.name}</div>
+              <div className="font-semibold ">{taskComponentTypes[type].label}</div>
               <div className="text-sm mt-1">{type.description}</div>
             </button>
           ))}

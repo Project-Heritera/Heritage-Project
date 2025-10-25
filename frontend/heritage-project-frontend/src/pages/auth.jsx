@@ -73,7 +73,7 @@ const showError = useErrorStore((state) => state.showError);
         Open Template Selector
       </button>g
 <Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
-  <PublicationForm FormType={"room"} course_id={1} section_id={1} room_id={1}/>       
+<TaskComponentMenu onSelect={handleTemplateSelect} onClose={handleClose}/>       
       </Modal>
      
     </div>
