@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { login } from "../services/auth";
-import TaskComponentSelectionMenu from "../components/TaskAndTaskComponents/TaskComponentSelecionMenu";
+import { TaskComponentMenu } from "../components/TaskAndTaskComponents/TaskComponentMenu";
 import PublicationForm from "../components/PublicationForm";
 import { useErrorStore } from "../stores/ErrorStore";
 import Modal from "../components/Modal";
@@ -71,14 +71,11 @@ const showError = useErrorStore((state) => state.showError);
         className="bg-blue-600 text-white px-4 py-2 rounded"
       >
         Open Template Selector
-      </button>
-
-      <Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
-        <TaskComponentSelectionMenu
-          onSelectTemplate={handleTemplateSelect}
-          onClose={handleClose} 
-        />
+      </button>g
+<Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
+  <PublicationForm FormType={"room"} course_id={1} section_id={1} room_id={1}/>       
       </Modal>
+     
     </div>
     </div>
   );
