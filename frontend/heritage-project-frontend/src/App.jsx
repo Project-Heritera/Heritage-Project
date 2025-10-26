@@ -18,8 +18,8 @@ function App() {
         <Route path='/login' element={<AuthLogin />} />
         {/*Protected Routes*/}
         <Route element={<ProtectedRoute />}>
-          <Route path='/courses' element={<CourseView />} />
-          <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
+          <Route path='/course_view' element={<CourseView />} />
+          <Route path='/room_editor' element={<RoomEditor />} />
         </Route>
       </Route>
       </Routes>
