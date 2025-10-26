@@ -7,9 +7,13 @@ import Home from './pages/home'
 import CourseView from './pages/course_view'
 import RoomEditor from './pages/room_editor'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorPopup from './components/ErrorPopup'
 
 function App() {
  return (
+  <div>
+    <div>
+      
     <BrowserRouter>
       <Routes>
         {/*Public Routes*/}
@@ -24,6 +28,9 @@ function App() {
       </Route>
       </Routes>
     </BrowserRouter>
+    </div>
+    <ErrorPopup/>
+  </div>
   );
 }
 
