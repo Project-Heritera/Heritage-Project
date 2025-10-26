@@ -3,7 +3,7 @@ import { safeParse } from "zod";
 import TextTaskComponent from "./TextComponent/TextTaskComponent";
 import MCQTaskComponent from "./mcqTaskComponent";
 import ImageTaskComponent from "./imageTaskComponent";
-import {taskComponentTypes, getComponentTypeSchema, getDefaultComponentJson} from "../../utils/taskComponentTypes";
+import {taskComponentTypes} from "../../utils/taskComponentTypes";
 import { useEffect, useState } from "react";
 TaskComponent.propTypes = {
   componentType: taskComponentTypes, 
@@ -16,7 +16,7 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
   useEffect(()=>{
      //if newly created, assign a default schema
     if (jsonData==""){
-      setJsondata(JSON.stringify(getDefaultComponentJson(componentType))); 
+      setJsondata(JSON.stringify(componentType.defaultValue)); 
     }
   },[]);
 
@@ -29,7 +29,7 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
     } catch (error) {
       throw new TypeError("Invalid JSON string")
     }
-    const jsonSchema = getComponentTypeSchema(componentTypeToSerialize);
+    const jsonSchema = componentTypeToSerialize.schema;
     const result = jsonSchema.safeParse(jsonToSerialize);
     if (!result.success){ throw new Error(result.error.issues);}
     else{ return true; }

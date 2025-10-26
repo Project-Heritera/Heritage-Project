@@ -19,7 +19,7 @@ from .models import (
 # -------------------------------
 class TaskComponentSerializer(serializers.ModelSerializer):
     task_component_id = serializers.IntegerField(source="id", read_only=True)
-    content = serializers.JSONField(source="content")
+    content = serializers.JSONField()
 
     class Meta:
         model = TaskComponent
@@ -31,8 +31,8 @@ class TaskComponentSerializer(serializers.ModelSerializer):
 # -------------------------------
 class TaskSerializer(serializers.ModelSerializer):
     task_id = serializers.IntegerField(source="id", read_only=True)
-    point_value = serializers.IntegerField(source="point_value")
-    components = TaskComponentSerializer(source="components", many=True, required=False)
+    point_value = serializers.IntegerField()
+    components = TaskComponentSerializer( many=True, required=False)
     tags = serializers.SlugRelatedField( # so it shows name field instead of its id
         slug_field="name",
         queryset=Tag.objects.all(),
@@ -188,19 +188,6 @@ class RoomSerializer(serializers.ModelSerializer):
         # For updates, enforce edit permission
         if self.instance and not self._user_has_access(self.instance, user, edit=True):
             raise PermissionDenied("You do not have permission to modify this room.")
-
-        return attrs
-
-    # used for *output validation*
-    def to_representation(self, instance):
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-
-        if user and not self._user_has_access(instance, user):
-            raise PermissionDenied("You do not have permission to access this room.")
-
-        return super().to_representation(instance)
-
     # -------------------------------
     # CRUD Logic
     # -------------------------------

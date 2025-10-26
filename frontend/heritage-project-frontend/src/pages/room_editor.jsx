@@ -24,13 +24,13 @@ const RoomEditor = () => {
   //for displaying status like error popup
   const showError = useErrorStore((state) => state.showError);
   // Store refs for all task components
-  const taskComponentRefs = useRef({});
+  const taskRefs = useRef({});
 
   useEffect(() => {
     const loadRoom = async () => {
       try {
-        const room_data = await get_test_room();
-        //const room_data = await get_room_data(course_id, section_id, room_id);
+        //const room_data = await get_test_room();
+        const room_data = await get_room_data(course_id, section_id, room_id);
         if (!room_data) {
           showError(
             "Unable to load data for room. You may not have permission to edit the room, the room may have already been created, or the room id may not exist",
@@ -76,16 +76,16 @@ const RoomEditor = () => {
         const tasks = Array.isArray(room_data.tasks) ? room_data.tasks : [];
         const normalizedTasks = tasks.map((task) => ({
           ...task,
-          task_components: Array.isArray(task.task_components)
-            ? task.task_components
+          task_components: Array.isArray(task.components)
+            ? task.components
             : [],
         }));
         setRoomTasks(normalizedTasks);
       } catch (err) {
         showError(
-            "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
-            "error"
-          );
+          "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
+          "error"
+        );
         Debug.error("Room exists, but Failed to load room data to page", err);
       }
     };
@@ -121,41 +121,13 @@ const RoomEditor = () => {
         created_on: roomCreationDate,
         last_updated: new Date().toISOString(),
       };
-
-      // go through all tasks
-      for (const task of roomTasks) {
-        const serializedTask = {
-          pointValue: task.pointValue,
-          tags: task.tags,
-          task_components: [],
-        };
-
-        //go through each task component
-        for (const taskComponent of task.task_components) {
-          const ref =
-            taskComponentRefs.current[taskComponent.task_component_id];
-
-          if (ref && ref.serialize) {
-            try {
-              const serializedData = ref.serialize();
-              if (serializedData) {
-                serializedTask.task_components.push({
-                  type: serializedData.componentType,
-                  metadata: serializedData.data,
-                });
-              }
-            } catch (err) {
-              showError("Unable to save room. Please make sure all marked tasks are complete before trying again.", "error")
-              Debug.error(
-                `Failed to serialize component ${taskComponent.task_component_id}:`,
-                err
-              );
-            }
-          }
+      for (const taskId in taskRefs.current) {
+        const taskRef = taskRefs.current[taskId];
+        if (taskRef?.serialize) {
+          const serializedTask = taskRef.serialize();
+          serializedRoom.tasks.push(serializedTask);
         }
-        serializedRoom.tasks.push(serializedTask);
       }
-
       Debug.log("Serialized Room Data:", serializedRoom);
       const room_status = await save_room(
         course_id,
@@ -165,7 +137,10 @@ const RoomEditor = () => {
       );
       return room_status;
     } catch (err) {
-      showError("Unable to save room. Please report this issue to ffronchetti@lsu.edu", "error")
+      showError(
+        "Unable to save room. Please report this issue to ffronchetti@lsu.edu",
+        "error"
+      );
       Debug.error("Error at room.js or publish room api at backend:", err);
       return null;
     }
@@ -198,26 +173,14 @@ const RoomEditor = () => {
               key={task.task_id}
               className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
             >
-              <Task pointValue={task.pointValue} tags={task.tags}>
-                <div className="flex flex-col gap-4">
-                  {task.task_components.map((taskComponent) => (
-                    <TaskComponent
-                      key={taskComponent.task_component_id}
-                      ref={(el) => {
-                        if (el) {
-                          taskComponentRefs.current[
-                            taskComponent.task_component_id
-                          ] = el;
-                        }
-                      }}
-                      componentType={taskComponent.type}
-                      taskComponentSpecificData={taskComponent.metadata}
-                      isEditing={true}
-                    />
-                  ))}
-                </div>
-              </Task>
-
+              <p>{task.task_id}</p>
+              <Task
+                key={task.task_id}
+                ref={(el) => (taskRefs.current[task.task_id] = el)}
+                pointValue={task.pointValue}
+                tags={task.tags}
+                initialComponents={task.components}
+              />
               <button
                 onClick={() => deleteTask(task.task_id)}
                 className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"

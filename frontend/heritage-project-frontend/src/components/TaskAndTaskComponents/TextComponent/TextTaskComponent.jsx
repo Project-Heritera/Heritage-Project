@@ -3,7 +3,7 @@ import Edit from "./EditTextComponet"
 import Read from "./ReadTextComponent"
 import "../../../styles/Components/TaskComponents/TextComponent.css"
 import PropTypes from 'prop-types';
-import { getComponentTypeSchema, taskComponentTypes } from '../../../utils/taskComponentTypes';
+import { taskComponentTypes } from '../../../utils/taskComponentTypes';
 TextTaskComponent.propTypes = {
   serialize: PropTypes.func.isRequired,
   jsonData: PropTypes.string,
@@ -19,7 +19,7 @@ function TextTaskComponent ({ serialize, jsonData, isEditing })  {
     useEffect(() => {
         if (jsonData) {
         try {
-            const schema = getComponentTypeSchema(taskComponentTypes.TEXT);
+            const schema = taskComponentTypes.TEXT.schema;
             const parsed = schema.parse(jsonData);
             if (!("text" in parsed)) {
             throw new Error("Text field missing in unserialized data.");

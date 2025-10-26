@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Edit from './EditMultipleChoice';
 import Use from './UseMultipleChoice'
+import { taskComponentTypes } from '../../../utils/taskComponentTypes';
 
 //This is the overall text componet for text. 
 //text is the initial text if any used to laod into the read or editor
