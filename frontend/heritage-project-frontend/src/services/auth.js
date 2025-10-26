@@ -21,7 +21,14 @@ export async function login(username, password) {
 		return response.data
 	} 
 	catch (error) {
-		//Requests in try failed default to here
-		throw(error);
+		if (error.response) {
+      		throw { status: error.response.status, data: error.response.data };
+    	}
+		else if (error.request) {
+			throw { status: null, data: null, message: 'No response received from server' };
+		}
+		else {
+			throw { status: null, data: null, message: error.message };
+		}
 	}
 }

@@ -24,10 +24,17 @@ const showError = useErrorStore((state) => state.showError);
       try {
         const data = await login(username, password);//Wait for external login function reply
         showError("Login success", "success");
-        console.log("Login success:", data);
+        Debug.log("Login success:", data);
+        setUsernmae("");
+        setPassword("");
       } catch (error) {
         //If somthing in try failed, default to here
-        showError("Error Logging in. Double check your password or try again", "error");
+        if (error.status == 404){
+          showError("Invalid Log in. Incorrect password provided or account dosen't exist", "error");
+        }
+        else {
+          showError("Something went wrong when logging in. Please try again later", "error");
+        }
         console.error(error);//log error
       }
     }

@@ -223,7 +223,7 @@ class Task(OrderedModel):
     order_with_respect_to = "room" # this creates a 'order' int column in the model table
 
     def __str__(self):
-        return f"{self.room} - {self.type}"
+        return f"{self.room.title if self.room else 'No Room'} - {self.pk}"
 
 
 class TaskComponentType(models.TextChoices):
