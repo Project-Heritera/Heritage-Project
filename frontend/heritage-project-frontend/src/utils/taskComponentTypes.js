@@ -1,8 +1,6 @@
 import * as z from "zod";
 import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
-import TextComponent from "../components/TaskComponents/TextComponent/TextComponent";
 import ImageTaskComponent from "../components/TaskAndTaskComponents/imageTaskComponent";
-import MCQTaskComponent from "../components/TaskAndTaskComponents/mcqTaskComponent";
 import MultipleChoiceComponent from "../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent";
 // Universal enum for task components
 //Label is just its name
@@ -27,17 +25,15 @@ const taskComponentTypes = Object.freeze({
     component: MultipleChoiceComponent,
     schema: z
       .object({
-        id: z.string(),
-        text: z.string(),
-        correct: z.boolean(),
-      })
-      .refine(
-        (data) => Object.values(data.options).some((val) => val === true),
-        {
+        choiceArray: z.array(object({
+          id: z.string(),
+          text: z.string(),
+          correct: z.boolean()
+        })).refine((data) => Object.values(data.correct).some((val) => val === true), {
           message: "At least one answer must be marked as correct",
           path: ["options"],
-        }
-      ),
+        })
+      }),
     defaultValue: {
       choiceArray: [
         { id: "a", text: "Edit Text", correct: false },
