@@ -40,7 +40,7 @@ const Task = forwardRef(
               <TaskComponent
                 key={tc.task_component_id}
                 componentType={tc.type}
-                taskComponentSpecificData={tc.metadata}
+                taskComponentSpecificData={tc.content}
                 isEditing={true}
                 ref={(el) => {
                   tc.ref = el;

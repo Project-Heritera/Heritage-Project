@@ -42,7 +42,7 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
           <>
           <Component
           componentType={componentType}
-          taskComponentSpecificData={taskComponentSpecificData}
+          jsonData={taskComponentSpecificData}
           isEditing={isEditing}
            />
           </>

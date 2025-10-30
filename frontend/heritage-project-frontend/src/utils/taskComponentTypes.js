@@ -25,7 +25,7 @@ const taskComponentTypes = Object.freeze({
     component: MultipleChoiceComponent,
     schema: z
       .object({
-        choiceArray: z.array(object({
+        choiceArray: z.array(z.object({
           id: z.string(),
           text: z.string(),
           correct: z.boolean()
