@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'apps.accounts',
     'apps.website',
-    'ordered_model'
+    'ordered_model',
+    'nested_admin',
 ]
 
 MIDDLEWARE = [

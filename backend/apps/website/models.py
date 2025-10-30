@@ -3,24 +3,10 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from ordered_model.models import OrderedModel # this handles auto-reordering when something is deleted
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 User = get_user_model()
-
-# this does *not* include the TextChoices or QuerySet models
-__all__ = [
-    "Course",
-    "Section",
-    "Room",
-    "Task",
-    "TaskComponent",
-    "UserCourseAccessLevel",
-    "UserSectionAccessLevel",
-    "ProgressOfTask",
-    "Tag",
-    "SavedTask",
-    "Dictionary",
-    "DictionaryEntry",
-]
 
 
 class AccessLevel(models.TextChoices):
@@ -86,7 +72,27 @@ class RoomQuerySet(models.QuerySet):
             progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
+
+def default_badge_image():
+    return "badges/default.png" # change to whatever the path is to the image, rn theres no actual image here
+
+
+class Badge(models.Model):
+    image = models.ImageField(upload_to="badges/", default=default_badge_image)
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
+
+
 class Course(models.Model):
+    badge = models.OneToOneField(
+        Badge,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="course"
+    )
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
@@ -111,6 +117,7 @@ class Course(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
+    image = models.ImageField(upload_to="Icons/") # no default
 
     def __str__(self):
         return self.title
@@ -119,10 +126,16 @@ class Course(models.Model):
 
 
 class Section(models.Model):
+    badge = models.OneToOneField(
+        Badge,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="section"
+    )
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
-        null=True,
         related_name="sections"
     )
     title = models.CharField(max_length=100)
@@ -150,6 +163,7 @@ class Section(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
+    image = models.ImageField(upload_to="Icons/") # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -158,17 +172,35 @@ class Section(models.Model):
 
 
 class Room(models.Model):
+    badge = models.OneToOneField(
+        Badge,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="room"
+    )
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
-        null=True,
         related_name="rooms"
     )
     section = models.ForeignKey(
         Section,
         on_delete=models.CASCADE,
-        null=True,
         related_name="rooms"
+    )
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="created_rooms"
+    )
+    visibility = models.CharField(
+        max_length=50,
+        choices=VisibilityLevel,
+        default=VisibilityLevel.PRIVATE
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -177,29 +209,28 @@ class Room(models.Model):
         blank=True,
         help_text="Users who can access the room when visibility is set to LIMITER"
     )
-    can_edit = models.BooleanField(default=True)
-    title = models.CharField(max_length=100)
-    description = models.CharField(max_length=255)
+    number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
-    visibility = models.CharField(
-        max_length=50,
-        choices=VisibilityLevel,
-        default=VisibilityLevel.PRIVATE
-    )
-    is_published = models.BooleanField(default=False)
-    creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        related_name="created_rooms"
-    )
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
+    image = models.ImageField(upload_to="Icons/") # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
     
     objects = RoomQuerySet.as_manager()
+
+
+@receiver(post_save, sender=Room)
+def create_room_badge(sender, instance, created, **kwargs):
+    if created and not instance.badge:
+        badge = Badge.objects.create(
+            title=instance.title,
+            image=default_badge_image()
+        )
+        instance.badge = badge
+        instance.save()
 
 
 class Tag(models.Model):
@@ -245,6 +276,7 @@ class TaskComponent(OrderedModel):
         max_length=50,
         choices=TaskComponentType
     )
+    # TODO: make it a image field if content is an image
     content = models.JSONField(default=dict, blank=True) # the format of this JSON will depend on the TaskComponent.type
     created_on = models.DateTimeField(auto_now_add=True)
 

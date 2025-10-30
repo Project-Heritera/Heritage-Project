@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from .models import (
+    Badge,
     Room,
     Course, 
     Section,
@@ -61,18 +62,33 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 # -------------------------------
+# Badge Serializer
+# -------------------------------
+class BadgeSerializer(serializers.ModelSerializer):
+    # task_component_id = serializers.IntegerField(source="id", read_only=True)
+    # content = serializers.JSONField(source="content")
+    badge_id = serializers.IntegerField(source="id", read_only=True)
+    image = serializers.ImageField(source="image")
+    title = serializers.CharField(source="title")
+
+    class Meta:
+        model = Badge
+        fields = ["badge_id", "image", "title"]
+
+
+# -------------------------------
 # Room Serializer
 # -------------------------------
-
 class RoomSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(source="course.id", read_only=True)
-    section_id = serializers.IntegerField(source="section.id", read_only=True)
+    course_id = serializers.IntegerField(source="course", read_only=True)
+    section_id = serializers.IntegerField(source="section", read_only=True)
     room_id = serializers.IntegerField(source="id", read_only=True)
     can_edit = serializers.SerializerMethodField()
     tasks = TaskSerializer(many=True, required=False)
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
-    last_updated = serializers.DateTimeField()
+    image = serializers.ImageField()
+    badge = BadgeSerializer(many=False, required=False)
 
     class Meta:
         model = Room
@@ -91,7 +107,8 @@ class RoomSerializer(serializers.ModelSerializer):
             "tasks",
             "creator", # as above, this is just a str
             "created_on",
-            "last_updated"
+            "image",
+            "badge",
         ]
         read_only_fields = ["course_id", "section_id", "room_id", "creator", "created_on"]
 
@@ -152,7 +169,7 @@ class RoomSerializer(serializers.ModelSerializer):
         # --- PUBLIC ---
         return True
 
-    def get_can_edit(self, obj):
+    def get_editing_mode(self, obj):
         """
         Whether the current user can edit this room.
         True only if user has edit-level (non-visitor) access.
