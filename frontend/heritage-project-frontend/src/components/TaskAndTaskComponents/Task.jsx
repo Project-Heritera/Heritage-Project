@@ -4,6 +4,7 @@ import { useState, forwardRef, useImperativeHandle } from "react";
 import { CirclePlus } from "lucide-react";
 import Modal from "../Modal";
 import { TaskComponentMenu } from "./TaskComponentMenu";
+import TaskComponent from "./TaskComponent";
 
 const Task = forwardRef(
   ({ pointValue = 0, tags = [], initialComponents = [] }, ref) => {
@@ -36,7 +37,7 @@ const Task = forwardRef(
           {taskComponents.map((tc) => {
             const Component = taskComponentTypes[tc.type].component;
             return (
-              <Component
+              <TaskComponent
                 key={tc.task_component_id}
                 componentType={tc.type}
                 taskComponentSpecificData={tc.metadata}

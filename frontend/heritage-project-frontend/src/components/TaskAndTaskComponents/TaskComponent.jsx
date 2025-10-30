@@ -35,22 +35,26 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
     else{ return true; }
   }
 
- return (
-    <div>
-    {(() => {
-      switch (componentType) {
-        case "MCQ":
-          return <MCQTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing}/>;
-        case "TEXT":
-          return <TextTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing}/>;
-        case "IMAGE":
-          return <ImageTaskComponent serialize={serialize} jsonData={jsonData} isEditing={isEditing} />;
-        default:
-          return (<p>Error did not provide component type</p>);
-      }
-    })()}
-    </div>
-  );
-}
-
+    {
+       const Component = taskComponentTypes[componentType].component;
+       if (Component != null){
+         return (
+          <>
+          <Component
+          componentType={componentType}
+          taskComponentSpecificData={taskComponentSpecificData}
+          isEditing={isEditing}
+           />
+          </>
+         )
+        }
+        else{
+          return(
+          <>
+          <p>Error did not provide component type</p>;
+          </>
+ )}
+      
+    }
+  }
 export default TaskComponent;

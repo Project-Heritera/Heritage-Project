@@ -20,6 +20,7 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
     let initChoiceArray = jsonData.choiceArray;
     console.log('choiceArray is: ', initChoiceArray)
     //Check if there is already choices added else init default 2 editable choices
+    //todo: from malik: you dont need to supply defailt values we alr do that in parent component. Just assume you are gettigna vlaid json
     if (initChoiceArray === undefined || initChoiceArray === null) {
         console.log("array was null adding init values")
         initChoiceArray = [

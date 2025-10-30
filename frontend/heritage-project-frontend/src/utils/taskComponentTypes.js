@@ -1,10 +1,12 @@
 import * as z from "zod";
 import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
+import TextComponent from "../components/TaskComponents/TextComponent/TextComponent";
 import ImageTaskComponent from "../components/TaskAndTaskComponents/imageTaskComponent";
 import MCQTaskComponent from "../components/TaskAndTaskComponents/mcqTaskComponent";
+import MultipleChoiceComponent from "../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent";
 // Universal enum for task components
 //Label is just its name
-//component is its corresponding component foudn in components/TaskAndTaskComponents 
+//component is its corresponding component foudn in components/TaskAndTaskComponents
 //schema is a schema that the jsonData field of the task compnent must followed in order to be saved to database. Called in serialization function for basetaskcomponent editor component
 //defaultValue jsons to be given to newly created component types that still fulfil schemas
 const taskComponentTypes = Object.freeze({
@@ -22,11 +24,12 @@ const taskComponentTypes = Object.freeze({
   },
   MCQ: {
     label: "Multiple Choice Question",
-    component: MCQTaskComponent,
+    component: MultipleChoiceComponent,
     schema: z
       .object({
-        options: z.record(z.boolean()),
-        hints: z.array(z.string()),
+        id: z.string(),
+        text: z.string(),
+        correct: z.boolean(),
       })
       .refine(
         (data) => Object.values(data.options).some((val) => val === true),
@@ -35,9 +38,14 @@ const taskComponentTypes = Object.freeze({
           path: ["options"],
         }
       ),
-    defaultValue: { options: { "Option 1": false, "Option 2": false }, hints: [] },
+    defaultValue: {
+      choiceArray: [
+        { id: "a", text: "Edit Text", correct: false },
+        { id: "b", text: "Edit Text", correct: false },
+      ],
+    },
   },
   // Add more components as needed
 });
 
-export {taskComponentTypes};
+export { taskComponentTypes };
