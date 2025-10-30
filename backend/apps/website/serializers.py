@@ -68,8 +68,8 @@ class BadgeSerializer(serializers.ModelSerializer):
     # task_component_id = serializers.IntegerField(source="id", read_only=True)
     # content = serializers.JSONField(source="content")
     badge_id = serializers.IntegerField(source="id", read_only=True)
-    image = serializers.ImageField(source="image")
-    title = serializers.CharField(source="title")
+    image = serializers.ImageField()
+    title = serializers.CharField()
 
     class Meta:
         model = Badge
@@ -80,8 +80,8 @@ class BadgeSerializer(serializers.ModelSerializer):
 # Room Serializer
 # -------------------------------
 class RoomSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(source="course", read_only=True)
-    section_id = serializers.IntegerField(source="section", read_only=True)
+    course_id = serializers.PrimaryKeyRelatedField(source="course", read_only=True)
+    section_id = serializers.PrimaryKeyRelatedField(source="section", read_only=True)
     room_id = serializers.IntegerField(source="id", read_only=True)
     can_edit = serializers.SerializerMethodField()
     tasks = TaskSerializer(many=True, required=False)
@@ -169,7 +169,7 @@ class RoomSerializer(serializers.ModelSerializer):
         # --- PUBLIC ---
         return True
 
-    def get_editing_mode(self, obj):
+    def get_can_edit(self, obj):
         """
         Whether the current user can edit this room.
         True only if user has edit-level (non-visitor) access.
