@@ -105,6 +105,7 @@ def _save_room_logic(request, course_id, section_id, room_id):
     '''
     room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
     serializer = RoomSerializer(room, data=request.data, context={"request": request})
+    print("serializer is vali", serializer.is_valid())
     if serializer.is_valid():
         with transaction.atomic():
             return serializer.save(), None
@@ -136,7 +137,7 @@ def save_room(request, course_id, section_id, room_id):
         * HTTP 400 if serializer validation fails
     '''
     room, errors = _save_room_logic(request, course_id, section_id, room_id)
-
+    print("error are : ", errors)
     if errors:
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
