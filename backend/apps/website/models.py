@@ -78,7 +78,7 @@ def default_badge_image():
 
 
 class Badge(models.Model):
-    image = models.ImageField(upload_to="badges/", default=default_badge_image)
+    image = models.ImageField(upload_to="Images/", default=default_badge_image)
     title = models.CharField(max_length=100)
 
     def __str__(self):
@@ -117,7 +117,7 @@ class Course(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/") # no default
 
     def __str__(self):
         return self.title
@@ -163,7 +163,7 @@ class Section(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/") # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -214,7 +214,7 @@ class Room(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/") # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
