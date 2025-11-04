@@ -95,7 +95,6 @@ const RoomEditor = () => {
   const addNewTask = () => {
     const newTask = {
       task_id: uuidv4(),
-      pointValue: 1,
       tags: [],
       task_components: [],
     };
@@ -177,7 +176,6 @@ const RoomEditor = () => {
               <Task
                 key={task.task_id}
                 ref={(el) => (taskRefs.current[task.task_id] = el)}
-                pointValue={task.pointValue}
                 tags={task.tags}
                 initialComponents={task.components}
               />

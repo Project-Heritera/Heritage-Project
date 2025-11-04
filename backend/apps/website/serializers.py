@@ -32,7 +32,7 @@ class TaskComponentSerializer(serializers.ModelSerializer):
 # -------------------------------
 class TaskSerializer(serializers.ModelSerializer):
     task_id = serializers.IntegerField(source="id", read_only=True)
-    point_value = serializers.IntegerField()
+    is_completed = serializers.BooleanField()
     components = TaskComponentSerializer( many=True, required=False)
     tags = serializers.SlugRelatedField( # so it shows name field instead of its id
         slug_field="name",
@@ -43,7 +43,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ["task_id", "point_value", "tags", "components"]
+        fields = ["task_id", "is_completed", "tags", "components"]
 
     def create(self, validated_data):
         # pop nested data out

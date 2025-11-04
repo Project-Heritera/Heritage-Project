@@ -118,7 +118,6 @@ export async function get_test_room(){
 		"tasks": [
 			{
 				"task_id": 2321,
-				"pointValue": 1,
 				"tags": ["tag1", "tag2"],
 				"task_components": [
 					{
@@ -135,7 +134,6 @@ export async function get_test_room(){
 			},
 			{
 				"task_id": 2121,
-				"pointValue": 0,
 				"tags": [],
 				"task_components": [
 					{

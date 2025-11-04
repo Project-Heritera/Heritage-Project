@@ -7,7 +7,7 @@ import { TaskComponentMenu } from "./TaskComponentMenu";
 import TaskComponent from "./TaskComponent";
 
 const Task = forwardRef(
-  ({ pointValue = 0, tags = [], initialComponents = [] }, ref) => {
+  ({ tags = [], initialComponents = [] }, ref) => {
     const [taskComponents, setTaskComponents] = useState(initialComponents);
     const [taskComponentMenu, setTaskComponentMenu] = useState(false);
     const addNewTaskComponent = (taskComponentTypeToAdd) => {
@@ -32,7 +32,6 @@ const Task = forwardRef(
       <div>
         <h3>Task</h3>
         <p>Tags: {tags.join(", ")}</p>
-        <p>Point Value: {pointValue}</p>
         <div className="task-body">
           {taskComponents.map((tc) => {
             const Component = taskComponentTypes[tc.type].component;
@@ -75,7 +74,6 @@ const Task = forwardRef(
   }
 )
 Task.propTypes = {
-  pointValue: PropTypes.number.isRequired,
   tags: PropTypes.arrayOf(PropTypes.string).isRequired,
   initialComponents: PropTypes.array,
 };;

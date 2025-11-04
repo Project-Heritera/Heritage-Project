@@ -210,6 +210,7 @@ def publish_room(request, course_id, section_id, room_id):
 
 
 """
+#todo: update with newer one 
 @NOTE: When it says *full room JSON structure* above, it means the following:
 {
   "title": "Introduction to Python",
