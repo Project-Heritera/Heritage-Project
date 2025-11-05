@@ -7,7 +7,7 @@ urlpatterns = [
     path("courses/", views.get_courses),
     # section apis
     path("courses/<int:course_id>/create_section", views.create_room),
-    path("courses/<int:course_id>/sections/", views.get_rooms),
+    path("courses/<int:course_id>/sections/", views.get_sections),
     # room apis
     path("courses/<int:course_id>/sections/<int:section_id>/create_room/", views.create_room),
     path("courses/<int:course_id>/sections/<int:section_id>/rooms/", views.get_rooms),

@@ -136,6 +136,11 @@ def create_section(request, course_id):
         * HTTP 404: If the parent course does not exist.
     @note:
         The authenticated user is automatically set as the section creator.
+    @example request:
+        {
+            "title": "Basics of AI slop",
+            "description": "A beginner-level section."
+        }
     """
     course = get_object_or_404(Course, id=course_id)
 
@@ -214,6 +219,11 @@ def create_room(request, course_id, section_id):
         * HTTP 404: If parent course or section does not exist.
     @note:
         The authenticated user is automatically set as the room creator.
+    @example request:
+        {
+            "title": "AI slop assignment 1",
+            "description": "A beginner-level room."
+        }
     """
     course = get_object_or_404(Course, id=course_id)
     section = get_object_or_404(Section, id=section_id, course=course)
