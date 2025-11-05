@@ -2,25 +2,28 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from ordered_model.models import OrderedModel # this handles auto-reordering when something is deleted
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.db.models import Q
+from ordered_model.models import F, OrderedModel # this handles auto-reordering when something is deleted
+from django.db.models import Q, Case, Value, When
 
 User = get_user_model()
 
 
+# | Visibility  | AccessLevel  | can_view  | can_edit   |
+# | PUBLIC      | (anyone)     | ✅        | ❌        |
+# | PRIVATE     | none         | ❌        | ❌        |
+# | PRIVATE     | VISITOR      | ✅        | ❌        |
+# | PRIVATE     | EDITOR       | ✅        | ✅        |
+
+
+# access level is only relevant for PRIVATE rooms/sections/courses
 class AccessLevel(models.TextChoices):
-    ADMIN = "AD", _("ADMIN")
+    EDITOR = "ED", _("EDITOR")
     VISITOR = "VI", _("VISITOR")
 
 
-# go to admins, click on spec instance, sample url contains id (all are 1)
-
 class VisibilityLevel(models.TextChoices):
-    PRIVATE = "PRI", _("PRIVATE")   # devs only
-    PUBLIC = "PUB", _("PUBLIC")     # available on web
-    LIMITER = "LIM", _("LIMITER")   # certain users only
+    PUBLIC = "PUB", _("PUBLIC")
+    PRIVATE = "PRI", _("PRIVATE")
 
 
 class CourseQuerySet(models.QuerySet):
@@ -52,8 +55,7 @@ class CourseQuerySet(models.QuerySet):
             visibility=VisibilityLevel.PUBLIC,
             is_published=True
         ) | Q(
-            # Condition C: The course is Limited AND the user is in access_users
-            visibility=VisibilityLevel.LIMITER,
+            visibility=VisibilityLevel.PRIVATE,
             access_users=user
         )
         
@@ -75,7 +77,11 @@ class CourseQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
 
@@ -107,8 +113,7 @@ class SectionQuerySet(models.QuerySet):
             visibility=VisibilityLevel.PUBLIC,
             is_published=True
         ) | Q(
-            # Condition C: The section is Limited AND the user has access via access_users (M2M)
-            visibility=VisibilityLevel.LIMITER,
+            visibility=VisibilityLevel.PRIVATE,
             access_users=user
         )
         
@@ -130,7 +135,11 @@ class SectionQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
 
@@ -164,8 +173,7 @@ class RoomQuerySet(models.QuerySet):
             visibility=VisibilityLevel.PUBLIC,
             is_published=True
         ) | Q(
-            # Condition C: The room is Limited AND the user has access via access_users (M2M)
-            visibility=VisibilityLevel.LIMITER,
+            visibility=VisibilityLevel.PRIVATE,
             access_users=user
         )
         
@@ -187,12 +195,16 @@ class RoomQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
 
 def default_badge_image():
-    return "badges/default.png" # change to whatever the path is to the image, rn theres no actual image here
+    return "Images/default.png" # change to whatever the path is to the image, rn theres no actual image here
 
 
 class Badge(models.Model):
@@ -201,6 +213,12 @@ class Badge(models.Model):
 
     def __str__(self):
         return self.title
+    
+    # override save() so it uses default badge image when saved
+    def save(self, *args, **kwargs):
+        if not self.badge_id:
+            self.badge = Badge.objects.create(title=self.title, image=default_badge_image())
+        super().save(*args, **kwargs)
 
 
 class Course(models.Model):
@@ -229,13 +247,13 @@ class Course(models.Model):
         through="UserCourseAccessLevel",
         related_name="course_access",
         blank=True,
-        help_text="Users who can access the course when visibility is set to LIMITER"
+        help_text="Users who can access the course when visibility is set to PRIVATE"
     )
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Images/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return self.title
@@ -274,14 +292,14 @@ class Section(models.Model):
         through="UserSectionAccessLevel",
         related_name="section_access",
         blank=True,
-        help_text="Users who can access the section when visibility is set to LIMITER"
+        help_text="Users who can access the section when visibility is set to PRIVATE"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Images/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -325,30 +343,19 @@ class Room(models.Model):
         through="UserRoomAccessLevel",
         related_name="room_access",
         blank=True,
-        help_text="Users who can access the room when visibility is set to LIMITER"
+        help_text="Users who can access the room when visibility is set to PRIVATE"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Images/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
     
     objects = RoomQuerySet.as_manager()
-
-
-@receiver(post_save, sender=Room)
-def create_room_badge(sender, instance, created, **kwargs):
-    if created and not instance.badge:
-        badge = Badge.objects.create(
-            title=instance.title,
-            image=default_badge_image()
-        )
-        instance.badge = badge
-        instance.save()
 
 
 class Tag(models.Model):
@@ -460,7 +467,7 @@ class ProgressOfTask(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.Room else 'No Room'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.task.room.title else 'No Room'} ({self.status})"
 
 
 class SavedTask(models.Model):
