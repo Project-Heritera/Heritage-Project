@@ -17,12 +17,14 @@ User = get_user_model()
 
 # access level is only relevant for PRIVATE rooms/sections/courses
 class AccessLevel(models.TextChoices):
+    # this can't be changed to a boolean bc it's intentionally
+    # so that you can be both not a visitor and also not a editor (none)
     EDITOR = "ED", _("EDITOR")
     VISITOR = "VI", _("VISITOR")
 
 
 class VisibilityLevel(models.TextChoices):
-    PUBLIC = "PUB", _("PUBLIC")
+    PUBLIC = "PUB", _("PUBLIC") # rn basically completely the same as is_published in functionality
     PRIVATE = "PRI", _("PRIVATE")
 
 
