@@ -15,6 +15,8 @@ class AccessLevel(models.TextChoices):
     VISITOR = "VI", _("VISITOR")
 
 
+# go to admins, click on spec instance, sample url contains id (all are 1)
+
 class VisibilityLevel(models.TextChoices):
     PRIVATE = "PRI", _("PRIVATE")   # devs only
     PUBLIC = "PUB", _("PUBLIC")     # available on web
@@ -364,7 +366,6 @@ class Task(OrderedModel):
         related_name="tasks"
     )
     tags = models.ManyToManyField(Tag)
-    point_value = models.IntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
 
     order_with_respect_to = "room" # this creates a 'order' int column in the model table
@@ -443,7 +444,7 @@ class UserRoomAccessLevel(models.Model):
 
 class Status(models.TextChoices):
     NOSTAR = "NOSTAR", _("NOT STARTED")
-    INPROG = "INPROG", _("IN-PROGRESS")
+    INCOMP = "INCOMP", _("INCOMPLETE")
     COMPLE = "COMPLE", _("COMPLETED")
 
 
@@ -456,8 +457,6 @@ class ProgressOfTask(models.Model):
         default=Status.NOSTAR
     )
     attempts = models.IntegerField(default=0)
-    last_attempt = models.DateTimeField(auto_now=True)
-    score = models.FloatField(default=0.0)
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
