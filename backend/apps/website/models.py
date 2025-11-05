@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from ordered_model.models import OrderedModel # this handles auto-reordering when something is deleted
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -19,10 +20,47 @@ class VisibilityLevel(models.TextChoices):
     PUBLIC = "PUB", _("PUBLIC")     # available on web
     LIMITER = "LIM", _("LIMITER")   # certain users only
 
-# The query sets below are used to sum the progress of all tasks 
-# that are relevant to the course/section/room 
-# and return a percentage complete
+
 class CourseQuerySet(models.QuerySet):
+    """Custom QuerySet for the Course model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Courses that the given user has permission to view.
+        
+        Permission rules:
+        1. Creator (always has access).
+        2. Superuser/Staff (always has access).
+        3. Public courses (if published).
+        4. Limited courses (if the user is in access_users).
+        5. Private courses (only the creator can view).
+        """
+        
+        # 1. Superuser/Staff Bypass (Highest Priority)
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # 2. General View Logic (Combined Q objects)
+        # Combine all conditions where a regular authenticated user can view the course:
+        view_conditions = Q(
+            # Condition A: The user is the creator (creator can always view)
+            creator=user
+        ) | Q(
+            # Condition B: The course is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            # Condition C: The course is Limited AND the user is in access_users
+            visibility=VisibilityLevel.LIMITER,
+            access_users=user
+        )
+        
+        # Note: Private courses are covered only by Condition A (creator=user).
+        
+        # 3. Apply the combined filter
+        return self.filter(view_conditions).distinct()
+
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("sections__rooms__tasks", distinct=True),
@@ -40,6 +78,44 @@ class CourseQuerySet(models.QuerySet):
 
 
 class SectionQuerySet(models.QuerySet):
+    """Custom QuerySet for the Section model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Sections the user can view, enforcing hierarchical access.
+        """
+        # 1. Superuser/Staff Bypass
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # --- Hierarchy Rule: The user must have VIEW access to the parent Course. ---
+        # Get the Course queryset that the user can view (using the CourseQuerySet logic)
+        viewable_courses = Course.objects.filter_by_user_access(user)
+        
+        # Start with all sections belonging to courses the user can view.
+        base_filter = Q(course__in=viewable_courses)
+
+        # --- Section-Specific Visibility Rules ---
+        # The user can view the section if they meet the hierarchy rule AND:
+        section_view_conditions = Q(
+            # Condition A: The user is the section creator
+            creator=user
+        ) | Q(
+            # Condition B: The section is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            # Condition C: The section is Limited AND the user has access via access_users (M2M)
+            visibility=VisibilityLevel.LIMITER,
+            access_users=user
+        )
+        
+        # Combine the base filter with the section-specific rules.
+        final_filter = base_filter & section_view_conditions
+
+        return self.filter(final_filter).distinct()
+    
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("rooms__tasks", distinct=True),
@@ -55,8 +131,48 @@ class SectionQuerySet(models.QuerySet):
             progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
         )
 
-    
+
 class RoomQuerySet(models.QuerySet):
+    """Custom QuerySet for the Room model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Rooms the user can view, enforcing hierarchical access.
+        """
+        # 1. Superuser/Staff Bypass
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # --- Hierarchy Rule: The user must have VIEW access to the parent Section. ---
+        # Get the Section queryset that the user can view (using the SectionQuerySet logic)
+        # Note: self.model.objects.filter_by_user_access(user) creates recursion,
+        # so we must call the method on the manager of the parent model.
+        viewable_sections = Section.objects.filter_by_user_access(user)
+        
+        # Start with all rooms belonging to sections the user can view.
+        base_filter = Q(section__in=viewable_sections)
+
+        # --- Room-Specific Visibility Rules ---
+        # The user can view the room if they meet the hierarchy rule AND:
+        room_view_conditions = Q(
+            # Condition A: The user is the room creator
+            creator=user
+        ) | Q(
+            # Condition B: The room is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            # Condition C: The room is Limited AND the user has access via access_users (M2M)
+            visibility=VisibilityLevel.LIMITER,
+            access_users=user
+        )
+        
+        # Combine the base filter with the room-specific rules.
+        final_filter = base_filter & room_view_conditions
+        
+        return self.filter(final_filter).distinct()
+    
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("tasks", distinct=True),
@@ -301,7 +417,6 @@ class UserCourseAccessLevel(models.Model):
 
 class UserSectionAccessLevel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
@@ -315,8 +430,6 @@ class UserSectionAccessLevel(models.Model):
 
 class UserRoomAccessLevel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
@@ -336,9 +449,6 @@ class Status(models.TextChoices):
 
 class ProgressOfTask(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     status = models.CharField(
         max_length=50,
