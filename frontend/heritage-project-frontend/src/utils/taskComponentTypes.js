@@ -11,11 +11,13 @@ const taskComponentTypes = Object.freeze({
   TEXT: {
     label: "Text Box",
     component: TextTaskComponent,
+    category: "Static",
     schema: z.object({ text: z.string() }),
     defaultValue: { text: "" },
   },
   IMAGE: {
     label: "Image",
+    category: "Static",
     component: ImageTaskComponent,
     schema: z.object({ url: z.string(), alt: z.string() }),
     defaultValue: { url: "", alt: "" },
@@ -23,6 +25,7 @@ const taskComponentTypes = Object.freeze({
   MCQ: {
     label: "Multiple Choice Question",
     component: MultipleChoiceComponent,
+    category: "Question",
     schema: z
       .object({
         choiceArray: z.array(z.object({
