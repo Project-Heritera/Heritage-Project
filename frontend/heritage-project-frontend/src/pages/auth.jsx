@@ -4,6 +4,7 @@ import { TaskComponentMenu } from "../components/TaskAndTaskComponents/TaskCompo
 import PublicationForm from "../components/PublicationForm";
 import { useErrorStore } from "../stores/ErrorStore";
 import Modal from "../components/Modal";
+import { test_api } from "../services/testAPIs";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
@@ -83,6 +84,9 @@ const showError = useErrorStore((state) => state.showError);
 <TaskComponentMenu onSelect={handleTemplateSelect} onClose={handleClose}/>       
       </Modal>
      
+    </div>
+    <div>
+      <button onClick={() => test_api()}>click to test apis</button>
     </div>
     </div>
   );

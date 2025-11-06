@@ -2,27 +2,71 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from ordered_model.models import OrderedModel # this handles auto-reordering when something is deleted
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from ordered_model.models import F, OrderedModel # this handles auto-reordering when something is deleted
+from django.db.models import Q, Case, Value, When
 
 User = get_user_model()
 
 
+# | Visibility  | AccessLevel  | can_view  | can_edit   |
+# | PUBLIC      | (anyone)     | ✅        | ❌        |
+# | PRIVATE     | none         | ❌        | ❌        |
+# | PRIVATE     | VISITOR      | ✅        | ❌        |
+# | PRIVATE     | EDITOR       | ✅        | ✅        |
+
+
+# access level is only relevant for PRIVATE rooms/sections/courses
 class AccessLevel(models.TextChoices):
-    ADMIN = "AD", _("ADMIN")
+    # this can't be changed to a boolean bc it's intentionally
+    # so that you can be both not a visitor and also not a editor (none)
+    EDITOR = "ED", _("EDITOR")
     VISITOR = "VI", _("VISITOR")
 
 
 class VisibilityLevel(models.TextChoices):
-    PRIVATE = "PRI", _("PRIVATE")   # devs only
-    PUBLIC = "PUB", _("PUBLIC")     # available on web
-    LIMITER = "LIM", _("LIMITER")   # certain users only
+    PUBLIC = "PUB", _("PUBLIC") # rn basically completely the same as is_published in functionality
+    PRIVATE = "PRI", _("PRIVATE")
 
-# The query sets below are used to sum the progress of all tasks 
-# that are relevant to the course/section/room 
-# and return a percentage complete
+
 class CourseQuerySet(models.QuerySet):
+    """Custom QuerySet for the Course model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Courses that the given user has permission to view.
+        
+        Permission rules:
+        1. Creator (always has access).
+        2. Superuser/Staff (always has access).
+        3. Public courses (if published).
+        4. Limited courses (if the user is in access_users).
+        5. Private courses (only the creator can view).
+        """
+        
+        # 1. Superuser/Staff Bypass (Highest Priority)
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # 2. General View Logic (Combined Q objects)
+        # Combine all conditions where a regular authenticated user can view the course:
+        view_conditions = Q(
+            # Condition A: The user is the creator (creator can always view)
+            creator=user
+        ) | Q(
+            # Condition B: The course is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            visibility=VisibilityLevel.PRIVATE,
+            access_users=user
+        )
+        
+        # Note: Private courses are covered only by Condition A (creator=user).
+        
+        # 3. Apply the combined filter
+        return self.filter(view_conditions).distinct()
+
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("sections__rooms__tasks", distinct=True),
@@ -35,11 +79,52 @@ class CourseQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
 
 class SectionQuerySet(models.QuerySet):
+    """Custom QuerySet for the Section model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Sections the user can view, enforcing hierarchical access.
+        """
+        # 1. Superuser/Staff Bypass
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # --- Hierarchy Rule: The user must have VIEW access to the parent Course. ---
+        # Get the Course queryset that the user can view (using the CourseQuerySet logic)
+        viewable_courses = Course.objects.filter_by_user_access(user)
+        
+        # Start with all sections belonging to courses the user can view.
+        base_filter = Q(course__in=viewable_courses)
+
+        # --- Section-Specific Visibility Rules ---
+        # The user can view the section if they meet the hierarchy rule AND:
+        section_view_conditions = Q(
+            # Condition A: The user is the section creator
+            creator=user
+        ) | Q(
+            # Condition B: The section is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            visibility=VisibilityLevel.PRIVATE,
+            access_users=user
+        )
+        
+        # Combine the base filter with the section-specific rules.
+        final_filter = base_filter & section_view_conditions
+
+        return self.filter(final_filter).distinct()
+    
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("rooms__tasks", distinct=True),
@@ -52,11 +137,54 @@ class SectionQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
-    
+
 class RoomQuerySet(models.QuerySet):
+    """Custom QuerySet for the Room model to handle access filtering."""
+    
+    def filter_by_user_access(self, user):
+        """
+        Returns a QuerySet of Rooms the user can view, enforcing hierarchical access.
+        """
+        # 1. Superuser/Staff Bypass
+        if user.is_superuser or user.is_staff:
+            return self.all()
+
+        # --- Hierarchy Rule: The user must have VIEW access to the parent Section. ---
+        # Get the Section queryset that the user can view (using the SectionQuerySet logic)
+        # Note: self.model.objects.filter_by_user_access(user) creates recursion,
+        # so we must call the method on the manager of the parent model.
+        viewable_sections = Section.objects.filter_by_user_access(user)
+        
+        # Start with all rooms belonging to sections the user can view.
+        base_filter = Q(section__in=viewable_sections)
+
+        # --- Room-Specific Visibility Rules ---
+        # The user can view the room if they meet the hierarchy rule AND:
+        room_view_conditions = Q(
+            # Condition A: The user is the room creator
+            creator=user
+        ) | Q(
+            # Condition B: The room is Public AND published
+            visibility=VisibilityLevel.PUBLIC,
+            is_published=True
+        ) | Q(
+            visibility=VisibilityLevel.PRIVATE,
+            access_users=user
+        )
+        
+        # Combine the base filter with the room-specific rules.
+        final_filter = base_filter & room_view_conditions
+        
+        return self.filter(final_filter).distinct()
+    
+    # used to sum the progress of all tasks as a percentage
     def user_progress_percent(self, user):
         return self.annotate(
             total_tasks=models.Count("tasks", distinct=True),
@@ -69,20 +197,30 @@ class RoomQuerySet(models.QuerySet):
                 distinct=True,
             ),
         ).annotate(
-            progress_percent=100.0 * models.F("completed_tasks") / models.F("total_tasks")
+            progress_percent=Case(
+                When(total_tasks=0, then=Value(0)),
+                default=100.0 * F("completed_tasks") / F("total_tasks"),
+                output_field=models.FloatField(),
+            )
         )
 
 
 def default_badge_image():
-    return "badges/default.png" # change to whatever the path is to the image, rn theres no actual image here
+    return "Images/default.png" # change to whatever the path is to the image, rn theres no actual image here
 
 
 class Badge(models.Model):
-    image = models.ImageField(upload_to="badges/", default=default_badge_image)
+    image = models.ImageField(upload_to="Images/", default=default_badge_image)
     title = models.CharField(max_length=100)
 
     def __str__(self):
         return self.title
+    
+    # override save() so it uses default badge image when saved
+    def save(self, *args, **kwargs):
+        if not self.badge_id:
+            self.badge = Badge.objects.create(title=self.title, image=default_badge_image())
+        super().save(*args, **kwargs)
 
 
 class Course(models.Model):
@@ -111,13 +249,13 @@ class Course(models.Model):
         through="UserCourseAccessLevel",
         related_name="course_access",
         blank=True,
-        help_text="Users who can access the course when visibility is set to LIMITER"
+        help_text="Users who can access the course when visibility is set to PRIVATE"
     )
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return self.title
@@ -156,14 +294,14 @@ class Section(models.Model):
         through="UserSectionAccessLevel",
         related_name="section_access",
         blank=True,
-        help_text="Users who can access the section when visibility is set to LIMITER"
+        help_text="Users who can access the section when visibility is set to PRIVATE"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -207,30 +345,19 @@ class Room(models.Model):
         through="UserRoomAccessLevel",
         related_name="room_access",
         blank=True,
-        help_text="Users who can access the room when visibility is set to LIMITER"
+        help_text="Users who can access the room when visibility is set to PRIVATE"
     )
     number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="Icons/") # no default
+    image = models.ImageField(upload_to="Images/", blank=True) # no default
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
     
     objects = RoomQuerySet.as_manager()
-
-
-@receiver(post_save, sender=Room)
-def create_room_badge(sender, instance, created, **kwargs):
-    if created and not instance.badge:
-        badge = Badge.objects.create(
-            title=instance.title,
-            image=default_badge_image()
-        )
-        instance.badge = badge
-        instance.save()
 
 
 class Tag(models.Model):
@@ -300,7 +427,6 @@ class UserCourseAccessLevel(models.Model):
 
 class UserSectionAccessLevel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
@@ -314,8 +440,6 @@ class UserSectionAccessLevel(models.Model):
 
 class UserRoomAccessLevel(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     access_level = models.CharField(
         max_length=50,
@@ -329,15 +453,12 @@ class UserRoomAccessLevel(models.Model):
 
 class Status(models.TextChoices):
     NOSTAR = "NOSTAR", _("NOT STARTED")
-    INPROG = "INPROG", _("IN-PROGRESS")
+    INCOMP = "INCOMP", _("INCOMPLETE")
     COMPLE = "COMPLE", _("COMPLETED")
 
 
 class ProgressOfTask(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     status = models.CharField(
         max_length=50,
@@ -345,12 +466,10 @@ class ProgressOfTask(models.Model):
         default=Status.NOSTAR
     )
     attempts = models.IntegerField(default=0)
-    last_attempt = models.DateTimeField(auto_now=True)
-    score = models.FloatField(default=0.0)
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.Room else 'No Room'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.task.room.title else 'No Room'} ({self.status})"
 
 
 class SavedTask(models.Model):
