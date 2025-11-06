@@ -1,15 +1,20 @@
 import PropTypes from "prop-types";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
-import { useState, forwardRef, useImperativeHandle } from "react";
-import { CirclePlus } from "lucide-react";
+import { useState, forwardRef, useImperativeHandle, createContext } from "react";
+import { CirclePlus, Users } from "lucide-react";
 import Modal from "../Modal";
 import { TaskComponentMenu } from "./TaskComponentMenu";
 import TaskComponent from "./TaskComponent";
+import statusTypes from "../../utils/statusTypes";
 
+const TaskGlobalContext = createContext(null);
 const Task = forwardRef(
   ({ tags = [], initialComponents = [] }, ref) => {
     const [taskComponents, setTaskComponents] = useState(initialComponents);
     const [taskComponentMenu, setTaskComponentMenu] = useState(false);
+    const [taskStatus, setTaskStatus] = useState(null);
+    const [runHandleSubmit, setRunHandleSubmit] = useState(false)
+
     const addNewTaskComponent = (taskComponentTypeToAdd) => {
       //get jsonData from defaults provided in enums file
       const jsonData = taskComponentTypes[taskComponentTypeToAdd].defaultValue;
@@ -27,6 +32,11 @@ const Task = forwardRef(
         return taskComponents.map((c) => (c.serialize ? c.serialize() : c));
       },
     }));
+    function updateTaskState(){
+      console.log("status before", taskStatus)
+      setRunHandleSubmit(true) //calls function in task component that acts as question
+      console.log("status after", taskStatus)
+    }
 
     return (
       <div>
@@ -34,10 +44,10 @@ const Task = forwardRef(
         <p>Tags: {tags.join(", ")}</p>
         <div className="task-body">
           {taskComponents.map((tc) => {
-            const Component = taskComponentTypes[tc.type].component;
             return (
+              <>
+              <TaskGlobalContext.Provider key={tc.task_component_id} value={{taskStatus, setTaskStatus, runHandleSubmit, setRunHandleSubmit}}>
               <TaskComponent
-                key={tc.task_component_id}
                 componentType={tc.type}
                 taskComponentSpecificData={tc.content}
                 isEditing={true}
@@ -45,6 +55,8 @@ const Task = forwardRef(
                   tc.ref = el;
                 }}
                 />
+                </TaskGlobalContext.Provider>
+                </>
             );
           })}
         </div>
@@ -76,5 +88,6 @@ const Task = forwardRef(
 Task.propTypes = {
   tags: PropTypes.arrayOf(PropTypes.string).isRequired,
   initialComponents: PropTypes.array,
-};;
+};
+export { TaskGlobalContext as GlobalStateContext };
 export default Task;

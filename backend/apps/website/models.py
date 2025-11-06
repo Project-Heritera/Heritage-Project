@@ -248,7 +248,6 @@ class Task(OrderedModel):
         related_name="tasks"
     )
     tags = models.ManyToManyField(Tag)
-    is_completed = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
 
     order_with_respect_to = "room" # this creates a 'order' int column in the model table

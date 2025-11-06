@@ -42,6 +42,8 @@ const taskComponentTypes = Object.freeze({
         { id: "a", text: "Edit Text", correct: false },
         { id: "b", text: "Edit Text", correct: false },
       ],
+      number_of_chances: 1,
+      hint: ""
     },
   },
   // Add more components as needed
