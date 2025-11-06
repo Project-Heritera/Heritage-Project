@@ -2,7 +2,7 @@
 
 import React from 'react';
 // Note the import syntax is different because you used "export default"
-import TextComponent from '../components/TaskComponents/TextComponent/TextComponent';
+import TextComponent from '../../components/TaskAndTaskComponents/TextComponent/TextTaskComponent';
 
 // This default export describes your component for Storybook
 export default {
@@ -17,7 +17,8 @@ const Template = (args) => <TextComponent {...args} />;
 export const Default = Template.bind({});
 Default.args = {
   // Your component doesn't have any props, so this is empty
-  text: `
+  jsonData: {
+    text: `
 # Heading 1: Main Title
 
 ## Heading 2: A Sub-Section
@@ -43,6 +44,8 @@ Here are some things to check:
 > This is a blockquote. It's often used for quoting text from another source. It should be visually distinct from regular paragraphs.
 
 Check out the official [Markdown Guide](https://www.markdownguide.org) for more info.
-`,
-edit: false,
+`
+  },
+
+  isEditing: true,
 };
