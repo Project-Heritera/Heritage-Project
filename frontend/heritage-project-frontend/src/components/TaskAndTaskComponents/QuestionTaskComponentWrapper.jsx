@@ -2,13 +2,14 @@ import { useState, useContext, useEffect } from "react";
 import statusTypes from "../../utils/statusTypes";
 import { GlobalStateContext } from "./Task";
 
-function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEditing, serialize }) {
-  const [attemptsLeft, setAttemptsLeft] = useState(jsonData.numOfChances ?? 1);
-  const [hint, setHind] = useState(jsonData.hint ?? "")
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [showHint, setShowHint] = useState(true);
+function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEditing, serialize, initialAttemptsLeft, initialIsCorrect,  }) {
+  const [attemptsLeft, setAttemptsLeft] = useState(initialAttemptsLeft);
+  const [numberOfAttenmpts, setNumberOfAttenmpts] = useState(jsonData.numOfChances ?? 1);
+  const [hint, setHint] = useState(jsonData.hint ?? "")
+  const [isCorrect, setIsCorrect] = useState(initialIsCorrect);
+  const [showHint, setShowHint] = useState(false);
 
-  const {roomStatus, setRoomStatus, runHandleSubmit, setRunHandleSubmit} = useContext(GlobalStateContext)//states from task
+  const {taskStatus, setTaskStatus, runHandleSubmit, setRunHandleSubmit} = useContext(GlobalStateContext)//states from task
 
   useEffect(() => {
     if (runHandleSubmit) {
@@ -19,8 +20,8 @@ function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEdit
   }, [runHandleSubmit]); // only runs when runHandleSubmit changes in task
 
   const handleSubmit = () => {
-    const result = QuestionTaskComponent.checkIfCorrect();//pass down to question task component (mcq, input)
-    setRoomStatus(result)
+    //const result = QuestionTaskComponent.checkIfCorrect();//pass down to question task component (mcq, input)
+    setTaskStatus(result)
   };
   
 
