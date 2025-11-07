@@ -3,7 +3,7 @@ import TaskComponent from "./TaskComponent";
 
 export const TaskGlobalContext = createContext(null);
 
-export default function TaskBase({ components, isEditing, contextValues }) {
+export default function TaskBase({ components, isEditing, contextValues={} }) {
   return (
     <TaskGlobalContext.Provider value={contextValues}>
       <div className="task-body">

@@ -24,15 +24,15 @@ const TaskEditor = forwardRef(({ tags = [], initialComponents = [] }, ref) => {
     serialize: () => taskComponents,
   }));
 
+
+
   return (
     <div className="task-editor">
-      <h3>Task Editor</h3>
       <p>Tags: {tags.join(", ")}</p>
 
       <TaskBase
         components={taskComponents}
         isEditing={true}
-        contextValues={{ taskStatus, setTaskStatus }}
       />
 
       <button onClick={() => setTaskComponentMenu(true)}>
