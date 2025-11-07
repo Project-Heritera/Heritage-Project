@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import statusTypes from "../../utils/statusTypes";
 import { GlobalStateContext } from "./Task";
+import { TaskGlobalContext } from "./TaskBase";
 
 function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEditing, serialize, initialAttemptsLeft, initialIsCorrect,  }) {
   const [attemptsLeft, setAttemptsLeft] = useState(initialAttemptsLeft);
@@ -9,7 +10,7 @@ function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEdit
   const [isCorrect, setIsCorrect] = useState(initialIsCorrect);
   const [showHint, setShowHint] = useState(false);
 
-  const {taskStatus, setTaskStatus, runHandleSubmit, setRunHandleSubmit} = useContext(GlobalStateContext)//states from task
+  const {taskStatus, setTaskStatus, runHandleSubmit, setRunHandleSubmit} = useContext(TaskGlobalContext)//states from task
 
   useEffect(() => {
     if (runHandleSubmit) {

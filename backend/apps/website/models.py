@@ -268,7 +268,6 @@ class Section(models.Model):
         Badge,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
         related_name="section"
     )
     course = models.ForeignKey(

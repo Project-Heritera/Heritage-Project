@@ -3,6 +3,7 @@ import { CirclePlus, List, Save } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import { DndContext } from "@dnd-kit/core";
 import Task from "../components/TaskAndTaskComponents/Task";
+import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
 import { taskComponentTypes } from "../utils/taskComponentTypes";
 import TaskComponent from "../components/TaskAndTaskComponents/TaskComponent";
@@ -173,7 +174,7 @@ const RoomEditor = () => {
               className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
             >
               <p>{task.task_id}</p>
-              <Task
+              <TaskEditor
                 key={task.task_id}
                 ref={(el) => (taskRefs.current[task.task_id] = el)}
                 tags={task.tags}
