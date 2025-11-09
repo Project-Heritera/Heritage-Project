@@ -2,6 +2,7 @@ import { useState } from "react";
 import { login } from "../services/auth";
 import { useErrorStore } from "../stores/ErrorStore";
 import Modal from "../components/Modal";
+import { test_api } from "../services/testAPIs";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
@@ -69,7 +70,22 @@ const showError = useErrorStore((state) => state.showError);
       />
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
-   </div>
+<div>
+      <button
+        onClick={() => setModalOpen(true)}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Open Template Selector
+      </button>g
+<Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
+<TaskComponentMenu onSelect={handleTemplateSelect} onClose={handleClose}/>       
+      </Modal>
+     
+    </div>
+    <div>
+      <button onClick={() => test_api()}>click to test apis</button>
+    </div>
+    </div>
   );
 };
 

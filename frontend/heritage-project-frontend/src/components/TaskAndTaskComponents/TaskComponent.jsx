@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
-import { safeParse } from "zod";
+import { json, safeParse } from "zod";
 import TextTaskComponent from "./TextComponent/TextTaskComponent";
-import MCQTaskComponent from "./mcqTaskComponent";
 import ImageTaskComponent from "./imageTaskComponent";
 import {taskComponentTypes} from "../../utils/taskComponentTypes";
 import { useEffect, useState } from "react";
+import QuestionTaskComponentWrapper from "./QuestionTaskComponentWrapper";
+import { Component } from "lucide-react";
 TaskComponent.propTypes = {
   componentType: taskComponentTypes, 
   taskComponentSpecificData: PropTypes.string,
@@ -38,15 +39,25 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
     {
        const Component = taskComponentTypes[componentType].component;
        if (Component != null){
-         return (
-          <>
-          <Component
-          componentType={componentType}
-          jsonData={taskComponentSpecificData}
-          isEditing={isEditing}
-           />
-          </>
-         )
+        if (taskComponentTypes[componentType].category==="Question"){
+          return (
+            <QuestionTaskComponentWrapper 
+            serialize={serialize}
+            QuestionTaskComponent={Component}
+            isEditing={isEditing}
+            jsonData={jsonData}
+            />
+          )
+        }
+        else{
+          return (
+           <Component
+           serialize={serialize}
+           jsonData={taskComponentSpecificData}
+           isEditing={isEditing}
+            />
+          )
+        }
         }
         else{
           return(
