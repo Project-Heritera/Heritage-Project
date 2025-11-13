@@ -11,6 +11,7 @@ from .models import (
     TaskComponent,
     Tag,
     VisibilityLevel,
+    ProgressOfTask,
 )
 
 # -------------------------------
@@ -227,6 +228,17 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 # -------------------------------
+# ProgressOfTask Serializer
+# -------------------------------
+class ProgressOfTaskSerializer(serializers.ModelSerializer):
+    task_id = serializers.IntegerField(source="task.id", read_only=True)
+    
+    class Meta:
+        model = ProgressOfTask
+        fields = ["task_id", "status", "attempts", "metadata"]
+
+
+# -------------------------------
 # Course Serializer
 # -------------------------------
 class CourseSerializer(serializers.ModelSerializer):
@@ -287,3 +299,14 @@ class CourseSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+# -------------------------------
+# ProgressOfTask Serializer
+# -------------------------------
+class ProgressOfTaskSerializer(serializers.ModelSerializer):
+    task_id = serializers.IntegerField(source="task.id", read_only=True)
+    
+    class Meta:
+        model = ProgressOfTask
+        fields = ["task_id", "status", "attempts", "metadata"]

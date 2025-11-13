@@ -102,6 +102,45 @@ export async function publish_room(course_id, section_id, room_id, publish_room_
 	}
 }
 
+/**
+ * get_task_progress_for_room: Fetches task progress for all tasks in a room.
+ * @ NOTE: backend handles verification that user can access room
+ * @course_id :
+ *  ID of the parent course
+ * @section_id :
+ *  ID of the parent section
+ * @room_id :
+ *  ID of room to get task progress from
+ * @return:
+ *  * HTTP 200 with list of task progress data if found.
+ *  * HTTP 403 if user lacks permission to view the room.
+ *  * HTTP 404 if the room does not exist.
+ * @example return data:
+ *  [
+ *    {
+ *      "task_id": 1,
+ *      "status": "COMPLE",
+ *      "attempts": 2,
+ *      "metadata": {}
+ *    },
+ *    {
+ *      "task_id": 2,
+ *      "status": "INCOMP",
+ *      "attempts": 1,
+ *      "metadata": {}
+ *    }
+ *  ]
+ */
+export async function get_task_progress_for_room(course_id, section_id, room_id) {
+	try {
+		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/task_progress/`);
+		return response.data
+	} 
+	catch (error) {
+		throw(error);
+	}
+}
+
 export async function get_test_room(){
 	//for testing purposes
 	const test_room  = {

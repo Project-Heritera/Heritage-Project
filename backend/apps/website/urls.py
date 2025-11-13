@@ -9,9 +9,25 @@ urlpatterns = [
     path("courses/<int:course_id>/create_section", views.create_room),
     path("courses/<int:course_id>/sections/", views.get_sections),
     # room apis
-    path("courses/<int:course_id>/sections/<int:section_id>/create_room/", views.create_room),
+    path(
+        "courses/<int:course_id>/sections/<int:section_id>/create_room/",
+        views.create_room,
+    ),
     path("courses/<int:course_id>/sections/<int:section_id>/rooms/", views.get_rooms),
-    path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/", views.get_room),
-    path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/save/", views.save_room),
-    path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/publish/", views.publish_room),
+    path(
+        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/",
+        views.get_room,
+    ),
+    path(
+        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/save/",
+        views.save_room,
+    ),
+    path(
+        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/publish/",
+        views.publish_room,
+    ),
+    path(
+        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/task_progress/",
+        views.get_task_progress_for_room,
+    ),
 ]
