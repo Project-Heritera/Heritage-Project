@@ -150,3 +150,58 @@ export async function get_test_room(){
 	}
 	return test_room;
 }
+export async function get_test_room_for_viewer(){
+	//for testing purposes
+	const test_room  = {
+    "course_id": 1,
+    "section_id": 1,
+    "room_id": 1,
+    "can_edit": false,
+    "title": "Array Basics",
+    "description": "Questions on array initialization, traversal, and manipulation",
+    "metadata": {},
+    "visibility": "PUB",
+    "is_published": true,
+    "tasks": [
+        {
+            "task_id": 1,
+            "tags": [
+                "Easy"
+            ],
+            "components": [
+                {
+                    "task_component_id": 1,
+                    "type": "TEXT",
+                    "content": {
+                        "text": "in this lesson you will learn about arrays and complex pointer arithmetic in assembly :)"
+                    }
+                }
+            ]
+        },
+        {
+            "task_id": 2,
+            "tags": [
+                "Medium"
+            ],
+            "components": [
+                {
+                    "task_component_id": 2,
+                    "type": "TEXT",
+                    "content": {
+                        "text": "vim and reddit son or linked in warrior daughter?"
+                    }
+                }
+            ]
+        }
+    ],
+    "creator": "testuser",
+    "created_on": "2025-10-30T05:56:54.985400Z",
+    "image": "http://127.0.0.1:8000/Icons/image_2025-10-30_005651897.png",
+    "badge": {
+        "badge_id": 4,
+        "image": "http://127.0.0.1:8000/badges/image_2025-10-30_004653651.png",
+        "title": "Array basics badge"
+    }
+	}
+	return test_room;
+}

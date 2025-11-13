@@ -6,6 +6,7 @@ import AuthLogin from './pages/auth'
 import Home from './pages/home'
 import CourseView from './pages/course_view'
 import RoomEditor from './pages/room_editor'
+import RoomViewer from './pages/room_viewer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorPopup from './components/ErrorPopup'
 
@@ -24,6 +25,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path='/courses' element={<CourseView />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
+          <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/view' element={<RoomViewer />} />
         </Route>
       </Route>
       </Routes>

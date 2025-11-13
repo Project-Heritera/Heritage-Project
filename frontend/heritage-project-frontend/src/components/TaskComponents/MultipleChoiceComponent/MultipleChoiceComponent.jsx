@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import statusTypes from "../../../utils/statusTypes";
 import Edit from "./EditMultipleChoice";
 import Use from "./UseMultipleChoice";
 import { taskComponentTypes } from "../../../utils/taskComponentTypes";
 
-//This is the overall text componet for text.
-//text is the initial text if any used to laod into the read or editor
+//This is the overall text component for text.
+//text is the initial text if any used to load into the read or editor
 //edit is the toggle for weather its editable or not
-const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
-  const [choiceApi, setChoiceApi] = useState(null); //Used to provide fucntions to parent of MarkdownArea
+const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, ref) => {
+  const [choiceApi, setChoiceApi] = useState(null); //Used to provide functions to parent of MarkdownArea
   const [selectedAnswerChoice, setSelectedAnswerChoice] = useState(""); //set to id of selected button for viewer
 
   function handleSerialize() {
@@ -17,10 +17,11 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
     });
     serialize(taskComponentTypes.TEXT, jsonToSerialize);
   }
-  function checkIfCorrect() {
-    if (selectedAnswerChoice == "") return statusTypes.INCOMP;
 
-    let correctAnswerChoices = choiceArray;
+  function checkIfCorrect() {
+    if (selectedAnswerChoice === "") return statusTypes.INCOMP;
+
+    let correctAnswerChoices = [];
     for (const choice of choiceArray) {
       if (choice.correct === true) {
         correctAnswerChoices.push(choice.id);
@@ -33,10 +34,15 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
     }
   }
 
+  // Expose checkIfCorrect to parent via ref
+  useImperativeHandle(ref, () => ({
+    checkIfCorrect,
+  }));
+
   let initChoiceArray = jsonData.choiceArray;
   console.log("choiceArray is: ", initChoiceArray);
   //Check if there is already choices added else init default 2 editable choices
-  //todo: from malik: you dont need to supply defailt values we alr do that in parent component. Just assume you are gettigna vlaid json
+  //todo: from malik: you dont need to supply default values we alr do that in parent component. Just assume you are getting a valid json
   if (initChoiceArray === undefined || initChoiceArray === null) {
     console.log("array was null adding init values");
     initChoiceArray = [
@@ -51,7 +57,7 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
   console.log("Am I editing?", isEditing);
 
   return (
-    <div className="text-componet">
+    <div className="text-component">
       {isEditing ? (
         //Edit is true
         <Edit
@@ -62,10 +68,14 @@ const MultipleChoiceComponent = ({ serialize, jsonData, isEditing }) => {
         />
       ) : (
         //Edit is false
-            <Use choiceArray={choiceArray} />
+        <Use 
+          choiceArray={choiceArray} 
+          selectedAnswerChoice={selectedAnswerChoice}
+          setSelectedAnswerChoice={setSelectedAnswerChoice}
+        />
       )}
     </div>
   );
-};
+});
 
 export default MultipleChoiceComponent;

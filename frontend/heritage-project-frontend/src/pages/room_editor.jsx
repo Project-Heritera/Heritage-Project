@@ -149,6 +149,8 @@ const RoomEditor = () => {
       Debug.log("Serialized Room Data:", updatedRoomData);
     //convert object to formData object
      const formData = await objectToFormData(updatedRoomData);
+
+      Debug.log("Form data is :", formData);
     
       //now make request to overwrite room
 const room_status = await save_room(
@@ -203,7 +205,6 @@ const room_status = await save_room(
               key={task.task_id}
               className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
             >
-              <p>{task.task_id}</p>
               <TaskEditor
                 key={task.task_id}
                 ref={(el) => (taskRefs.current[task.task_id] = el)}

@@ -1,42 +1,68 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useRef } from "react";
 import statusTypes from "../../utils/statusTypes";
-import { GlobalStateContext } from "./Task";
 import { TaskGlobalContext } from "./TaskBase";
 
-function QuestionTaskComponentWrapper({ jsonData,  QuestionTaskComponent, isEditing, serialize, initialAttemptsLeft, initialIsCorrect,  }) {
-  const [attemptsLeft, setAttemptsLeft] = useState(initialAttemptsLeft);
-  const [numberOfAttenmpts, setNumberOfAttenmpts] = useState(jsonData.numOfChances ?? 1);
-  const [hint, setHint] = useState(jsonData.hint ?? "")
-  const [isCorrect, setIsCorrect] = useState(initialIsCorrect);
+function QuestionTaskComponentWrapper({ jsonData, QuestionTaskComponent, isEditing, serialize, initialAttemptsLeft, initialIsCorrect }) {
+  // Parse jsonData if it's a string, otherwise use as-is
+  let parsedJsonData;
+  try {
+    parsedJsonData = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+  } catch (e) {
+    console.error("Failed to parse jsonData:", e);
+    parsedJsonData = jsonData || {};
+  }
+  
+  const [attemptsLeft, setAttemptsLeft] = useState(initialAttemptsLeft ?? (parsedJsonData.numOfChances ?? 1));
+  const [numberOfAttempts, setNumberOfAttempts] = useState(parsedJsonData.numOfChances ?? 1);
+  const [hint, setHint] = useState(parsedJsonData.hint ?? "");
+  const [isCorrect, setIsCorrect] = useState(initialIsCorrect ?? false);
   const [showHint, setShowHint] = useState(false);
+  const questionComponentRef = useRef(null);
 
-  const {taskStatus, setTaskStatus, runHandleSubmit, setRunHandleSubmit} = useContext(TaskGlobalContext)//states from task
-
-  useEffect(() => {
-    if (runHandleSubmit) {
-      handleSubmit();
-      // reset the trigger so it doesn’t run again immediately
-      setRunHandleSubmit(false);
-    }
-  }, [runHandleSubmit]); // only runs when runHandleSubmit changes in task
+  const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext); // states from task
 
   const handleSubmit = () => {
-    //const result = QuestionTaskComponent.checkIfCorrect();//pass down to question task component (mcq, input)
-    setTaskStatus(result)
+    if (!questionComponentRef.current || !questionComponentRef.current.checkIfCorrect) {
+      console.error("Question component does not expose checkIfCorrect method");
+      return;
+    }
+
+    const result = questionComponentRef.current.checkIfCorrect();
+    setTaskStatus(result);
+    
+    if (result === statusTypes.COMPLE) {
+      setIsCorrect(true);
+    } else if (result === statusTypes.INCOMP) {
+      setIsCorrect(false);
+      if (attemptsLeft > 0) {
+        setAttemptsLeft(prev => prev - 1);
+      }
+    }
   };
-  
 
   return (
     <div className="question-wrapper">
       <QuestionTaskComponent
-        jsonData={jsonData}
+        ref={questionComponentRef}
+        jsonData={parsedJsonData}
         isEditing={isEditing}
         serialize={serialize}
       />
-      {!isCorrect && attemptsLeft === 0 && jsonData.hint && (
-        <p className="hint">{jsonData.hint}</p>
+      {!isEditing && (
+        <div className="question-actions">
+          <button 
+            onClick={handleSubmit}
+            className="submit-question-button"
+            disabled={taskStatus === statusTypes.COMPLE}
+          >
+            Submit
+          </button>
+        </div>
       )}
-      {showHint && <p className="hint">{jsonData.hint}</p>}
+      {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
+        <p className="hint">{parsedJsonData.hint}</p>
+      )}
+      {showHint && <p className="hint">{parsedJsonData.hint}</p>}
     </div>
   );
 }
