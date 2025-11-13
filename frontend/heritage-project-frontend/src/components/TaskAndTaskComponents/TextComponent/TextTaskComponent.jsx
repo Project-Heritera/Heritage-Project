@@ -14,7 +14,7 @@ TextTaskComponent.propTypes = {
 //edit is the toggle for weather its editable or not
 function TextTaskComponent ({ serialize, jsonData, isEditing })  {
     const [areaApi, setAreaApi] = useState(null);//Used to provide fucntions to parent of MarkdownArea
-    const text = ""
+    const [text, setText] = useState("")
     // Load jsonData into local state on component creation
     useEffect(() => {
         if (jsonData) {
@@ -24,7 +24,7 @@ function TextTaskComponent ({ serialize, jsonData, isEditing })  {
             if (!("text" in parsed)) {
             throw new Error("Text field missing in unserialized data.");
             }
-            const text = jsonData.text
+            setText(jsonData.text)
         } catch (err) {
             console.error("Failed to load TextEditor:", err);
             // Kill component

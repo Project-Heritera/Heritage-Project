@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { get_room_data, get_test_room_for_viewer } from "../services/room";
+import {
+  get_room_data,
+  get_test_room_for_viewer,
+  get_task_progress_for_room,
+} from "../services/room";
 import { useErrorStore } from "../stores/ErrorStore";
 import { Debug } from "../utils/debugLog";
 import "../styles/pages/room_editor.css";
 import TaskViewer from "../components/TaskAndTaskComponents/TaskViewer";
+import statusTypes from "../utils/statusTypes";
 
 const RoomViewer = () => {
   const { course_id, section_id, room_id } = useParams();
@@ -63,14 +68,47 @@ const RoomViewer = () => {
           setRoomVisibility(room_data.visibility);
         }
 
+        // Load task progress data
+        let taskProgressData = [];
+        try {
+          taskProgressData = await get_task_progress_for_room(
+            course_id,
+            section_id,
+            room_id
+          );
+          Debug.log("Task progress data loaded:", taskProgressData);
+        } catch (progressErr) {
+          Debug.error("Failed to load task progress data:", progressErr);
+          // Continue without progress data if it fails
+        }
+
+        // Create a map of task_id to progress data for easy lookup
+        const progressMap = {};
+        if (Array.isArray(taskProgressData)) {
+          taskProgressData.forEach((progress) => {
+            progressMap[progress.task_id] = progress;
+          });
+        }
+
         //else set state to user_unavailable
         const tasks = Array.isArray(room_data.tasks) ? room_data.tasks : [];
-        const normalizedTasks = tasks.map((task) => ({
-          ...task,
-          task_components: Array.isArray(task.components)
-            ? task.components
-            : [],
-        }));
+        const normalizedTasks = tasks.map((task) => {
+          const progress = progressMap[task.task_id] || null;
+          return {
+            ...task,
+            task_components: Array.isArray(task.components)
+              ? task.components
+              : [],
+            // Add progress data to each task
+            progress: progress
+              ? {
+                  status: progress.status,
+                  attempts: progress.attempts,
+                  metadata: progress.metadata,
+                }
+              : null,
+          };
+        });
         setRoomTasks(normalizedTasks);
         setRoomData(room_data);
       } catch (err) {
@@ -82,7 +120,7 @@ const RoomViewer = () => {
       }
     };
     loadRoom();
-  }, []);
+  }, [course_id, section_id, room_id]);
   const serializeAllTasks = async () => {
     try {
       let taskProgressData = [];
@@ -122,18 +160,18 @@ const RoomViewer = () => {
     <div className="room-editor flex flex-col px-8 py-6 gap-6">
       <div className="room-editor-header space-y-2">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Viewer for Room: {roomTitle}</h1>
-            <p className="text-base">{roomDesc}</p>
-            <p className="text-sm italic">{roomCreator}</p>
-          </div>
-          <button
+           <button
             onClick={() => navigate(-1)}
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
             ← RETURN
           </button>
-        </div>
+          <div>
+            <h1 className="text-3xl font-bold">Viewer for Room: {roomTitle}</h1>
+            <p className="text-base">{roomDesc}</p>
+            <p className="text-sm italic">Created by: {roomCreator}</p>
+          </div>
+       </div>
       </div>
 
       <div className="room-editor-body">
@@ -149,9 +187,9 @@ const RoomViewer = () => {
                 initialComponents={
                   task.task_components || task.components || []
                 }
-                intialStatus={null}
-                initialAttempts={null}
-                initialMetadata={null}
+                intialStatus={task.progress?.status || null}
+                initialAttempts={task.progress?.attempts ?? 0}
+                initialMetadata={task.progress?.metadata || {}}
                 taskId={task.task_id}
               />
             </div>
@@ -164,15 +202,7 @@ const RoomViewer = () => {
         <p>Last Modified On {roomLastEdited}</p>
       </div>
 
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={onTaskSubmit}
-          className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-        >
-          Submit All Answers
-        </button>
-      </div>
-    </div>
+   </div>
   );
 };
 

@@ -8,8 +8,8 @@ const TaskViewer = forwardRef(
     {
       intialStatus,
       initialComponents = [],
-      initialAttempts,
-      initialMetadata,
+      initialAttempts = 1,
+      initialMetadata = {},
       taskId,
     },
     ref
@@ -19,9 +19,7 @@ const TaskViewer = forwardRef(
     //specifics for viewer
     const [attempts, setAttempts] = useState(initialAttempts);
     const [metadata, setMetadata] = useState(initialMetadata);
-    const [taskStatus, setTaskStatus] = useState(
-      intialStatus || statusTypes.NOSTAR
-    );
+    const [taskStatus, setTaskStatus] = useState(intialStatus);
     //influences component behavior if no question task component is present in task
     const [questionTaskPresent, setQuestionTaskPresent] = useState(false);
 
@@ -30,6 +28,7 @@ const TaskViewer = forwardRef(
       const hasQuestion = taskComponents.some(
         (tc) => taskComponentTypes[tc.type]?.category === "Question"
       );
+      console.log("does task have a question component", hasQuestion);
       setQuestionTaskPresent(hasQuestion);
     }, [taskComponents]);
 
