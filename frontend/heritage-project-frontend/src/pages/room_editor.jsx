@@ -1,12 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { CirclePlus, List, Save } from "lucide-react";
 import "../styles/pages/room_editor.css";
-import { DndContext } from "@dnd-kit/core";
-import Task from "../components/TaskAndTaskComponents/Task";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
-import { taskComponentTypes } from "../utils/taskComponentTypes";
-import TaskComponent from "../components/TaskAndTaskComponents/TaskComponent";
 import { useParams } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
 import { v4 as uuidv4 } from "uuid";
