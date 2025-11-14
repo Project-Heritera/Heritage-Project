@@ -22,7 +22,7 @@ const taskComponentTypes = Object.freeze({
     schema: z.object({ url: z.string(), alt: z.string() }),
     defaultValue: { url: "", alt: "" },
   },
-  MCQ: {
+  OPTION: {
     label: "Multiple Choice Question",
     component: MultipleChoiceComponent,
     category: "Question",
