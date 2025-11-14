@@ -4,8 +4,8 @@ import {
 } from "../../ui/card"
 function SummaryIcon({Icon, fill}) {
   return (
-    <Card className="w-1/8 aspect-square flex h-full items-center justify-center">
-            <Icon className="h-4/4 w-4/4"  fill={fill ? "currentColor" : "none"}/>
+    <Card className="h-12 w-12 flex items-center justify-center">
+            <Icon className="h-6 w-6 shrink-0"  fill={fill ? "currentColor" : "none"}/>
     </Card>
   )
 }

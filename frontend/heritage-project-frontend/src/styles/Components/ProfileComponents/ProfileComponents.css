@@ -11,7 +11,7 @@
 }
 
 .profileDescription {
-    @apply text-sm text-muted-foreground mt-2;
+    @apply text-sm text-muted-foreground mt-2 max-w-[80%];
 }
 
 .profileDescriptionDiv {

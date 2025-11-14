@@ -3,7 +3,7 @@ import {
 } from "../../ui/card"
 import SummaryText from "./SummaryText";
 import SummaryIcon from "./SummaryIcon";
-function ProfileSummary({Icon, title, value, fill}) {
+function Summary({Icon, title, value, fill}) {
   return (
     <div className="flex">
         <SummaryIcon Icon={Icon} fill={fill}></SummaryIcon>
@@ -12,4 +12,4 @@ function ProfileSummary({Icon, title, value, fill}) {
   )
 }
 
-export default ProfileSummary;
+export default Summary;
