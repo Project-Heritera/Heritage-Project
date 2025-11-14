@@ -11,13 +11,31 @@ from .serializers import RoomSerializer, CourseSerializer, SectionSerializer
 from .models import Course, Section, Room, VisibilityLevel
 
 
-# TODO: delete_section, delete_course, delete_room
+# TODO: get room progress, get user badges, update task progress
 # go to admins, click on spec instance, sample url contains id (all are 1)
 
 
 # -------------------------------
 # Course-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_course(request, course_id):
+    user = request.user
+
+    course = get_object_or_404(Course, id=course_id)
+
+    if not user_has_access(course, user):
+        raise PermissionDenied("You do not have permission to delete this course.")
+
+    course.delete()
+
+    return Response(
+        {"status": "success", "message": "Course deleted.", "course_id": course_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_courses(request):
@@ -40,6 +58,7 @@ def get_courses(request):
     )
 
     if not viewable_courses_qs.exists():
+        # permissiondenied also gives HTTP 403
         raise PermissionDenied("You do not have permission to view any courses.")
 
     serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
@@ -90,6 +109,24 @@ def create_course(request):
 # -------------------------------
 # Section-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_section(request, course_id, section_id):
+    user = request.user
+
+    section = get_object_or_404(Course, id=section_id)
+
+    if not user_has_access(section, user):
+        raise PermissionDenied("You do not have permission to delete this section.")
+
+    section.delete()
+
+    return Response(
+        {"status": "success", "message": "Section deleted.", "section_id": section_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_sections(request, course_id):
@@ -171,6 +208,24 @@ def create_section(request, course_id):
 # -------------------------------
 # Room-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_room(request, course_id, section_id, room_id):
+    user = request.user
+
+    room = get_object_or_404(Course, id=room_id)
+
+    if not user_has_access(room, user):
+        raise PermissionDenied("You do not have permission to delete this room.")
+
+    room.delete()
+
+    return Response(
+        {"status": "success", "message": "Room deleted.", "room_id": room_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_rooms(request, course_id, section_id):
