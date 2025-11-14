@@ -218,8 +218,17 @@ class Badge(models.Model):
     
     # override save() so it uses default badge image when saved
     def save(self, *args, **kwargs):
-        if not self.badge_id:
-            self.badge = Badge.objects.create(title=self.title, image=default_badge_image())
+        # Ensure the image has a default value if not provided.
+        # Previously this referenced a non-existent `badge_id` attribute
+        # which raised AttributeError when saving from the admin.
+        try:
+            has_image = bool(self.image)
+        except Exception:
+            has_image = False
+
+        if not has_image:
+            self.image = default_badge_image()
+
         super().save(*args, **kwargs)
 
 
