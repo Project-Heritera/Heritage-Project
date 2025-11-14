@@ -29,8 +29,8 @@ const RoomViewer = () => {
   useEffect(() => {
     const loadRoom = async () => {
       try {
-        const room_data = await get_test_room_for_viewer();
-        //const room_data = await get_room_data(course_id, section_id, room_id);
+        //const room_data = await get_test_room_for_viewer();
+        const room_data = await get_room_data(course_id, section_id, room_id);
         if (!room_data) {
           showError(
             "Unable to load data for room. You may not have permission to edit the room, the room may have already been created, or the room id may not exist",

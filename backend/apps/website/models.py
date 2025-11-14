@@ -319,6 +319,7 @@ class Room(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="rooms")
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="rooms")
     title = models.CharField(max_length=100)
+    can_edit = models.BooleanField(default=True)
     description = models.CharField(max_length=255)
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,

@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from .permissions import user_has_access # Keep this for get_can_edit/etc.
+from .permissions import user_has_access  # Keep this for get_can_edit/etc.
 from .models import (
     Badge,
     Room,
-    Course, 
+    Course,
     Section,
     Task,
     TaskComponent,
@@ -13,6 +13,7 @@ from .models import (
     VisibilityLevel,
     ProgressOfTask,
 )
+
 
 # -------------------------------
 # TaskComponent Serializer
@@ -23,7 +24,7 @@ class TaskComponentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaskComponent
-        fields = ["task_component_id", "type", "content"] # what is sent back
+        fields = ["task_component_id", "type", "content"]  # what is sent back
 
 
 # -------------------------------
@@ -32,11 +33,8 @@ class TaskComponentSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     task_id = serializers.IntegerField(source="id", read_only=True)
     components = TaskComponentSerializer(many=True, required=False)
-    tags = serializers.SlugRelatedField( # so it shows name field instead of its id
-        slug_field="name",
-        queryset=Tag.objects.all(),
-        many=True,
-        required=False
+    tags = serializers.SlugRelatedField(  # so it shows name field instead of its id
+        slug_field="name", queryset=Tag.objects.all(), many=True, required=False
     )
 
     class Meta:
@@ -50,7 +48,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
         task = Task.objects.create(**validated_data)
 
-        task.tags.set(tags_data) # go thru, add tags
+        task.tags.set(tags_data)  # go thru, add tags
 
         # go thru, add components
         for comp_data in components_data:
@@ -79,7 +77,6 @@ class RoomSerializer(serializers.ModelSerializer):
     course_id = serializers.PrimaryKeyRelatedField(source="course", read_only=True)
     section_id = serializers.PrimaryKeyRelatedField(source="section", read_only=True)
     room_id = serializers.IntegerField(source="id", read_only=True)
-    can_edit = serializers.SerializerMethodField()
     tasks = TaskSerializer(many=True, required=False)
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
@@ -89,20 +86,29 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = [
-            "course_id", "section_id", "room_id", "can_edit",
-            "title", "description", "metadata", "visibility", "is_published", 
-            "tasks", "creator", "created_on", "image", "badge", "can_edit"
+            "course_id",
+            "section_id",
+            "room_id",
+            "can_edit",
+            "title",
+            "description",
+            "metadata",
+            "visibility",
+            "is_published",
+            "tasks",
+            "creator",
+            "created_on",
+            "image",
+            "badge",
         ]
-        read_only_fields = ["course_id", "section_id", "room_id", "creator", "created_on"]
-
-    def get_can_edit(self, obj):
-        """
-        Whether the current user can edit this room. (Kept for output context)
-        """
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        # We keep this method because it's responsible for the read-only output field 'can_edit'
-        return user_has_access(obj, user, edit=True)
+        read_only_fields = [
+            "course_id",
+            "section_id",
+            "room_id",
+            "creator",
+            "created_on",
+            "can_edit",
+        ]
 
     def validate(self, attrs):
         """Ensure visibility consistency with parent course/section."""
@@ -115,9 +121,12 @@ class RoomSerializer(serializers.ModelSerializer):
         course_visibility = getattr(course, "visibility", None)
 
         if visibility == VisibilityLevel.PUBLIC:
-            if (section_visibility and section_visibility != VisibilityLevel.PUBLIC) or \
-            (course_visibility and course_visibility != VisibilityLevel.PUBLIC):
-                raise ValidationError("Public room cannot exist under a private section/course.")
+            if (
+                section_visibility and section_visibility != VisibilityLevel.PUBLIC
+            ) or (course_visibility and course_visibility != VisibilityLevel.PUBLIC):
+                raise ValidationError(
+                    "Public room cannot exist under a private section/course."
+                )
 
         return attrs
 
@@ -140,8 +149,8 @@ class RoomSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        instance.tasks.all().delete() # del everything
-        for task_data in tasks_data: # replace everything
+        instance.tasks.all().delete()  # del everything
+        for task_data in tasks_data:  # replace everything
             TaskSerializer(context=self.context).create({**task_data, "room": instance})
 
         return instance
@@ -152,7 +161,9 @@ class RoomSerializer(serializers.ModelSerializer):
 # -------------------------------
 class SectionSerializer(serializers.ModelSerializer):
     course_id = serializers.PrimaryKeyRelatedField(source="course", read_only=True)
-    section_id = serializers.IntegerField(source="id", read_only=True) # Changed from PK field for clarity
+    section_id = serializers.IntegerField(
+        source="id", read_only=True
+    )  # Changed from PK field for clarity
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
@@ -162,16 +173,24 @@ class SectionSerializer(serializers.ModelSerializer):
         model = Section
 
         fields = [
-            "course_id", "section_id", "title", "description", "metadata",
-            "visibility", "is_published", "creator", "created_on", 
-            "image", "badge",
+            "course_id",
+            "section_id",
+            "title",
+            "description",
+            "metadata",
+            "visibility",
+            "is_published",
+            "creator",
+            "created_on",
+            "image",
+            "badge",
         ]
         read_only_fields = ["course_id", "section_id", "creator", "created_on"]
 
     def validate(self, attrs):
         """Ensure visibility consistency with the parent course."""
         attrs = super().validate(attrs)
-        
+
         # Determine current/new visibility and parent course
         visibility = attrs.get("visibility", getattr(self.instance, "visibility", None))
         course = attrs.get("course", getattr(self.instance, "course", None))
@@ -182,10 +201,12 @@ class SectionSerializer(serializers.ModelSerializer):
         if visibility == VisibilityLevel.PUBLIC:
             # A public section cannot exist under a non-public course.
             if course_visibility and course_visibility != VisibilityLevel.PUBLIC:
-                raise ValidationError("Public section cannot exist under a private course.")
-  
+                raise ValidationError(
+                    "Public section cannot exist under a private course."
+                )
+
         return attrs
-    
+
     def create(self, validated_data):
         """Creates a new Section instance."""
         # NOTE: The parent 'course' field is usually passed in the view (as seen in create_section)
@@ -198,7 +219,7 @@ class SectionSerializer(serializers.ModelSerializer):
             badge_serializer.is_valid(raise_exception=True)
             badge = badge_serializer.save()
             section.badge = badge
-            section.save(update_fields=['badge'])
+            section.save(update_fields=["badge"])
 
         return section
 
@@ -210,7 +231,7 @@ class SectionSerializer(serializers.ModelSerializer):
         # Update main fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-       
+
         # Handle nested Badge update or creation
         if badge_data:
             if instance.badge:
@@ -232,7 +253,7 @@ class SectionSerializer(serializers.ModelSerializer):
 # -------------------------------
 class ProgressOfTaskSerializer(serializers.ModelSerializer):
     task_id = serializers.IntegerField(source="task.id", read_only=True)
-    
+
     class Meta:
         model = ProgressOfTask
         fields = ["task_id", "status", "attempts", "metadata"]
@@ -242,7 +263,9 @@ class ProgressOfTaskSerializer(serializers.ModelSerializer):
 # Course Serializer
 # -------------------------------
 class CourseSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(source="id", read_only=True) # Changed from PK field for clarity
+    course_id = serializers.IntegerField(
+        source="id", read_only=True
+    )  # Changed from PK field for clarity
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
@@ -252,14 +275,22 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
 
         fields = [
-            "course_id", "title", "description", "metadata", "visibility", 
-            "is_published", "creator", "created_on", "image", "badge",
+            "course_id",
+            "title",
+            "description",
+            "metadata",
+            "visibility",
+            "is_published",
+            "creator",
+            "created_on",
+            "image",
+            "badge",
         ]
         read_only_fields = ["course_id", "creator", "created_on"]
-    
+
     def validate(self, attrs):
         """No visibility or permission checks needed here."""
-        attrs = super().validate(attrs) 
+        attrs = super().validate(attrs)
         return attrs
 
     def create(self, validated_data):
@@ -273,8 +304,8 @@ class CourseSerializer(serializers.ModelSerializer):
             badge_serializer.is_valid(raise_exception=True)
             badge = badge_serializer.save()
             course.badge = badge
-            course.save(update_fields=['badge'])
-           
+            course.save(update_fields=["badge"])
+
         return course
 
     def update(self, instance, validated_data):
@@ -284,7 +315,7 @@ class CourseSerializer(serializers.ModelSerializer):
         # Update main fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-           
+
         # Handle nested Badge update or creation
         if badge_data:
             if instance.badge:
@@ -306,7 +337,7 @@ class CourseSerializer(serializers.ModelSerializer):
 # -------------------------------
 class ProgressOfTaskSerializer(serializers.ModelSerializer):
     task_id = serializers.IntegerField(source="task.id", read_only=True)
-    
+
     class Meta:
         model = ProgressOfTask
         fields = ["task_id", "status", "attempts", "metadata"]
