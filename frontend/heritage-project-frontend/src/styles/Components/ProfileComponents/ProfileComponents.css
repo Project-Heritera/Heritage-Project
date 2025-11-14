@@ -1,5 +1,5 @@
 .profileImageContainer {
-    @apply w-[30%];
+    @apply w-[20%];
 }
 
 .profileImage {
@@ -11,7 +11,7 @@
 }
 
 .profileDescription {
-    @apply text-sm text-muted-foreground mt-2;
+    @apply text-sm text-muted-foreground mt-2 max-w-3xl;
 }
 
 .profileDescriptionDiv {
