@@ -1,12 +1,14 @@
 import {
   CardContent,
 } from "../../ui/card"
+import SummaryText from "./SummaryText";
 import SummaryIcon from "./SummaryIcon";
-function ProfileSummary({Icon, title, value}) {
+function ProfileSummary({Icon, title, value, fill}) {
   return (
-    <CardContent>
-        <SummaryIcon Icon={Icon}></SummaryIcon>
-    </CardContent>
+    <div className="flex">
+        <SummaryIcon Icon={Icon} fill={fill}></SummaryIcon>
+        <SummaryText title={title} value={value}></SummaryText>
+    </div>
   )
 }
 

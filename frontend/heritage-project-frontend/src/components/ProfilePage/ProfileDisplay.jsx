@@ -6,9 +6,13 @@ import ProfileSummary from "./ProfileSummary/ProfileSummary";
 function ProfileDisplay() {
   return (
     <ProfileDiv>
-      <ProfileImage profileImage={"http://localhost:5173/testimage.jpg"}/>
-      <ProfileDescription name={"Harry Potter"} description={"Lorem ipsum llorem ipsum"}></ProfileDescription>
-      <ProfileSummary></ProfileSummary>
+      <div className="flex">
+        <ProfileImage profileImage={"http://localhost:5173/testimage.jpg"}/>
+        <div className="flex flex-col">
+          <ProfileDescription name={"Harry Potter"} description={"Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum"}></ProfileDescription>
+          <ProfileSummary></ProfileSummary>
+        </div>
+      </div>
     </ProfileDiv>
   )
 }
