@@ -1,0 +1,19 @@
+.profileImageContainer {
+    @apply w-[30%];
+}
+
+.profileImage {
+    @apply rounded-md object-cover w-full h-full;
+}
+
+.profileName {
+    @apply text-2xl font-bold text-primary;
+}
+
+.profileDescription {
+    @apply text-sm text-muted-foreground mt-2;
+}
+
+.profileDescriptionDiv {
+    @apply text-left mt-4
+}
