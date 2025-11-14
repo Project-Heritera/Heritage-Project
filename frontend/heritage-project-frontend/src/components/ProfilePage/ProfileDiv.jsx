@@ -10,7 +10,9 @@ import {
 function ProfileDiv({children}) {
   return (
     <Card>
-        {children}
+        <CardContent>
+          {children}
+        </CardContent>
     </Card>
   )
 }

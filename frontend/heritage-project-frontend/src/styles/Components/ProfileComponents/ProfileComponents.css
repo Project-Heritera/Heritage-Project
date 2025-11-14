@@ -11,9 +11,21 @@
 }
 
 .profileDescription {
-    @apply text-sm text-muted-foreground mt-2 max-w-[80%];
+    @apply text-sm text-muted-foreground mt-2;
 }
 
 .profileDescriptionDiv {
-    @apply text-left mt-4
+    @apply text-left
+}
+
+.summaryValue {
+    @apply text-2xl font-bold mb-0
+}
+
+.summaryTitle {
+    @apply text-sm text-gray-500 mb-0
+}
+
+.summaryDiv {
+    @apply text-left flex flex-col gap-0
 }
