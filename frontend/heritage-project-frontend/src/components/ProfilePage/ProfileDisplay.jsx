@@ -3,13 +3,13 @@ import ProfileImage from "./ProfileImage"
 import ProfileDescription from "./ProfileDescription";
 import ProfileSummary from "./ProfileSummary/ProfileSummary";
 
-function ProfileDisplay() {
+function ProfileDisplay({profImage, name, description}) {
   return (
     <ProfileDiv>
       <div className="profileDisplayDiv">
-        <ProfileImage profileImage={"http://localhost:5173/testimage.jpg"}/>
+        <ProfileImage profileImage={profImage}/>
         <div className="profileDisplayInfoDiv">
-          <ProfileDescription name={"Harry Potter"} description={"Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum"}></ProfileDescription>
+          <ProfileDescription name={name} description={description}></ProfileDescription>
           <ProfileSummary></ProfileSummary>
         </div>
       </div>
