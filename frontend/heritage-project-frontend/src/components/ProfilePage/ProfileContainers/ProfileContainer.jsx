@@ -29,8 +29,10 @@ function ProfileContainer({children, title, itemsPerRow}) {
             )}
         </div>
         {/* Display desired children */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-4`}>
+        <div className="flex justify-center">
+            <div className={`inline-grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-4`}>
             {viewableChildren}
+        </div>
         </div>
     </ProfileDiv>
   )
