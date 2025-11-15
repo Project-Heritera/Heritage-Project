@@ -6,9 +6,9 @@ import ProfileSummary from "./ProfileSummary/ProfileSummary";
 function ProfileDisplay() {
   return (
     <ProfileDiv>
-      <div className="flex gap-x-8 items-center">
+      <div className="profileDisplayDiv">
         <ProfileImage profileImage={"http://localhost:5173/testimage.jpg"}/>
-        <div className="flex flex-col gap-y-12">
+        <div className="profileDisplayInfoDiv">
           <ProfileDescription name={"Harry Potter"} description={"Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum"}></ProfileDescription>
           <ProfileSummary></ProfileSummary>
         </div>

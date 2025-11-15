@@ -26,6 +26,30 @@
     @apply text-sm text-gray-500 mb-0
 }
 
-.summaryDiv {
+.summaryTextDiv {
     @apply text-left flex flex-col gap-0
+}
+
+.summaryDiv {
+    @apply flex items-center
+}
+
+.profileSummaryDiv {
+    @apply flex justify-between
+}
+
+.summaryIconCard {
+    @apply h-12 w-12 flex items-center justify-center
+}
+
+.summaryIcon {
+    @apply h-6 w-6 shrink-0
+}
+
+.profileDisplayDiv {
+    @apply flex gap-x-8 items-center
+}
+
+.profileDisplayInfoDiv {
+    @apply flex flex-col gap-y-12
 }
