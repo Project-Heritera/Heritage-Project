@@ -1,0 +1,63 @@
+/* CourseCard.css */
+
+.course-card-link {
+  text-decoration: none;
+  display: block;
+}
+
+.course-container {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.course-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Progress Badge - Top Left */
+.course-progress-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: #023B4E;
+  background-color: #EDEDED;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: "Zalando Sans Expanded", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+/* Title Badge - Bottom Center */
+.course-title-badge {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background-color: rgba(109, 187, 213, 0.45); /* #6DBBD5 at 45% opacity */
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-family: "Zalando Sans Expanded", sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  z-index: 10;
+  max-width: 90%;
+  word-wrap: break-word;
+}
+

@@ -240,6 +240,16 @@ class Badge(models.Model):
         super().save(*args, **kwargs)
 
 
+# relation between user and badge; "user X has badge Y"
+class UserBadge(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    awarded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s {self.badge}"
+
+
 class Course(models.Model):
     badge = models.OneToOneField(
         Badge, on_delete=models.SET_NULL, null=True, blank=True, related_name="course"

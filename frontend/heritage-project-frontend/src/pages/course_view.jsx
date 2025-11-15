@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { List } from "lucide-react";
 import "../styles/pages/course_view.css";
+import CourseCard from "../components/CourseViewer/CourseCard";
 
 const CourseView = () => {
   // Function to handle sign in
@@ -37,90 +38,42 @@ const CourseView = () => {
             </div>
           </div>
           <div className="course-view-body-body grid grid-cols-3 gap-4">
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_1.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  Creole | Kouri-Vini Language
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_2.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  Standard Hawaiian Language
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_3.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  Lantern Building
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_4.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  Ancestry Tree Cutout
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_5.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  Lost Icons | Louisiana
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
-            <div className="course-container">
-              <div className="course-image">
-                <img src="./src/assets/course_image_placeholder_6.png" />
-              </div>
-              <div className="course-title">
-                <a href="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53">
-                  History of Recycling
-                </a>
-              </div>
-              <div className="course-progress-bar flex flex-row">
-                <p>30%</p>
-                <progress value={0.3} />
-              </div>
-            </div>
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="Creole | Kouri-Vini Language"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_1.png"
+            />
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="Standard Hawaiian Language"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_2.png"
+            />
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="Lantern Building"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_3.png"
+            />
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="Ancestry Tree Cutout"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_4.png"
+            />
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="Lost Icons | Louisiana"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_5.png"
+            />
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="History of Recycling"
+              progress={0.3}
+              imageLink="./src/assets/course_image_placeholder_6.png"
+            />
           </div>
         </div>
       </div>

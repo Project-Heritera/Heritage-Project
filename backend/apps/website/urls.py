@@ -3,31 +3,26 @@ from . import views
 
 urlpatterns = [
     # course apis
-    path("courses/create_course", views.create_course),
+    path("courses/create_course/", views.create_course),
     path("courses/", views.get_courses),
+    path("courses/<int:course_id>/progress/", views.get_course_progress),
+    path("courses/<int:course_id>/delete/", views.delete_course),
     # section apis
-    path("courses/<int:course_id>/create_section", views.create_room),
+    path("courses/<int:course_id>/create_section/", views.create_section),
     path("courses/<int:course_id>/sections/", views.get_sections),
+    path("sections/<int:section_id>/progress/", views.get_section_progress),
+    path("sections/<int:section_id>/delete/", views.delete_section),
     # room apis
-    path(
-        "courses/<int:course_id>/sections/<int:section_id>/create_room/",
-        views.create_room,
-    ),
-    path("courses/<int:course_id>/sections/<int:section_id>/rooms/", views.get_rooms),
-    path(
-        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/",
-        views.get_room,
-    ),
-    path(
-        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/save/",
-        views.save_room,
-    ),
-    path(
-        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/publish/",
-        views.publish_room,
-    ),
-    path(
-        "courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/task_progress/",
-        views.get_task_progress_for_room,
-    ),
+    path("courses/<int:course_id>/sections/<int:section_id>/create_room/", views.create_room),
+    path("sections/<int:section_id>/rooms/", views.get_rooms),
+    path("rooms/<int:room_id>/progress/", views.get_room_progress),
+    path("rooms/<int:room_id>/delete/", views.delete_room),
+    path("rooms/<int:room_id>/", views.get_room),
+    path("rooms/<int:room_id>/save/", views.save_room),
+    path("rooms/<int:room_id>/publish/", views.publish_room),
+    # task prog api
+    path("tasks/<int:task_id>/update_progress/", views.update_task_progress),
+    # user badges api
+    path("badges/", views.get_badges),
+    path("badges/<int:badge_id>/award_badge/", views.award_badge),
 ]
