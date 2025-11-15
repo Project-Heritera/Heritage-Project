@@ -7,17 +7,168 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from .permissions import user_has_access
-from .serializers import RoomSerializer, CourseSerializer, SectionSerializer
-from .models import Course, Section, Room, VisibilityLevel
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 
-# TODO: delete_section, delete_course, delete_room
-# go to admins, click on spec instance, sample url contains id (all are 1)
+# -------------------------------
+# Task-related API calls
+# -------------------------------
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_task_progress(request, task_id):
+    """
+    update_task_progress: Updates or creates a user's progress for a specific task.
+
+    @param request:
+        HTTP request containing "status", "attempts", and optional "metadata".
+        Expected JSON body:
+        {
+            "status": "COMPLE",
+            "attempts": 2,
+            "metadata": {
+                "struggling_with": "time complexity"
+            }
+        }
+    @param task_id:
+        The ID of the Task whose progress is being updated.
+    @return:
+        * HTTP 200: Progress successfully updated or created.
+        * HTTP 400: If serializer validation fails.
+        * HTTP 404: If the task does not exist.
+    @note:
+        - If a ProgressOfTask entry does not exist for (user, task), a new one will be created.
+        - Only the authenticated user's progress is modified.
+        - !!! Make sure you use "COMPLE", "NOSTAR", or "INCOMP" for "status", otherwise it will have a HTTP 400
+    """
+    user = request.user
+    task = get_object_or_404(Task, id=task_id)
+
+    # Get or create progress record for this user & task
+    # If already created, this will not replace missing fields
+    # i.e. if you only give status, attempts/metadata will stay the same
+    progress, created = ProgressOfTask.objects.get_or_create(
+        user=user,
+        task=task,
+        defaults={"status": Status.NOSTAR, "attempts": 0}
+    )
+
+    # Feed existing instance + incoming update data into serializer
+    serializer = ProgressOfTaskSerializer(progress, data=request.data, partial=True)
+
+    # Validate incoming data
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Save the update
+    serializer.save()
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Badge-related API calls
+# -------------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def award_badge(request, badge_id):
+    """
+    award_badge: Awards a badge to the user.
+
+    @param request: HTTP request object.
+    @param badge_id: ID of the badge being awarded.
+    @return:
+        * HTTP 201: Badge awarded.
+        * HTTP 200: Badge already awarded.
+    """
+    user = request.user
+    badge = get_object_or_404(Badge, id=badge_id)
+
+    # Check if user already has this badge
+    user_badge, created = UserBadge.objects.get_or_create(
+        user=user,
+        badge=badge
+    )
+
+    # Response body
+    data = {
+        "badge_id": badge.id,
+        "title": badge.title,
+        "image": request.build_absolute_uri(badge.image.url),
+        "awarded_at": user_badge.awarded_at,
+        "status": "created" if created else "already_awarded",
+    }
+
+    # If created = True → new badge awarded
+    # If created = False → badge already existed
+    return Response(
+        data,
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_badges(request):
+    """
+    get_badges: Gets all of the badges that the user has.
+
+    @param request: HTTP request object.
+    @return:
+        * HTTP 200: Got all the badges.
+        * HTTP 204: User has no badges.
+    """
+    user = request.user
+
+    user_badges = UserBadge.objects.filter(user=user).select_related("badge")
+
+    # If the user has no badges → return 204 No Content
+    if not user_badges.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    data = [
+        {
+            "badge_id": ub.badge.id,
+            "title": ub.badge.title,
+            "image": request.build_absolute_uri(ub.badge.image.url),
+            "awarded_at": ub.awarded_at
+        }
+        for ub in user_badges
+    ]
+
+    return Response(data, status=status.HTTP_200_OK)
 
 
 # -------------------------------
 # Course-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_course(request, course_id):
+    """
+    delete_course: Deletes a course.
+
+    @param request: HTTP request object.
+    @param course_id: ID of the course.
+    @return:
+        * HTTP 204: Course was successfully deleted.
+        * HTTP 403: If the user cannot edit the course.
+    """
+    user = request.user
+
+    course = get_object_or_404(Course, id=course_id)
+
+    if not user_has_access(course, user):
+        raise PermissionDenied("You do not have permission to delete this course.")
+
+    course.delete()
+
+    return Response(
+        {"status": "success", "message": "Course deleted.", "course_id": course_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_courses(request):
@@ -40,6 +191,7 @@ def get_courses(request):
     )
 
     if not viewable_courses_qs.exists():
+        # permissiondenied also gives HTTP 403
         raise PermissionDenied("You do not have permission to view any courses.")
 
     serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
@@ -87,9 +239,75 @@ def create_course(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_course_progress(request, course_id):
+    """
+    get_course_progress: Get the total progress of the course as a percentage.
+
+    @param request: HTTP request object.
+    @param course_id: ID of the course.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Course.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific course
+    course_qs = qs.filter(id=course_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    course = course_qs.first()
+    if not course:
+        return Response(
+            {"detail": "Course not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "course_id": course.id,
+        "title": course.title,
+        "progress_percent": round(course.progress_percent or 0, 2),
+        "completed_tasks": course.completed_tasks,
+        "total_tasks": course.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 # -------------------------------
 # Section-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_section(request, section_id):
+    """
+    delete_section: Deletes a section.
+
+    @param request: HTTP request object.
+    @param section_id: ID of the section.
+    @return:
+        * HTTP 204: Section was successfully deleted.
+        * HTTP 403: If the user cannot edit the section.
+    """
+    user = request.user
+
+    section = get_object_or_404(Section, id=section_id)
+
+    if not user_has_access(section, user):
+        raise PermissionDenied("You do not have permission to delete this section.")
+
+    section.delete()
+
+    return Response(
+        {"status": "success", "message": "Section deleted.", "section_id": section_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_sections(request, course_id):
@@ -168,12 +386,78 @@ def create_section(request, course_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_section_progress(request, section_id):
+    """
+    get_section_progress: Get the total progress of the section as a percentage.
+
+    @param request: HTTP request object.
+    @param section_id: ID of the section.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Section.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific section
+    section_qs = qs.filter(id=section_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    section = section_qs.first()
+    if not section:
+        return Response(
+            {"detail": "Section not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "section_id": section.id,
+        "title": section.title,
+        "progress_percent": round(section.progress_percent or 0, 2),
+        "completed_tasks": section.completed_tasks,
+        "total_tasks": section.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 # -------------------------------
 # Room-related API calls
 # -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_room(request, room_id):
+    """
+    delete_room: Deletes a room.
+
+    @param request: HTTP request object.
+    @param room_id: ID of the room.
+    @return:
+        * HTTP 204: Room was successfully deleted.
+        * HTTP 403: If the user cannot edit the room.
+    """
+    user = request.user
+
+    room = get_object_or_404(Room, id=room_id)
+
+    if not user_has_access(room, user):
+        raise PermissionDenied("You do not have permission to delete this room.")
+
+    room.delete()
+
+    return Response(
+        {"status": "success", "message": "Room deleted.", "room_id": room_id},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_rooms(request, course_id, section_id):
+def get_rooms(request, section_id):
     """
     get_rooms: Retrieves all rooms for a given course and section that the user can view.
 
@@ -188,11 +472,11 @@ def get_rooms(request, course_id, section_id):
         Queryset is filtered by user access and annotated with progress data.
     """
     user = request.user
-    get_object_or_404(Section, id=section_id, course_id=course_id)
+    get_object_or_404(Section, id=section_id)
 
     viewable_rooms_qs = (
         Room.objects
-            .filter(course_id=course_id, section_id=section_id)
+            .filter(section_id=section_id)
             .filter_by_user_access(user)
             .user_progress_percent(user)
     )
@@ -226,7 +510,7 @@ def create_room(request, course_id, section_id):
         }
     """
     course = get_object_or_404(Course, id=course_id)
-    section = get_object_or_404(Section, id=section_id, course=course)
+    section = get_object_or_404(Section, id=section_id)
 
     data = {
         "title": request.data.get("title", ""),
@@ -253,15 +537,52 @@ def create_room(request, course_id, section_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_room_progress(request, room_id):
+    """
+    get_room_progress: Get the total progress of the room as a percentage.
+
+    @param request: HTTP request object.
+    @param room_id: ID of the room.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Room.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific room
+    room_qs = qs.filter(id=room_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    room = room_qs.first()
+    if not room:
+        return Response(
+            {"detail": "Room not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "room_id": room.id,
+        "title": room.title,
+        "progress_percent": round(room.progress_percent or 0, 2),
+        "completed_tasks": room.completed_tasks,
+        "total_tasks": room.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_room(request, course_id, section_id, room_id):
+def get_room(request, room_id):
     """
     get_room: Retrieves details for a specific room.
 
     @param request: HTTP request object.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
     @param room_id: ID of the room.
     @return:
         * HTTP 200: Serialized room data.
@@ -270,7 +591,7 @@ def get_room(request, course_id, section_id, room_id):
     @note:
         Checks hierarchical user access before returning data.
     """
-    room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
+    room = get_object_or_404(Room, id=room_id)
 
     if not user_has_access(room, request.user, edit=False):
         raise PermissionDenied("You do not have permission to view this room.")
@@ -282,20 +603,18 @@ def get_room(request, course_id, section_id, room_id):
 # -------------------------------
 # Helper for save/publish logic
 # -------------------------------
-def _save_room_logic(request, course_id, section_id, room_id):
+def _save_room_logic(request, room_id):
     """
     _save_room_logic: Internal helper to validate and save a room (and nested entities).
 
     @param request: HTTP request object containing full room JSON.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
     @param room_id: ID of the room being updated.
     @return:
         Tuple of (room, None) on success or (None, serializer_errors) on failure.
     @note:
         All operations occur within an atomic transaction to ensure consistency.
     """
-    room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
+    room = get_object_or_404(Room, id=room_id)
     serializer = RoomSerializer(room, data=request.data, context={"request": request})
 
     if serializer.is_valid():
@@ -306,13 +625,11 @@ def _save_room_logic(request, course_id, section_id, room_id):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def save_room(request, course_id, section_id, room_id):
+def save_room(request, room_id):
     """
     save_room: Overwrites an existing room (and its nested components) with new data.
 
     @param request: HTTP request containing the full updated room JSON.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
     @param room_id: ID of the room being updated.
     @return:
         * HTTP 200: On successful save.
@@ -320,7 +637,7 @@ def save_room(request, course_id, section_id, room_id):
     @note:
         Validation and save are atomic. Removed components are cascade-deleted.
     """
-    room, errors = _save_room_logic(request, course_id, section_id, room_id)
+    room, errors = _save_room_logic(request, room_id)
 
     if errors:
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -337,13 +654,11 @@ def save_room(request, course_id, section_id, room_id):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def publish_room(request, course_id, section_id, room_id):
+def publish_room(request, room_id):
     """
     publish_room: Validates and publishes a room, making it publicly visible.
 
     @param request: HTTP request containing room data for validation and publishing.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
     @param room_id: ID of the room being published.
     @return:
         * HTTP 200: If published successfully.
@@ -351,7 +666,7 @@ def publish_room(request, course_id, section_id, room_id):
     @note:
         A room must contain at least one task before publishing. Visibility is set to PUBLIC.
     """
-    room, errors = _save_room_logic(request, course_id, section_id, room_id)
+    room, errors = _save_room_logic(request, room_id)
     if errors:
         return Response(
             {"status": "error", "errors": errors, "published": False},
