@@ -19,8 +19,8 @@ function ProfileContainer({children, title, itemsPerRow}) {
   return (
     <ProfileDiv>
         {/* Display the view all button and Title*/}
-        <div className='flex justify-between'>
-            <h2 className='text-lg font-bold'>{title}</h2>
+        <div className='profileContainerDiv'>
+            <h2 className='profileContainerTitle'>{title}</h2>
             {/* Only display view all if we have an overflow */}
             {overflow && (
                 <Button variant="link" onClick={() => setIsOpen(!isOpen)}>
@@ -29,7 +29,7 @@ function ProfileContainer({children, title, itemsPerRow}) {
             )}
         </div>
         {/* Display desired children */}
-        <div className="flex justify-center">
+        <div className="profileContainerChildrenDiv">
             <div className={`inline-grid grid-cols-1 ${gridColsClass} gap-4`}>
             {viewableChildren}
         </div>

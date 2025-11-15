@@ -1,4 +1,5 @@
 @import "./styles/Components/ProfileComponents/ProfileComponents.css";
+@import "./styles/Components/Common/Badge.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 

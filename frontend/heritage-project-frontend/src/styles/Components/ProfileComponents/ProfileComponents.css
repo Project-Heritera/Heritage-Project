@@ -53,3 +53,15 @@
 .profileDisplayInfoDiv {
     @apply flex flex-col gap-y-12
 }
+
+.profileContainerDiv {
+    @apply flex justify-between
+}
+
+.profileContainerTitle {
+    @apply text-lg font-bold
+}
+
+.profileContainerChildrenDiv {
+    @apply flex justify-center
+}

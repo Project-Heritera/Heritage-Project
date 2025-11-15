@@ -3,8 +3,8 @@ import BadgeImage from "./BadgeImage";
 
 function Badge({image, title}) {
   return (
-    <Card className="h-90 w-80">
-        <CardContent className="flex-col">
+    <Card>
+        <CardContent className="badgeContent">
             {/* Display the Image */}
             <BadgeImage badgeImage={image}></BadgeImage>
             <CardTitle>Creole Completed</CardTitle>
