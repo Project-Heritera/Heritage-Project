@@ -14,6 +14,7 @@ admin.site.register(SavedTask)
 admin.site.register(Dictionary)
 admin.site.register(DictionaryEntry)
 admin.site.register(Badge)
+admin.site.register(UserBadge)
 
 class TaskComponentInline(nested_admin.NestedTabularInline):
     model = TaskComponent
