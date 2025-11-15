@@ -223,6 +223,7 @@ class Badge(models.Model):
         super().save(*args, **kwargs)
 
 
+# relation between user and badge; "user X has badge Y"
 class UserBadge(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
@@ -478,7 +479,7 @@ class ProgressOfTask(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
-        return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.task.room.title else 'No Room'} ({self.status})"
+        return f"{self.user.username if self.user else 'Unknown'} → {self.task.room.title if self.task.room.title else 'No Room'} ({self.status})"
 
 
 class SavedTask(models.Model):

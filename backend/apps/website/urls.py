@@ -21,7 +21,8 @@ urlpatterns = [
     path("rooms/<int:room_id>/save/", views.save_room),
     path("rooms/<int:room_id>/publish/", views.publish_room),
     # task prog api
-    path("tasks/<int:task_id>/", views.update_task_progress),
+    path("tasks/<int:task_id>/update_progress/", views.update_task_progress),
     # user badges api
     path("badges/", views.get_badges),
+    path("badges/<int:badge_id>/award_badge/", views.award_badge),
 ]

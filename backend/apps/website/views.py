@@ -7,72 +7,106 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from .permissions import user_has_access
-from .serializers import RoomSerializer, CourseSerializer, SectionSerializer
-from .models import Course, Section, Room, UserBadge, VisibilityLevel
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 
-# TODO: get user badges, update task progress, get course/section/room progress
-# go to admins, click on spec instance, sample url contains id (all are 1)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_course_progress(request, course_id):
-    """
-    get_course_progress: Get the total progress of the course as a percentage.
-
-    @param request: HTTP request object.
-    @param course_id: ID of the course.
-    @return:
-        * HTTP 200: Got the progress (will return this even if the progress is 0%).
-    """
-    user = request.user
-
-    # Use your custom QuerySet filter
-    qs = Course.objects.filter_by_user_access(user)
-    
-    # Annotate progress for this specific course
-    course_qs = qs.filter(id=course_id).user_progress_percent(user)
-
-    # If the user doesn't have access → 404
-    course = course_qs.first()
-    if not course:
-        return Response(
-            {"detail": "Course not found or access denied."},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    # Build response
-    data = {
-        "course_id": course.id,
-        "title": course.title,
-        "progress_percent": round(course.progress_percent or 0, 2),
-        "completed_tasks": course.completed_tasks,
-        "total_tasks": course.total_tasks,
-    }
-
-    return Response(data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_section_progress(request, section_id):
-    return 0
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_room_progress(request, room_id):
-    return 0
-
-api_view(['PUT'])
+# -------------------------------
+# Task-related API calls
+# -------------------------------
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_task_progress(request, task_id):
-    return 0
+    """
+    update_task_progress: Updates or creates a user's progress for a specific task.
 
-# ! EVERYTHING BELOW IS DONE ALREADY, ABOVE STILL NEEDS WORK
+    @param request:
+        HTTP request containing "status", "attempts", and optional "metadata".
+        Expected JSON body:
+        {
+            "status": "COMPLE",
+            "attempts": 2,
+            "metadata": {
+                "struggling_with": "time complexity"
+            }
+        }
+    @param task_id:
+        The ID of the Task whose progress is being updated.
+    @return:
+        * HTTP 200: Progress successfully updated or created.
+        * HTTP 400: If serializer validation fails.
+        * HTTP 404: If the task does not exist.
+    @note:
+        - If a ProgressOfTask entry does not exist for (user, task), a new one will be created.
+        - Only the authenticated user's progress is modified.
+        - !!! Make sure you use "COMPLE", "NOSTAR", or "INCOMP" for "status", otherwise it will have a HTTP 400
+    """
+    user = request.user
+    task = get_object_or_404(Task, id=task_id)
+
+    # Get or create progress record for this user & task
+    # If already created, this will not replace missing fields
+    # i.e. if you only give status, attempts/metadata will stay the same
+    progress, created = ProgressOfTask.objects.get_or_create(
+        user=user,
+        task=task,
+        defaults={"status": Status.NOSTAR, "attempts": 0}
+    )
+
+    # Feed existing instance + incoming update data into serializer
+    serializer = ProgressOfTaskSerializer(progress, data=request.data, partial=True)
+
+    # Validate incoming data
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Save the update
+    serializer.save()
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # -------------------------------
 # Badge-related API calls
 # -------------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def award_badge(request, badge_id):
+    """
+    award_badge: Awards a badge to the user.
+
+    @param request: HTTP request object.
+    @param badge_id: ID of the badge being awarded.
+    @return:
+        * HTTP 201: Badge awarded.
+        * HTTP 200: Badge already awarded.
+    """
+    user = request.user
+    badge = get_object_or_404(Badge, id=badge_id)
+
+    # Check if user already has this badge
+    user_badge, created = UserBadge.objects.get_or_create(
+        user=user,
+        badge=badge
+    )
+
+    # Response body
+    data = {
+        "badge_id": badge.id,
+        "title": badge.title,
+        "image": request.build_absolute_uri(badge.image.url),
+        "awarded_at": user_badge.awarded_at,
+        "status": "created" if created else "already_awarded",
+    }
+
+    # If created = True → new badge awarded
+    # If created = False → badge already existed
+    return Response(
+        data,
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_badges(request):
@@ -205,6 +239,45 @@ def create_course(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_course_progress(request, course_id):
+    """
+    get_course_progress: Get the total progress of the course as a percentage.
+
+    @param request: HTTP request object.
+    @param course_id: ID of the course.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Course.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific course
+    course_qs = qs.filter(id=course_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    course = course_qs.first()
+    if not course:
+        return Response(
+            {"detail": "Course not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "course_id": course.id,
+        "title": course.title,
+        "progress_percent": round(course.progress_percent or 0, 2),
+        "completed_tasks": course.completed_tasks,
+        "total_tasks": course.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 # -------------------------------
 # Section-related API calls
 # -------------------------------
@@ -311,6 +384,45 @@ def create_section(request, course_id):
             status=status.HTTP_201_CREATED,
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_section_progress(request, section_id):
+    """
+    get_section_progress: Get the total progress of the section as a percentage.
+
+    @param request: HTTP request object.
+    @param section_id: ID of the section.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Section.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific section
+    section_qs = qs.filter(id=section_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    section = section_qs.first()
+    if not section:
+        return Response(
+            {"detail": "Section not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "section_id": section.id,
+        "title": section.title,
+        "progress_percent": round(section.progress_percent or 0, 2),
+        "completed_tasks": section.completed_tasks,
+        "total_tasks": section.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 
 # -------------------------------
@@ -423,6 +535,45 @@ def create_room(request, course_id, section_id):
             status=status.HTTP_201_CREATED,
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_room_progress(request, room_id):
+    """
+    get_room_progress: Get the total progress of the room as a percentage.
+
+    @param request: HTTP request object.
+    @param room_id: ID of the room.
+    @return:
+        * HTTP 200: Got the progress (will return this even if the progress is 0%).
+    """
+    user = request.user
+
+    # Use your custom QuerySet filter
+    qs = Room.objects.filter_by_user_access(user)
+    
+    # Annotate progress for this specific room
+    room_qs = qs.filter(id=room_id).user_progress_percent(user)
+
+    # If the user doesn't have access → 404
+    room = room_qs.first()
+    if not room:
+        return Response(
+            {"detail": "Room not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Build response
+    data = {
+        "room_id": room.id,
+        "title": room.title,
+        "progress_percent": round(room.progress_percent or 0, 2),
+        "completed_tasks": room.completed_tasks,
+        "total_tasks": room.total_tasks,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

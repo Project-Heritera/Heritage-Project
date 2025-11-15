@@ -4,9 +4,11 @@ from django.db import transaction
 from .permissions import user_has_access # Keep this for get_can_edit/etc.
 from .models import (
     Badge,
+    ProgressOfTask,
     Room,
     Course, 
     Section,
+    Status,
     Task,
     TaskComponent,
     Tag,
@@ -69,6 +71,35 @@ class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
         fields = ["badge_id", "image", "title"]
+
+
+# -------------------------------
+# ProgressOfTask Serializer
+# -------------------------------
+class ProgressOfTaskSerializer(serializers.ModelSerializer):
+    progress_id = serializers.IntegerField(source="id", read_only=True)
+    task_id = serializers.IntegerField(source="task.id", read_only=True)
+    task_title = serializers.CharField(source="task.title", read_only=True)
+    room_title = serializers.CharField(source="task.room.title", read_only=True)
+
+    status = serializers.ChoiceField(choices=Status.choices)
+    attempts = serializers.IntegerField()
+    metadata = serializers.JSONField()
+
+    class Meta:
+        model = ProgressOfTask
+        fields = [
+            "progress_id",
+            "user",
+            "task_id",
+            "task_title",
+            "room_title",
+            # the below three are the only that will change
+            "status",
+            "attempts",
+            "metadata",
+        ]
+        read_only_fields = ["progress_id", "task_id", "task_title", "room_title"]
 
 
 # -------------------------------

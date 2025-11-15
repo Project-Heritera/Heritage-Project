@@ -4,15 +4,16 @@ import api from "./api";
 export async function test_api() {
 	try {
         const test_input = {
-            "title": "AI course 1",
-            "description": "A beginner-level course."
+            "status": "NOSTAR",
+            "attempts": 0,
+            "metadata": {
+                "struggling_with": "time complexity"
+            }
         }
-        let course_id = 1
-        let section_id = 1
-		const response = await api.get(`website/courses/2/progress/`); //enter url here
+		const response = await api.put(`website/tasks/1/update_progress/`, test_input); //enter url here
         console.log("response from call:", response)
 		return response.data
-	} 
+	}   
 	catch (error) {
 		throw(error);
 	}
