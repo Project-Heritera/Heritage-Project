@@ -2,6 +2,7 @@ import ProfileDiv from "./ProfileDiv";
 import ProfileImage from "./ProfileImage"
 import ProfileDescription from "./ProfileDescription";
 import ProfileSummary from "./ProfileSummary/ProfileSummary";
+import ProfileDropDown from "./ProfileDropdown"
 
 function ProfileDisplay({profImage, name, description}) {
   return (
@@ -11,6 +12,9 @@ function ProfileDisplay({profImage, name, description}) {
         <div className="profileDisplayInfoDiv">
           <ProfileDescription name={name} description={description}></ProfileDescription>
           <ProfileSummary></ProfileSummary>
+        </div>
+        <div className="self-start">
+          <ProfileDropDown/>
         </div>
       </div>
     </ProfileDiv>
