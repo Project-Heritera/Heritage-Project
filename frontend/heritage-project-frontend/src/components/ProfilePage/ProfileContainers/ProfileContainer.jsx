@@ -3,7 +3,7 @@ import ProfileDiv from '../ProfileDiv'
 import { Button } from '@/components/ui/button'
 
 function ProfileContainer({children, title, itemsPerRow}) {
-    const gridColsClass = `lg:grid-cols-${itemsPerRow}`
+    const gridColsClass = `md:grid-cols-${itemsPerRow}`
 
     //make state for view all button
     const [isOpen, setIsOpen] = useState(false)
@@ -30,7 +30,7 @@ function ProfileContainer({children, title, itemsPerRow}) {
         </div>
         {/* Display desired children */}
         <div className="flex justify-center">
-            <div className={`inline-grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-4`}>
+            <div className={`inline-grid grid-cols-1 ${gridColsClass} gap-4`}>
             {viewableChildren}
         </div>
         </div>

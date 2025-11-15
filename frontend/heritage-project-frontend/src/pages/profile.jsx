@@ -4,7 +4,7 @@ import BadgeContainer from "@/components/ProfilePage/ProfileContainers/BadgeCont
 
 function Profile() {
   return (
-    <div>
+    <div className="flex flex-col gap-6 p-6">
       <ProfileDisplay profImage={"http://localhost:5173/testimage.jpg"} name={"Harry Potter"} description={"Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum"}/>
       <BadgeContainer/>
     </div>
