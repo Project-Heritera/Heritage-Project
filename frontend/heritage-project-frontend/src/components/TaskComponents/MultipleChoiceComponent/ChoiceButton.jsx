@@ -1,7 +1,17 @@
 import React from "react";
 
 //Component used to render the choice button for the reading side of the component
-const ChoiceButton = ({ choiceId, text, isCorrect, selected, onClick }) => {
+const ChoiceButton = ({ choiceId, text, selected, onClick, revealedCorrect, revealedIncorrect }) => {
+  // revealedCorrect / revealedIncorrect expected as Sets containing numeric ids
+  const idStr = String(choiceId);
+  const isRevealedCorrect = revealedCorrect && revealedCorrect.has && revealedCorrect.has(idStr);
+  const isRevealedIncorrect = revealedIncorrect && revealedIncorrect.has && revealedIncorrect.has(idStr);
+
+  let borderColor = "transparent";
+  if (isRevealedCorrect) borderColor = "#16a34a"; // green
+  else if (isRevealedIncorrect) borderColor = "#dc2626"; // red
+  else if (selected) borderColor = "#2563eb"; // blue for current selection
+
   return (
     <button
       onClick={onClick}
@@ -9,7 +19,7 @@ const ChoiceButton = ({ choiceId, text, isCorrect, selected, onClick }) => {
       style={{
         backgroundColor: selected ? "#3b82f6" : "#f3f4f6",
         color: selected ? "white" : "black",
-        border: selected ? "2px solid #2563eb" : "2px solid transparent",
+        border: `2px solid ${borderColor}`,
         padding: "0.5rem 1rem",
         borderRadius: "0.5rem",
         cursor: "pointer",

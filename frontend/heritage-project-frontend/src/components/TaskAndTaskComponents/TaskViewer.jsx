@@ -2,6 +2,7 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
 import statusTypes from "../../utils/statusTypes";
+import "../../styles/Components/TaskViewer.css";
 
 const TaskViewer = forwardRef(
   (
@@ -51,35 +52,44 @@ const TaskViewer = forwardRef(
 
     // Render different content based on taskStatus
     const renderContent = () => {
+      // Always render the task base
+      const taskBaseComponent = (
+        <TaskBase
+          components={taskComponents}
+          isEditing={false}
+          contextValues={contextValues}
+        />
+      );
+
+      // Render overlay badge for complete/incomplete status
+      let statusOverlay = null;
       if (taskStatus === statusTypes.COMPLE) {
-        return (
-          <div className="task-complete">
-            <h3>✓ Task Complete</h3>
-            <p>You have successfully completed this task!</p>
+        statusOverlay = (
+          <div className="task-status-overlay task-complete-overlay">
+            <div className="status-badge">
+              <div className="status-icon">✓</div>
+              <div className="status-text">Task Complete</div>
+            </div>
           </div>
         );
       } else if (taskStatus === statusTypes.INCOMP) {
-        return (
-          <div className="task-incomplete">
-            <h3>✗ Incorrect Answer</h3>
-            <p>Please try again.</p>
-            <TaskBase
-              components={taskComponents}
-              isEditing={false}
-              contextValues={contextValues}
-            />
+        statusOverlay = (
+          <div className="task-status-overlay task-incomplete-overlay">
+            <div className="status-badge">
+              <div className="status-icon">✗</div>
+              <div className="status-text">Try Again</div>
+            </div>
           </div>
         );
-      } else {
-        // NOSTAR or null - show the task normally
-        return (
-          <TaskBase
-            components={taskComponents}
-            isEditing={false}
-            contextValues={contextValues}
-          />
-        );
       }
+
+      // Return task with optional overlay on top
+      return (
+        <div className="task-content-wrapper">
+          {taskBaseComponent}
+          {statusOverlay}
+        </div>
+      );
     };
 
     return <div className="task-viewer">{renderContent()}</div>;

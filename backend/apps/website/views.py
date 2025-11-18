@@ -68,7 +68,7 @@ def update_task_progress(request, task_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_task_progress_for_room(request, course_id, section_id, room_id):
+def get_task_progress_for_room(request,  room_id):
     """
     get_task_progress_for_room: Retrieves task progress for all tasks in a room.
 
@@ -85,7 +85,7 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
         ProgressOfTask entries for the current user matching those task IDs.
     """
     # Check if room exists and user has access
-    room = get_object_or_404(Room, id=room_id, section_id=section_id, course_id=course_id)
+    room = get_object_or_404(Room, id=room_id)
     
     if not user_has_access(room, request.user, edit=False):
         raise PermissionDenied("You do not have permission to view this room.")
