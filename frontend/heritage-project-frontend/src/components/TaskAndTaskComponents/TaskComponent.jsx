@@ -37,7 +37,6 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
   }
 
     {
-       console.log("component is ", taskComponentTypes[componentType].component)
        const Component = taskComponentTypes[componentType].component;
        if (Component != null){
         if (taskComponentTypes[componentType].category==="Question"){

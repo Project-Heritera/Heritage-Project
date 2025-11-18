@@ -11,8 +11,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { path: "/courses", label: "LEARN" },
+    { path: "/login", label: "LOGIN/SIGNUP" },
+    { path: "/courses", label: "COURSES" },
     { path: "/create", label: "CREATE" },
+    { path: "/profile", label: "PROFILE" },
     { path: "/", label: "HOME" },
     { path: "/about", label: "ABOUT" },
     { path: "/contact", label: "CONTACT" },
