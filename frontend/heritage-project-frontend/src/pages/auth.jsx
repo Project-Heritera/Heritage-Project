@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { login } from "../services/auth";
-import { TaskComponentMenu } from "../components/TaskAndTaskComponents/TaskComponentMenu";
-import PublicationForm from "../components/PublicationForm";
 import { useErrorStore } from "../stores/ErrorStore";
 import Modal from "../components/Modal";
 import { test_api } from "../services/testAPIs";
@@ -10,13 +8,6 @@ const AuthLogin = () => {
   const [username, setUsernmae] = useState("");
   const [password, setPassword] = useState("");
 const showError = useErrorStore((state) => state.showError);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const handleTemplateSelect = (templateKey) => {
-    console.log("Selected template:", templateKey);
-    // do whatever you need with the selected template
-  };
-  const handleClose = () => setModalOpen(false);
-
 
   // Function to handle sign in
   async function handleLogin() {
@@ -70,21 +61,8 @@ const showError = useErrorStore((state) => state.showError);
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-
       <button onClick={handleLogin}>Sign In</button>
       <button onClick={handleSignOut}>Sign Out</button>
-<div>
-      <button
-        onClick={() => setModalOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Open Template Selector
-      </button>g
-<Modal isOpen={isModalOpen} onClose={handleClose} animationType="slide">
-<TaskComponentMenu onSelect={handleTemplateSelect} onClose={handleClose}/>       
-      </Modal>
-     
-    </div>
     <div>
       <button onClick={() => test_api()}>click to test apis</button>
     </div>

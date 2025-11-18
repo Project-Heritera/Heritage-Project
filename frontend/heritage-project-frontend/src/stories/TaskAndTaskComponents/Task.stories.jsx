@@ -10,7 +10,6 @@ const Template = (args) => <Task {...args} />;
 
 export const WithTextAndImageChildren = Template.bind({});
 WithTextAndImageChildren.args = {
-  pointValue: 10,
   tags: ["math", "reading"],
   children: [
     <TaskComponent

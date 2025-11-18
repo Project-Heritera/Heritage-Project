@@ -1,19 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import { CirclePlus, List, Save } from "lucide-react";
 import "../styles/pages/room_editor.css";
-import { DndContext } from "@dnd-kit/core";
-import Task from "../components/TaskAndTaskComponents/Task";
+import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
-import { taskComponentTypes } from "../utils/taskComponentTypes";
-import TaskComponent from "../components/TaskAndTaskComponents/TaskComponent";
 import { useParams } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
 import { v4 as uuidv4 } from "uuid";
+import { objectToFormData } from "../utils/objectToFormData";
 
 const RoomEditor = () => {
   //get ids from url
   const { course_id, section_id, room_id } = useParams();
 
+  const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
   const [roomDesc, setRoomDesc] = useState("No Description");
   const [roomCreator, setRoomCreator] = useState("No Creator");
@@ -70,17 +69,18 @@ const RoomEditor = () => {
         if (room_data.visibility) {
           setRoomVisibility(room_data.visibility);
         }
-
+        
         //load username from creator field and set room creater state
         //else set state to user_unavailable
         const tasks = Array.isArray(room_data.tasks) ? room_data.tasks : [];
         const normalizedTasks = tasks.map((task) => ({
           ...task,
           task_components: Array.isArray(task.components)
-            ? task.components
-            : [],
+          ? task.components
+          : [],
         }));
         setRoomTasks(normalizedTasks);
+        setRoomData(room_data)
       } catch (err) {
         showError(
           "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
@@ -91,11 +91,10 @@ const RoomEditor = () => {
     };
     loadRoom();
   }, []);
-
+  
   const addNewTask = () => {
     const newTask = {
       task_id: uuidv4(),
-      pointValue: 1,
       tags: [],
       task_components: [],
     };
@@ -109,6 +108,17 @@ const RoomEditor = () => {
   // Function to serialize everything to ever exist
   const serializeAllTasks = async () => {
     try {
+      let updatedRoomData = roomData;
+      //add changes to room data object
+      updatedRoomData.title = roomTitle;
+      updatedRoomData.can_edit = true;
+      updatedRoomData.description = roomDesc;
+      updatedRoomData.metadata = {};
+      updatedRoomData.visibility = roomVisibility;
+      updatedRoomData.creator = roomCreator;
+      updatedRoomData.created_on = roomCreationDate;
+      updatedRoomData.last_updated = new Date().toISOString();
+      /*
       const serializedRoom = {
         can_edit: true,
         title: roomTitle,
@@ -121,20 +131,38 @@ const RoomEditor = () => {
         created_on: roomCreationDate,
         last_updated: new Date().toISOString(),
       };
+      */
+      //get the updated task and task components
+     let updatedRoomTasks = []
       for (const taskId in taskRefs.current) {
         const taskRef = taskRefs.current[taskId];
         if (taskRef?.serialize) {
           const serializedTask = taskRef.serialize();
-          serializedRoom.tasks.push(serializedTask);
+          updatedRoomTasks.push(serializedTask);
         }
       }
-      Debug.log("Serialized Room Data:", serializedRoom);
+      updatedRoomData.tasks=updatedRoomTasks
+      Debug.log("Serialized Room Data:", updatedRoomData);
+    //convert object to formData object
+     const formData = await objectToFormData(updatedRoomData);
+
+      Debug.log("Form data is :", formData);
+    
+      //now make request to overwrite room
+const room_status = await save_room(
+        course_id,
+        section_id,
+        room_id,
+        formData
+      );
+      /*
       const room_status = await save_room(
         course_id,
         section_id,
         room_id,
         serializedRoom
       );
+      */
       return room_status;
     } catch (err) {
       showError(
@@ -173,11 +201,9 @@ const RoomEditor = () => {
               key={task.task_id}
               className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
             >
-              <p>{task.task_id}</p>
-              <Task
+              <TaskEditor
                 key={task.task_id}
                 ref={(el) => (taskRefs.current[task.task_id] = el)}
-                pointValue={task.pointValue}
                 tags={task.tags}
                 initialComponents={task.components}
               />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { taskComponentTypes } from '../utils/taskComponentTypes';
 // Note the import syntax is different because you used "export default"
 import MultipleChoiceComponent from '../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent';
 
@@ -15,7 +16,6 @@ const Template = (args) => <MultipleChoiceComponent {...args} />;
 export const Default = Template.bind({});
 Default.args = {
   // Your component doesn't have any props, so this is empty
-  jsonData: {
-  },
+  jsonData: taskComponentTypes.MCQ.defaultValue,
   isEditing: true,
-};
+  serialize: (()=>{})};

@@ -1,0 +1,209 @@
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  get_room_data,
+  get_test_room_for_viewer,
+  get_task_progress_for_room,
+} from "../services/room";
+import { useErrorStore } from "../stores/ErrorStore";
+import { Debug } from "../utils/debugLog";
+import "../styles/pages/room_editor.css";
+import TaskViewer from "../components/TaskAndTaskComponents/TaskViewer";
+import statusTypes from "../utils/statusTypes";
+
+const RoomViewer = () => {
+  const { course_id, section_id, room_id } = useParams();
+  const navigate = useNavigate();
+  const showError = useErrorStore((state) => state.showError);
+
+  const [roomData, setRoomData] = useState({});
+  const [roomTitle, setRoomTitle] = useState("Question Bank");
+  const [roomDesc, setRoomDesc] = useState("Question Bank");
+  const [roomCreator, setRoomCreator] = useState("No Creator");
+  const [roomCreationDate, setRoomCreationDate] = useState("Unavailable");
+  const [roomLastEdited, setRoomLastEdited] = useState("Unavailable");
+  const [roomVisibility, setRoomVisibility] = useState("PUB");
+  const [roomTasks, setRoomTasks] = useState([]); // Store answers by question index
+  //store refs for all task components
+  const taskRefs = useRef({});
+  useEffect(() => {
+    const loadRoom = async () => {
+      try {
+        //const room_data = await get_test_room_for_viewer();
+        const room_data = await get_room_data(course_id, section_id, room_id);
+        if (!room_data) {
+          showError(
+            "Unable to load data for room. You may not have permission to edit the room, the room may have already been created, or the room id may not exist",
+            "error"
+          );
+          Debug.error(
+            "Room editing page entered but room id has no is editing field"
+          );
+          return;
+        }
+        Debug.log("room data: ", room_data);
+        //dont load page if room dosent have can edit set to true
+        if (room_data["can_edit"] == true) {
+          showError("Room has not been released yet", "error");
+          Debug.error(
+            "Viewing page reached and room data has editing_mode set to true"
+          );
+        }
+        if (room_data.title) {
+          setRoomTitle(room_data.title);
+        }
+        if (room_data.description) {
+          setRoomDesc(room_data.description);
+        }
+        if (room_data.last_updated) {
+          setRoomLastEdited(room_data.last_updated);
+        }
+        if (room_data.created_on) {
+          setRoomCreationDate(room_data.created_on);
+        }
+        if (room_data.creator) {
+          setRoomCreator(room_data.creator);
+        }
+        if (room_data.visibility) {
+          setRoomVisibility(room_data.visibility);
+        }
+
+        // Load task progress data
+        let taskProgressData = [];
+        try {
+          taskProgressData = await get_task_progress_for_room(
+            course_id,
+            section_id,
+            room_id
+          );
+          Debug.log("Task progress data loaded:", taskProgressData);
+        } catch (progressErr) {
+          Debug.error("Failed to load task progress data:", progressErr);
+          // Continue without progress data if it fails
+        }
+
+        // Create a map of task_id to progress data for easy lookup
+        const progressMap = {};
+        if (Array.isArray(taskProgressData)) {
+          taskProgressData.forEach((progress) => {
+            progressMap[progress.task_id] = progress;
+          });
+        }
+
+        //else set state to user_unavailable
+        const tasks = Array.isArray(room_data.tasks) ? room_data.tasks : [];
+        const normalizedTasks = tasks.map((task) => {
+          const progress = progressMap[task.task_id] || null;
+          return {
+            ...task,
+            task_components: Array.isArray(task.components)
+              ? task.components
+              : [],
+            // Add progress data to each task
+            progress: progress
+              ? {
+                  status: progress.status,
+                  attempts: progress.attempts,
+                  metadata: progress.metadata,
+                }
+              : null,
+          };
+        });
+        setRoomTasks(normalizedTasks);
+        setRoomData(room_data);
+      } catch (err) {
+        showError(
+          "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
+          "error"
+        );
+        Debug.error("Room exists, but Failed to load room data to page", err);
+      }
+    };
+    loadRoom();
+  }, [course_id, section_id, room_id]);
+  const serializeAllTasks = async () => {
+    try {
+      let taskProgressData = [];
+
+      // Serialize all tasks
+      for (const taskId in taskRefs.current) {
+        const taskRef = taskRefs.current[taskId];
+        if (taskRef?.serialize) {
+          const serializedTask = taskRef.serialize();
+          taskProgressData.push(serializedTask);
+        }
+      }
+
+      Debug.log("Serialized Task Progress Data:", taskProgressData);
+
+      // TODO: Implement API call to save task progress
+      // Example: await save_task_progress(course_id, section_id, room_id, taskProgressData);
+
+      return taskProgressData;
+    } catch (err) {
+      showError(
+        "Unable to save task progress. Please report this issue to ffronchetti@lsu.edu",
+        "error"
+      );
+      Debug.error("Error saving task progress:", err);
+      return null;
+    }
+  };
+
+  const onTaskSubmit = async () => {
+    console.log("On submit hit");
+    const result = await serializeAllTasks();
+    Debug.log("Task submission result:", result);
+    // TODO: Show success message or navigate
+  };
+  return (
+    <div className="room-editor flex flex-col px-8 py-6 gap-6">
+      <div className="room-editor-header space-y-2">
+        <div className="flex items-center justify-between">
+           <button
+            onClick={() => navigate(-1)}
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            ← RETURN
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold">Viewer for Room: {roomTitle}</h1>
+            <p className="text-base">{roomDesc}</p>
+            <p className="text-sm italic">Created by: {roomCreator}</p>
+          </div>
+       </div>
+      </div>
+
+      <div className="room-editor-body">
+        <div className="task-editor flex flex-col gap-6">
+          {roomTasks.map((task) => (
+            <div
+              key={task.task_id}
+              className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
+            >
+              <TaskViewer
+                key={task.task_id}
+                ref={(el) => (taskRefs.current[task.task_id] = el)}
+                initialComponents={
+                  task.task_components || task.components || []
+                }
+                intialStatus={task.progress?.status || null}
+                initialAttempts={task.progress?.attempts ?? 0}
+                initialMetadata={task.progress?.metadata || {}}
+                taskId={task.task_id}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="room_modification_info text-sm text-gray-500 mt-6">
+        <p>Created On {roomCreationDate}</p>
+        <p>Last Modified On {roomLastEdited}</p>
+      </div>
+
+   </div>
+  );
+};
+
+export default RoomViewer;
