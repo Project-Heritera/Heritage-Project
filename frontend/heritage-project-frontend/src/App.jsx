@@ -9,6 +9,7 @@ import RoomEditor from './pages/room_editor'
 import RoomViewer from './pages/room_viewer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorPopup from './components/ErrorPopup'
+import ProfilePage from './pages/profile.jsx'
 
 function App() {
  return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<AuthLogin />} />
         <Route path='/login' element={<AuthLogin />} />
+        <Route path="/profile" element={<ProfilePage/>}></Route>
         {/*Protected Routes*/}
         <Route element={<ProtectedRoute />}>
           <Route path='/courses' element={<CourseView />} />

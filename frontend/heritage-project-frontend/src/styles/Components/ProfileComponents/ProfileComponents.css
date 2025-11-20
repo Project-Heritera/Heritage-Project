@@ -1,0 +1,67 @@
+.profileImageContainer {
+    @apply w-[20%];
+}
+
+.profileImage {
+    @apply rounded-md object-cover w-full h-full;
+}
+
+.profileName {
+    @apply text-2xl font-bold text-primary;
+}
+
+.profileDescription {
+    @apply text-sm text-muted-foreground mt-2 max-w-4xl;
+}
+
+.profileDescriptionDiv {
+    @apply text-left
+}
+
+.summaryValue {
+    @apply text-2xl font-bold mb-0
+}
+
+.summaryTitle {
+    @apply text-sm text-gray-500 mb-0
+}
+
+.summaryTextDiv {
+    @apply text-left flex flex-col gap-0
+}
+
+.summaryDiv {
+    @apply flex items-center
+}
+
+.profileSummaryDiv {
+    @apply flex justify-between
+}
+
+.summaryIconCard {
+    @apply h-12 w-12 flex items-center justify-center
+}
+
+.summaryIcon {
+    @apply h-6 w-6 shrink-0
+}
+
+.profileDisplayDiv {
+    @apply flex gap-x-8 items-center
+}
+
+.profileDisplayInfoDiv {
+    @apply flex flex-col gap-y-8 flex-1
+}
+
+.profileContainerDiv {
+    @apply flex justify-between
+}
+
+.profileContainerTitle {
+    @apply text-lg font-bold
+}
+
+.profileContainerChildrenDiv {
+    @apply flex justify-center
+}
