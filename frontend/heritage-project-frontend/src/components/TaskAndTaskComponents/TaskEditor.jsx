@@ -6,7 +6,7 @@ import Modal from "../Modal";
 import { TaskComponentMenu } from "./TaskComponentMenu";
 import { TagSelectionMenu } from "./TagSelectionMenu";
 
-const TaskEditor = forwardRef(({ initialTags = [], initialComponents = [] }, ref) => {
+const TaskEditor = forwardRef(({ initialTags = [], initialComponents = [] , taskID}, ref) => {
   const [taskComponents, setTaskComponents] = useState(initialComponents);
   const [taskComponentMenu, setTaskComponentMenu] = useState(false);
   //for tags
@@ -83,6 +83,7 @@ const TaskEditor = forwardRef(({ initialTags = [], initialComponents = [] }, ref
       <TaskBase
         components={taskComponents}
         isEditing={true}
+        taskID={taskID}
         />
         </div>
         <div className="add-task-component">

@@ -2,16 +2,15 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
 import statusTypes from "../../utils/statusTypes";
-import "../../styles/Components/TaskViewer.css";
 
 const TaskViewer = forwardRef(
   (
     {
-      intialStatus,
+      initialStatus,
       initialComponents = [],
       initialAttempts = 1,
       initialMetadata = {},
-      taskId,
+      taskID,
     },
     ref
   ) => {
@@ -20,7 +19,7 @@ const TaskViewer = forwardRef(
     //specifics for viewer
     const [attempts, setAttempts] = useState(initialAttempts);
     const [metadata, setMetadata] = useState(initialMetadata);
-    const [taskStatus, setTaskStatus] = useState(intialStatus);
+    const [taskStatus, setTaskStatus] = useState(initialStatus);
     //influences component behavior if no question task component is present in task
     const [questionTaskPresent, setQuestionTaskPresent] = useState(false);
 
@@ -29,21 +28,8 @@ const TaskViewer = forwardRef(
       const hasQuestion = taskComponents.some(
         (tc) => taskComponentTypes[tc.type]?.category === "Question"
       );
-      console.log("does task have a question component", hasQuestion);
       setQuestionTaskPresent(hasQuestion);
     }, [taskComponents]);
-
-    useImperativeHandle(ref, () => ({
-      serialize: () => {
-        let taskData = {
-          status: taskStatus,
-          attempts: attempts,
-          metadata: metadata,
-          task: taskId,
-        };
-        return taskData;
-      },
-    }));
 
     const contextValues = {
       taskStatus,
@@ -52,44 +38,44 @@ const TaskViewer = forwardRef(
 
     // Render different content based on taskStatus
     const renderContent = () => {
-      // Always render the task base
-      const taskBaseComponent = (
-        <TaskBase
-          components={taskComponents}
-          isEditing={false}
-          contextValues={contextValues}
-        />
-      );
-
-      // Render overlay badge for complete/incomplete status
-      let statusOverlay = null;
+      const questionProgressData = {
+      attempts: attempts,
+      status: taskStatus,
+      metadata: metadata,
+    };
       if (taskStatus === statusTypes.COMPLE) {
-        statusOverlay = (
-          <div className="task-status-overlay task-complete-overlay">
-            <div className="status-badge">
-              <div className="status-icon">✓</div>
-              <div className="status-text">Task Complete</div>
-            </div>
+        return (
+          <div className="task-complete">
+            <h3>✓ Task Complete</h3>
+            <p>You have successfully completed this task!</p>
           </div>
         );
       } else if (taskStatus === statusTypes.INCOMP) {
-        statusOverlay = (
-          <div className="task-status-overlay task-incomplete-overlay">
-            <div className="status-badge">
-              <div className="status-icon">✗</div>
-              <div className="status-text">Try Again</div>
-            </div>
+        return (
+          <div className="task-incomplete">
+            <h3>✗ Incorrect Answer</h3>
+            <p>Please try again.</p>
+            <TaskBase
+              components={taskComponents}
+              isEditing={false}
+              contextValues={contextValues}
+              taskID={taskID}
+              questionProgressData={questionProgressData}
+            />
           </div>
         );
+      } else {
+        // NOSTAR or null - show the task normally
+        return (
+          <TaskBase
+            components={taskComponents}
+            isEditing={false}
+            taskID={taskID}
+            contextValues={contextValues}
+            questionProgressData={questionProgressData}
+          />
+        );
       }
-
-      // Return task with optional overlay on top
-      return (
-        <div className="task-content-wrapper">
-          {taskBaseComponent}
-          {statusOverlay}
-        </div>
-      );
     };
 
     return <div className="task-viewer">{renderContent()}</div>;

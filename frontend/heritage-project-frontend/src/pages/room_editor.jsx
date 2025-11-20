@@ -206,6 +206,7 @@ const room_status = await save_room(
                 ref={(el) => (taskRefs.current[task.task_id] = el)}
                 tags={task.tags}
                 initialComponents={task.components}
+                taskID={task.task_id}
               />
               <button
                 onClick={() => deleteTask(task.task_id)}

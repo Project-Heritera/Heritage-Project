@@ -1,5 +1,6 @@
 import api from "./api";
 import { Debug } from "../utils/debugLog";
+import { ca } from "zod/v4/locales";
 /**
  * create_room: Creates a new room in the database.
  *
@@ -139,6 +140,16 @@ export async function get_task_progress_for_room(course_id, section_id, room_id)
 		return response.data
 	} 
 	catch (error) {
+		throw(error);
+	}
+}
+export async function update_task_progress(task_id, updated_task_progress_data){
+	try{
+		console.log(updated_task_progress_data)
+		const response = await api.put(`website/tasks/${task_id}/update_progress/`, updated_task_progress_data)
+		return response.data
+	}
+	catch(error) {
 		throw(error);
 	}
 }
