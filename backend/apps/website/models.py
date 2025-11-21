@@ -1,14 +1,20 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from ordered_model.models import (
-    F,
-    OrderedModel,
-)  # this handles auto-reordering when something is deleted
+from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
+from django.contrib.auth.models import AbstractUser
 
-User = get_user_model()
+
+class CustomUser(AbstractUser):
+    """
+    Custom User model extending Django's AbstractUser to add global score.
+    """
+    # The new score field is added directly to the User model
+    profile_pic = models.ImageField(upload_to="Images/", blank=True)
+    
+    def __str__(self):
+        return self.username
 
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
@@ -511,3 +517,15 @@ class DictionaryEntry(models.Model):
 
     def __str__(self):
         return f"{self.word}"
+
+
+class Geolocation(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    rating = models.FloatField(null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return self.name

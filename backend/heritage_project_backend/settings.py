@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.website",
     "ordered_model",
     "nested_admin",
+    "friendship",
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,7 @@ REST_FRAMEWORK = {
     ],
 }
 
+AUTH_USER_MODEL = 'website.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
