@@ -1,0 +1,10 @@
+.badgeContent {
+    @apply flex-col
+}
+.badgeImageDiv {
+    @apply w-[100%] mb-2
+}
+
+.badgeImage {
+    @apply rounded-md object-cover w-full h-full
+}
