@@ -34,7 +34,6 @@ function QuestionTaskComponentWrapper({
   const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext) || {}; // states from task
   const [isCorrect, setIsCorrect] = useState(taskStatus === "COMPLE");
 
-
   const handleSubmit = () => {
     if (
       !questionComponentRef.current ||
