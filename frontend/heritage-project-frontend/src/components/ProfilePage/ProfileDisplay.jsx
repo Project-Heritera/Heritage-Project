@@ -4,7 +4,9 @@ import ProfileDescription from "./ProfileDescription";
 import ProfileSummary from "./ProfileSummary/ProfileSummary";
 import ProfileDropDown from "./ProfileDropdown"
 import ConnectionButton from "./ConnectionButton";
+import EditButton from "./EditButton";
 import ProfileTitle from "./ProfileTitle"
+import ProfileEdit from "./ProfileEdit";
 
 function ProfileDisplay({ profImage, name, description }) {
   const editProfile = () => console.log("Editing profile")
@@ -25,7 +27,7 @@ function ProfileDisplay({ profImage, name, description }) {
               <ProfileTitle username={"Harry Potter"} />
               {/* Display actions*/}
               <div className="ml-auto">
-                <ConnectionButton />
+                <ProfileEdit/>
                 <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
               </div>
             </div>
