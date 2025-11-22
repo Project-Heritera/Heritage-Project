@@ -180,6 +180,31 @@ def get_badges(request):
 # -------------------------------
 # Course-related API calls
 # -------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_courses_created(request):
+    """
+    get_courses_created: Gets all courses created by the logged in user.
+
+    @param request: HTTP request object.
+    @return:
+        * HTTP 200: Got all the courses
+        * HTTP 204: User has no courses that they have created
+    """
+    user = request.user
+
+    courses = Course.objects.filter(creator=user)
+
+    if not courses.exists():
+        return Response(
+            {"detail": "You have not created any courses."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+    serializer = CourseSerializer(courses, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):
