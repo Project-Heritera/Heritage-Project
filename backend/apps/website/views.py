@@ -9,6 +9,9 @@ from django.shortcuts import get_object_or_404
 from .permissions import user_has_access
 from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
 
 
 # -------------------------------
@@ -236,6 +239,26 @@ def get_courses(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    summary="Create a new course",
+    description="Creates a course and assigns the current user as creator.",
+    # 1. Tell Docs to show the form fields for Title and Description
+    request=CourseSerializer, 
+    
+    # 2. Define your CUSTOM response structure here
+    responses={
+        201: inline_serializer(
+            name='CourseCreateResponse',
+            fields={
+                'status': serializers.CharField(),
+                'course_id': serializers.IntegerField(),
+                'creator_id': serializers.IntegerField(),
+                'creator_username': serializers.CharField(),
+            }
+        ),
+        400: None, # Or just leave generic
+    }
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_course(request):
