@@ -8,7 +8,7 @@ function Badge({image, title}) {
             {/* Display the Image */}
             <BadgeImage badgeImage={image}></BadgeImage>
             <CardTitle>Creole Completed</CardTitle>
-            <CardDescription>This badge is awared fr0o the completion of the Creole Course</CardDescription>
+            <CardDescription>This badge is awared for the completion of the Creole Course</CardDescription>
         </CardContent>
     </Card>
   )
