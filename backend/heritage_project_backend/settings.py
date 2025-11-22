@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.website",
     "ordered_model",
     "nested_admin",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +98,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Means by default no one can access any API endpoints without login
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
