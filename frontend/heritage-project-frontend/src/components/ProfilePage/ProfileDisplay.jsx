@@ -7,6 +7,7 @@ import ConnectionButton from "./ConnectionButton";
 import EditButton from "./EditButton";
 import ProfileTitle from "./ProfileTitle"
 import ProfileEdit from "./ProfileEdit";
+import { useState } from "react";
 
 function ProfileDisplay({ profImage, name, description }) {
   const editProfile = () => console.log("Editing profile")
@@ -16,10 +17,13 @@ function ProfileDisplay({ profImage, name, description }) {
     { label: "Edit Profile", action: editProfile }
   ]
 
+  const [currentBio, setCurrentBio] = useState(description);
+  const [currentImageUrl, setCurrentImageUrl] = useState(profImage);
+
   return (
     <ProfileDiv>
       <div className="profileDisplayDiv">
-        <ProfileImage profileImage={profImage} />
+        <ProfileImage profileImage={currentImageUrl} />
         <div className="profileDisplayInfoDiv">
           <div className="flex flex-col ">
             {/* Actions and Title div*/}
@@ -27,13 +31,13 @@ function ProfileDisplay({ profImage, name, description }) {
               <ProfileTitle username={"Harry Potter"} />
               {/* Display actions*/}
               <div className="ml-auto">
-                <ProfileEdit/>
+                <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl}/>
                 <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
               </div>
             </div>
             {/* Display Description and profile summaries*/}
             <div className="text-left">
-              <ProfileDescription description={description}></ProfileDescription>
+              <ProfileDescription description={currentBio}></ProfileDescription>
             </div>
           </div>
           <ProfileSummary></ProfileSummary>

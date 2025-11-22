@@ -15,10 +15,9 @@ import { Input } from "@/components/ui/input"
 import ProfileImage from "./ProfileImage";
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 
-function ProfileEdit({ currentName, currentBio, currentImage, children, currentImageUrl }) {
+function ProfileEdit({ currentBio, currentImageUrl, setCurrentImageUrl, setCurrentBio}) {
     //Store data for whats being edited
     const [bio, setBio] = useState(currentBio);
-    const [name, setName] = useState(currentName);
     const [open, setOpen] = useState(false)
     const [imageFile, setImageFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState(currentImageUrl);
@@ -37,6 +36,11 @@ function ProfileEdit({ currentName, currentBio, currentImage, children, currentI
 
     const saveChanges = () => {
         console.log("Saving changes");
+        //Submit chanegs to backend
+        //Close menu and set properities for users display
+        setCurrentBio(bio);
+        setCurrentImageUrl(previewUrl);
+        setOpen(false);
     }
 
 
