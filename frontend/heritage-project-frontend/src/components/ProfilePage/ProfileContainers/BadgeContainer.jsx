@@ -7,7 +7,7 @@ function BadgeContainer() {
     const badges = api.get("/website/badges/")
   }
   return (
-    <ProfileContainer title={"Badges"} itemsPerRow={2}>
+    <ProfileContainer title={"Badges"} itemsPerRow={3}>
         {console.log(getBadges())}
         <Badge image={"http://localhost:5173/testimage.jpg"}/>
         <Badge image={"http://localhost:5173/testimage.jpg"}/>
