@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Menu } from "lucide-react";
+import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
 
 export default function Navbar() {
   const location = useLocation();
@@ -54,16 +54,13 @@ export default function Navbar() {
         </ul>
       </div>
 
-      <div className="absolute right-[25px] top-1/2 transform -translate-y-1/2">
-        <div className="flex items-center gap-3">
-          <button
-            aria-label="Toggle menu"
-            onClick={() => setOpen((s) => !s)}
-            className="text-white hover:text-[#FDD023] focus:outline-none"
+        <div
+            className="flex items-center justify-center text-[#FFFFFF] hover:text-[#FDD023] transition-colors"
+            aria-label="Menu"
           >
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
+            <NavbarDropDown/>
+          </div>
+
       </div>
 
 
