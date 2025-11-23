@@ -21,11 +21,8 @@ export default function Navbar() {
   ];
 
   return (
-    // The main nav element is now the relative container.
-    // It is fixed and provides the consistent height.
     <nav className="w-full bg-[#023B4E] fixed top-0 left-0 right-0 z-50 min-h-[60px] relative">
       
-      {/* 1. Logo (Always 15px from the left edge of the viewport) */}
       <div className="absolute left-[25px] top-1/2 transform -translate-y-1/2">
         <Link to="/" className="flex items-center">
           <h1
@@ -37,8 +34,6 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* 2. Centered Nav Links (Desktop Only) */}
-      {/* These links are centered relative to the max-width container */}
       <div className="max-w-7xl mx-auto hidden md:flex items-center justify-center min-h-[60px]">
         <ul className="flex items-center gap-8">
           {navLinks.map((link) => (
@@ -59,7 +54,6 @@ export default function Navbar() {
         </ul>
       </div>
 
-      {/* 3. Hamburger Button (Always 15px from the right edge of the viewport) */}
       <div className="absolute right-[25px] top-1/2 transform -translate-y-1/2">
         <div className="flex items-center gap-3">
           <button
@@ -72,7 +66,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 4. Mobile Dropdown (Appears below the fixed nav bar) */}
+
       {open && (
         <div className="pt-2 pb-3 px-4 md:hidden absolute top-[60px] w-full bg-[#023B4E]">
           <ul className="flex flex-col gap-2">
