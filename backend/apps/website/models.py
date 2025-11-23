@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
     """
     # The new score field is added directly to the User model
     profile_pic = models.ImageField(upload_to="Images/", blank=True)
+    description = models.CharField(max_length=200, blank=True)
     
     def __str__(self):
         return self.username
@@ -225,7 +226,8 @@ def default_badge_image():
 
 class Badge(models.Model):
     image = models.ImageField(upload_to="Images/", default=default_badge_image)
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.title

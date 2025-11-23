@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -7,7 +7,6 @@ urlpatterns = [
     path("courses/", views.get_courses),
     path("courses/<int:course_id>/progress/", views.get_course_progress),
     path("courses/<int:course_id>/delete/", views.delete_course),
-    path("get_courses_created/", views.get_courses_created),
     
     # section apis
     path("courses/<int:course_id>/create_section/", views.create_section),
@@ -24,16 +23,17 @@ urlpatterns = [
     path("rooms/<int:room_id>/save/", views.save_room),
     path("rooms/<int:room_id>/publish/", views.publish_room),
     
-    # task prog api
+    # task prog apis
     path("tasks/<int:task_id>/update_progress/", views.update_task_progress),
     path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/task_progress/", views.get_task_progress_for_room,),
     
-    # user badges api
-    path("badges/", views.get_badges),
-    path("badges/<int:badge_id>/award_badge/", views.award_badge),
+    # user info apis
+    path("user_info/", views.get_user_info),
+    path("update_user_info/", views.update_user_info),
+    path("another_user_info/<int:user_id>", views.get_another_user_info),
 
-    # friendship apis
-    path("friendship/", include("friendship.urls"))
-    # urls here: https://github.com/revsys/django-friendship/blob/main/friendship/urls.py
-    # call them by doing: /api/userdata/friendship/<rest of the path>
+    # user badges apis
+    path("badges/", views.get_badges),
+    path("another_badges/<int:user_id>", views.get_another_badges),
+    path("badges/<int:badge_id>/award_badge/", views.award_badge),
 ]
