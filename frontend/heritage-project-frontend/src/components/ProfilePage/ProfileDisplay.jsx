@@ -9,7 +9,7 @@ import ProfileTitle from "./ProfileTitle"
 import ProfileEdit from "./ProfileEdit";
 import { useState } from "react";
 
-function ProfileDisplay({ profImage, name, description }) {
+function ProfileDisplay({ profImage, name, description, isOwner }) {
   const editProfile = () => console.log("Editing profile")
 
   //Add label and function (action) for dropdown menu buttons
@@ -31,7 +31,14 @@ function ProfileDisplay({ profImage, name, description }) {
               <ProfileTitle username={"Harry Potter"} />
               {/* Display actions*/}
               <div className="ml-auto">
-                <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl}/>
+                {/* Handle whats displayed if users page is the owners*/}
+                {isOwner ? (
+                  //Viewing as owner
+                  <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl} />
+                ) : (
+                  //Viewing as outside viewer
+                  <ConnectionButton />
+                )}
                 <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
               </div>
             </div>

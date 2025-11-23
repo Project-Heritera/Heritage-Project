@@ -1,5 +1,5 @@
 import api from './api'
-import { ACCESS_TOKEN, REFRESH_TOKEN } from '../services/LocalStorage'; 
+import { ACCESS_TOKEN, REFRESH_TOKEN, USER_NAME } from '../services/LocalStorage'; 
 
 //This function/service handles login requests for JWT tokens during a login attempt. Requires input of username and password of user.
 //Tokens are stored in local storage.
@@ -17,6 +17,8 @@ export async function login(username, password) {
 			localStorage.setItem(ACCESS_TOKEN, response.data.access);
 			localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
 		}
+
+		localStorage.setItem(USER_NAME, username);
 		console.log('Login successful', response.data);
 		return response.data
 	} 
