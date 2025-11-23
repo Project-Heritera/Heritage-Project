@@ -138,8 +138,6 @@ def get_user_info(request):
     tags=["Users"],
     summary="Get another user's info",
     description="Gets the information of another user (not the one logged in). You must provide the user's ID in the url.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetAnotherUserInfoResponse",
@@ -156,8 +154,8 @@ def get_user_info(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_another_user_info(request, user_id):
-    user = get_object_or_404(User, id=user_id)
+def get_another_user_info(request, user_username):
+    user = get_object_or_404(User, username=user_username)
 
     courses_created_int = Course.objects.filter(creator=user).count()
 
