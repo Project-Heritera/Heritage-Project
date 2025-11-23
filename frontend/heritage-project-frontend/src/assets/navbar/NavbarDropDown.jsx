@@ -11,8 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { USER_NAME } from "@/services/LocalStorage";
 
 function NavbarDropDown() {
+    const user = localStorage.getItem(USER_NAME)
+
     return (
         <Sheet>
             <SheetTrigger asChild>
@@ -52,10 +55,10 @@ function NavbarDropDown() {
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <Avatar>
                             <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>CN</AvatarFallback>
+                            <AvatarFallback>{user.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="font-medium">Clayton</p>
+                            <p className="font-medium">{user}</p>
                         <p className="text-xs text-muted-foreground">clayton@example.com</p>
                         </div>
                     </div>
@@ -64,7 +67,7 @@ function NavbarDropDown() {
                         <Link to="/settings" className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
                             <Settings className="h-4 w-4" /> Settings
                         </Link>
-                        <Link to="" className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
+                        <Link to={`/u/${user}`} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
                             <User className="h-4 w-4" /> Profile
                         </Link>
                         <button className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-100 text-red-600 text-sm w-full text-left">
