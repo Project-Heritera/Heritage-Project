@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
+import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
 
 export default function Navbar() {
   const location = useLocation();
@@ -50,7 +51,7 @@ export default function Navbar() {
             className="flex items-center justify-center text-[#FFFFFF] hover:text-[#FDD023] transition-colors"
             aria-label="Menu"
           >
-            <Menu className="w-10 h-10" strokeWidth={2.5} />
+            <NavbarDropDown/>
           </div>
 
       </div>

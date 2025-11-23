@@ -1,0 +1,80 @@
+import { Menu, Settings, LogOut, User } from "lucide-react";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+function NavbarDropDown() {
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Menu className="w-10 h-10" strokeWidth={2.5} />
+            </SheetTrigger>
+
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                    <SheetDescription>
+                        Navigate through Vivan
+                    </SheetDescription>
+                </SheetHeader>
+
+                {/* Links go here */}
+                <div className="flex flex-col gap-4 mt-8 px-6">
+                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                        HOME
+                    </Link>
+                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                        LEARN
+                    </Link>
+                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                        CREATE
+                    </Link>
+                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                        ABOUT
+                    </Link>
+                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                        CONTACT
+                    </Link>
+                </div>
+
+                {/* User Section */}
+                <div className="mt-auto px-6 mb-6">
+                    {/* Account Info */}
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                        <Avatar>
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-medium">Clayton</p>
+                        <p className="text-xs text-muted-foreground">clayton@example.com</p>
+                        </div>
+                    </div>
+                    {/* Account Actions */}
+                    <div className="flex flex-col gap-2 ">
+                        <Link to="/settings" className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
+                            <Settings className="h-4 w-4" /> Settings
+                        </Link>
+                        <Link to="" className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
+                            <User className="h-4 w-4" /> Profile
+                        </Link>
+                        <button className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-100 text-red-600 text-sm w-full text-left">
+                            <LogOut className="h-4 w-4" /> Logout
+                        </button>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
+export default NavbarDropDown;
