@@ -14,5 +14,5 @@ urlpatterns = [
     # user info
     path("user_info/", views.get_user_info),
     path("update_user_info/", views.update_user_info),
-    path("another_user_info/<int:user_id>", views.get_another_user_info),
+    path("another_user_info/<str:user_username>", views.get_another_user_info),
 ]

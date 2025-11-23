@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,8 @@ from rest_framework import serializers
 from .permissions import user_has_access
 from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
+
+User = get_user_model()
 
 
 # # user info apis
@@ -101,12 +104,30 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
 # -------------------------------
 # Badge-related API calls
 # -------------------------------
-api_view('GET')
-@permission_classes([IsAuthenticated])
-def get_another_badges(request, user_id):
+@extend_schema(
+    tags=["Badges"],
+    summary="Get the badges of another user.",
+    description="Retrieves task progress for all tasks in a room.",
     
+    
+    responses={
+        200: UserBadgeSerializer,
+        204: OpenApiResponse(description='User has no badges.'),
+        404: OpenApiResponse(description='Could not get user.'),
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_another_badges(request, user_username):
+    # Get the user (404 if not found)
+    user = get_object_or_404(User, username=user_username)
 
-    return 0
+    # Get all badges for that user
+    user_badges = UserBadge.objects.filter(user=user).select_related("badge")
+
+    serializer = UserBadgeSerializer(user_badges, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
