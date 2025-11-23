@@ -10,5 +10,9 @@ urlpatterns = [
     #JWT Tokens
     path('token/', TokenObtainPairView.as_view(), name='get_token'),
     path('token/refresh', TokenRefreshView.as_view(), name='refresh_token'),
-    path('token/verify', TokenVerifyView.as_view(), name='verify_token')
+    path('token/verify', TokenVerifyView.as_view(), name='verify_token'),
+    # user info
+    path("user_info/", views.get_user_info),
+    path("update_user_info/", views.update_user_info),
+    path("another_user_info/<int:user_id>", views.get_another_user_info),
 ]

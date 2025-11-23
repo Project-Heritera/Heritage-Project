@@ -26,11 +26,6 @@ urlpatterns = [
     # task prog apis
     path("tasks/<int:task_id>/update_progress/", views.update_task_progress),
     path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/task_progress/", views.get_task_progress_for_room,),
-    
-    # user info apis
-    path("user_info/", views.get_user_info),
-    path("update_user_info/", views.update_user_info),
-    path("another_user_info/<int:user_id>", views.get_another_user_info),
 
     # user badges apis
     path("badges/", views.get_badges),

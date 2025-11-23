@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
 
 from .permissions import user_has_access
-from .serializers import BadgeSerializer, ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 
@@ -21,68 +21,6 @@ from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, 
 #     # user badges apis
 #     path("another_badges/", views.get_another_badges),
 
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def get_courses_created(request):
-#     """
-#     get_courses_created: Gets all courses created by the logged in user.
-
-#     @param request: HTTP request object.
-#     @return:
-#         * HTTP 200: Got all the courses
-#         * HTTP 204: User has no courses that they have created
-#     """
-#     user = request.user
-
-#     courses = Course.objects.filter(creator=user)
-
-#     if not courses.exists():
-#         return Response(
-#             {"detail": "You have not created any courses."},
-#             status=status.HTTP_204_NO_CONTENT
-#         )
-
-#     serializer = CourseSerializer(courses, many=True)
-#     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-# -------------------------------
-# User-related API calls
-# -------------------------------
-api_view('PUT')
-@permission_classes([IsAuthenticated])
-def update_user_info(request):
-    user = request.user
-
-    # prof pic and desc only
-
-    return 0
-
-api_view('GET')
-@permission_classes([IsAuthenticated])
-def get_user_info(request):
-    user = request.user
-
-    courses = Course.objects.filter(creator=user)
-
-    if not courses.exists():
-        return Response(
-            {"detail": "You have not created any courses."},
-            status=status.HTTP_204_NO_CONTENT
-        )
-
-    serializer = CourseSerializer(courses, many=True) # change this to just be "courses_created": <# of courses>
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-api_view('GET')
-@permission_classes([IsAuthenticated])
-def get_another_user_info(request, user_id):
-    
-
-    return 0
-
 # -------------------------------
 # Task-related API calls
 # -------------------------------
@@ -90,8 +28,6 @@ def get_another_user_info(request, user_id):
     tags=["Tasks"],
     summary="Update the progress of a task",
     description="Updates or creates a user's progress for a specific task. If a ProgressOfTask entry does not exist for (user, task), a new one will be created. Only the authenticated user's progress is modified. Make sure you use 'COMPLE', 'NOSTAR', or 'INCOMP' for 'status', otherwise it will have a HTTP 400.",
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         200: ProgressOfTaskSerializer,
         400: OpenApiResponse(description='Serializer Failed.'),
@@ -131,7 +67,7 @@ def update_task_progress(request, task_id):
     summary="Get the progress of a room",
     description="Retrieves task progress for all tasks in a room.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: ProgressOfTaskSerializer,
         403: OpenApiResponse(description='User does not have permission to view this room.'),
@@ -177,8 +113,6 @@ def get_another_badges(request, user_id):
     tags=["Badges"],
     summary="Award a badge",
     description="Creates a UserBadge object to represent the 'User has a Badge' relation.",
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         201: UserBadgeSerializer,
         409: OpenApiResponse(description='Badge was already awarded. Cannot be awarded again'),
@@ -215,8 +149,6 @@ def award_badge(request, badge_id):
     tags=["Badges"],
     summary="Get user's badges",
     description="Gets all of the badges that the user has (meaning that a UserBadge relation exists).",
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         200: UserBadgeSerializer,
         204: OpenApiResponse(description='User has no badges.'),
@@ -246,8 +178,6 @@ def get_badges(request):
     tags=["Courses"],
     summary="Delete a course",
     description="Deletes a course and everything that that course contains: sections/rooms/etc..",
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         204: OpenApiResponse(description='Course deleted successfully.'),
         403: OpenApiResponse(description='You do not have permission to delete this course.'),
@@ -273,8 +203,6 @@ def delete_course(request, course_id):
     tags=["Courses"],
     summary="Get courses",
     description="Retrieves all courses the user can view, annotated with progress.",
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         200: CourseSerializer(),
         403: OpenApiResponse(description='You do not have permission to view any courses.'),
@@ -304,7 +232,6 @@ def get_courses(request):
     tags=["Courses"],
     summary="Create a new course",
     description="Creates a course and assigns the current user as creator. The authenticated user is automatically set as the course creator.",
-    # 1. Tell Docs to show the form fields for Title and Description
     request=inline_serializer(
         name="CreateCourseRequest",
         fields={
@@ -312,8 +239,6 @@ def get_courses(request):
             "description": serializers.CharField(),
         }
     ), 
-    
-    # 2. Define your CUSTOM response structure here
     responses={
         201: CourseSerializer(),
         400: OpenApiResponse(description='Serializer Failed.'),
@@ -342,7 +267,7 @@ def create_course(request):
     summary="Get course progress",
     description="Get the total progress of the course as a percentage.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: inline_serializer(
             name="GetCourseProgressResponse",
@@ -393,7 +318,7 @@ def get_course_progress(request, course_id):
     summary="Delete a section",
     description="Deletes a section and everything that that section contains: rooms/etc..",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         204: OpenApiResponse(description='Section deleted successfully.'),
         403: OpenApiResponse(description='You do not have permission to delete this section.'),
@@ -420,7 +345,7 @@ def delete_section(request, section_id):
     summary="Get sections",
     description="Retrieves all sections the user can view, annotated with progress.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: SectionSerializer(),
         403: OpenApiResponse(description='You do not have permission to view any sections.'),
@@ -463,7 +388,7 @@ def get_sections(request, course_id):
     tags=["Sections"],
     summary="Create a new section",
     description="Creates a section and assigns the current user as creator. The authenticated user is automatically set as the section creator.",
-    # 1. Tell Docs to show the form fields for Title and Description
+    
     request=inline_serializer(
         name="CreateSectionRequest",
         fields={
@@ -472,7 +397,7 @@ def get_sections(request, course_id):
         }
     ), 
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         201: SectionSerializer(),
         404: OpenApiResponse(description='Could not get course that the section is in.'),
@@ -505,7 +430,7 @@ def create_section(request, course_id):
     summary="Get section progress",
     description="Get the total progress of the section as a percentage.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: inline_serializer(
             name="GetSectionProgressResponse",
@@ -556,7 +481,7 @@ def get_section_progress(request, section_id):
     summary="Delete a room",
     description="Deletes a room and everything that that room contains: tasks/etc..",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         204: OpenApiResponse(description='Room deleted successfully.'),
         403: OpenApiResponse(description='You do not have permission to delete this room.'),
@@ -583,7 +508,7 @@ def delete_room(request, room_id):
     summary="Get rooms",
     description="Retrieves all rooms the user can view, annotated with progress.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: RoomSerializer(),
         403: OpenApiResponse(description='You do not have permission to view any rooms.'),
@@ -614,7 +539,7 @@ def get_rooms(request, section_id):
     tags=["Rooms"],
     summary="Create a new room",
     description="Creates a room and assigns the current user as creator. The authenticated user is automatically set as the room creator.",
-    # 1. Tell Docs to show the form fields for Title and Description
+    
     request=inline_serializer(
         name="CreateRoomRequest",
         fields={
@@ -623,7 +548,7 @@ def get_rooms(request, section_id):
         }
     ), 
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         201: RoomSerializer(),
         404: OpenApiResponse(description='Could not get course or section that the room is in.'),
@@ -658,7 +583,7 @@ def create_room(request, course_id, section_id):
     summary="Get room progress",
     description="Get the total progress of the room as a percentage.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: inline_serializer(
             name="GetRoomProgressResponse",
@@ -709,7 +634,7 @@ def get_room_progress(request, room_id):
     summary="Get a room",
     description="Retrieves a room the user can view",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: RoomSerializer(),
         403: OpenApiResponse(description='You do not have permission to view this room.'),
@@ -745,7 +670,7 @@ def _save_room_logic(request, room_id):
     summary="Save a room",
     description="Overwrites an existing room (and its nested components) with new data. Validation and save are atomic. Removed components are cascade-deleted.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: OpenApiResponse(description='Room saved successfully.'),
         400: OpenApiResponse(description='Serializer Failed.'),
@@ -773,7 +698,7 @@ def save_room(request, room_id):
     summary="Publish a room",
     description="Validates and publishes a room, making it publicly visible. A room must contain at least one task before publishing. Visibility is set to PUBLIC.",
     
-    # 2. Define your CUSTOM response structure here
+    
     responses={
         200: OpenApiResponse(description='Room published successfully.'),
         400: OpenApiResponse(description='Serializer Failed.'),

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from django.contrib.auth import get_user_model
 from .models import (
     Badge,
     ProgressOfTask,
@@ -15,23 +14,6 @@ from .models import (
     VisibilityLevel,
     ProgressOfTask,
 )
-
-User = get_user_model()
-
-# -------------------------------
-# User Serializer
-# -------------------------------
-class UserSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(source="id", read_only=True)
-    username = serializers.CharField(read_only=True)
-    profile_pic = serializers.ImageField()
-    description = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ["user_id", "username", "profile_pic", "description"]
-        read_only_fields = ["user_id"]
-
 
 # -------------------------------
 # TaskComponent Serializer
