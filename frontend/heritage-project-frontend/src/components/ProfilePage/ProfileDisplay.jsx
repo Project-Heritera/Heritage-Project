@@ -9,7 +9,7 @@ import ProfileTitle from "./ProfileTitle"
 import ProfileEdit from "./ProfileEdit";
 import { useState } from "react";
 
-function ProfileDisplay({ profImage, name, description }) {
+function ProfileDisplay({ profImage, name, description, isOwner }) {
   const editProfile = () => console.log("Editing profile")
 
   //Add label and function (action) for dropdown menu buttons
