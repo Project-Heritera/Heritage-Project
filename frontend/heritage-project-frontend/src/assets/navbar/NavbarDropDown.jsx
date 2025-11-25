@@ -55,7 +55,7 @@ function NavbarDropDown() {
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <Avatar>
                             <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>{user.charAt(0).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback>{user && user.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
                             <p className="font-medium">{user}</p>
