@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, backgroundImage, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   get_room_data,
@@ -18,6 +18,7 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const RoomViewer = () => {
   const { course_id, section_id, room_id } = useParams();
@@ -62,9 +63,8 @@ const RoomViewer = () => {
           setRoomTitle(room_data.title);
         }
         if (room_data.image) {
-          setBackgroundImage(room_data.image);
+          setBackgroundImage(room_data.image)
         }
-
         if (room_data.description) {
           setRoomDesc(room_data.description);
         }
@@ -170,27 +170,42 @@ const RoomViewer = () => {
     // TODO: Show success message or navigate
   };
   return (
-  <div className="relative w-screen h-screen overflow-hidden">
-    <div
-    className="absolute inset-0 bg-cover bg-center"
-    style={{ backgroundImage: `url(${backgroundImage})` }}
-  ></div>
-    <div className="room-editor flex flex-col px-8 py-6">
-      <div className="room-editor-header space-y-2">
-        <div className="flex items-center justify-between">
-           <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            ← RETURN
-          </button>
-       </div>
-          <div>
-            <h1 className="text-3xl font-bold">Viewer for Room: {roomTitle}</h1>
-            <p className="text-base">{roomDesc}</p>
-            <p className="text-sm italic">Created by: {roomCreator}</p>
-          </div>
-      </div>
+  <div className="relative min-h-screen w-full">
+      {/* Background layer */}
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundRepeat: "repeat", // repeat infinitely
+          backgroundPosition: "top left",
+          backgroundSize: "auto", // keeps original size
+        }}
+      />
+
+      {/* Foreground content */}
+      <div className="room-editor flex flex-col px-8 py-6 relative z-10">
+    <Card className="mb-6">
+  <CardHeader className="pb-4">
+    <div className="flex items-center justify-between">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="text-blue-600 hover:text-blue-800 font-medium"
+      >
+        ← RETURN
+      </Button>
+    </div>
+    <div className="mt-2 space-y-3">
+      <CardTitle className="text-3xl font-bold">
+        Viewer for Room: {roomTitle}
+      </CardTitle>
+      <CardDescription className="text-base">{roomDesc}</CardDescription>
+      <p className="text-sm italic text-muted-foreground">
+        Created by: {roomCreator}
+      </p>
+    </div>
+  </CardHeader>
+</Card>
 
       <div className="room-editor-body">
    <div className="task-editor flex flex-col gap-6 items-center">
@@ -219,10 +234,12 @@ const RoomViewer = () => {
 
       </div>
 
-      <div className="room_modification_info  text-gray-500 mt-6">
-        <p>Created On {roomCreationDate}</p>
-        <p>Last Modified On {roomLastEdited}</p>
-      </div>
+<Card className="mt-6 bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
+  <CardContent className="flex flex-col gap-2">
+    <p>Created On: {roomCreationDate}</p>
+    <p>Last Modified On: {roomLastEdited}</p>
+  </CardContent>
+</Card>
 
    </div>
    </div>

@@ -27,10 +27,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { get_random_image_from_list } from "@/utils/default_images";
 
 const RoomEditor = () => {
   //get ids from url
   const { course_id, section_id, room_id } = useParams();
+  const [backgroundImage, setBackgroundImage] = useState(get_random_image_from_list())
+
 
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
@@ -73,6 +76,9 @@ const RoomEditor = () => {
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);
+        }
+        if (room_data.image) {
+          setBackgroundImage(room_data.image);
         }
         if (room_data.description) {
           setRoomDesc(room_data.description);
@@ -221,7 +227,20 @@ const RoomEditor = () => {
   };
 
   return (
-    <div className="room-editor min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
+       <div className="relative w-screen min-h-screen">
+    {/* Background layer: repeats infinitely */}
+    <div
+      className="fixed inset-0 -z-10"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundRepeat: "repeat",   // repeats in both directions
+        backgroundPosition: "top left",
+        backgroundSize: "auto",       // keep natural size
+      }}
+    />
+
+    {/* Foreground content */}
+    <div className="room-editor min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative z-10">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header Card */}
         <Card>
@@ -335,6 +354,7 @@ const RoomEditor = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
