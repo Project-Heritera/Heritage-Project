@@ -6,7 +6,7 @@ export const TaskGlobalContext = createContext(null);
 export default function TaskBase({ components, isEditing, contextValues={} }) {
   return (
     <TaskGlobalContext.Provider value={contextValues}>
-      <div className="task-body">
+      <div className="task-body space-y-6">
         {components.map((tc) => (
           <TaskComponent
             key={tc.task_component_id}

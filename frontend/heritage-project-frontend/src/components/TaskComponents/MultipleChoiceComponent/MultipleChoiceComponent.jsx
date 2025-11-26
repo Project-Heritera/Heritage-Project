@@ -4,12 +4,26 @@ import Edit from "./EditMultipleChoice";
 import Use from "./UseMultipleChoice";
 import { taskComponentTypes } from "../../../utils/taskComponentTypes";
 
-//This is the overall text component for text.
-//text is the initial text if any used to load into the read or editor
-//edit is the toggle for weather its editable or not
 const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, ref) => {
   const [choiceApi, setChoiceApi] = useState(null); //Used to provide functions to parent of MarkdownArea
-  const [selectedAnswerChoice, setSelectedAnswerChoice] = useState(""); //set to id of selected button for viewer
+  const [selectedAnswerChoice, setSelectedAnswerChoice] = useState([]); //set to id of selected button for viewer
+  
+function handleSelectAnswerChoice(selectedID) {
+  const correctAnswerChoices = choiceArray.filter(c => c.correct).map(c => c.id);
+
+  // If only one correct answer, enforce single selection
+  if (correctAnswerChoices.length === 1) {
+    setSelectedAnswerChoice([selectedID]);
+  } else {
+    // Multiple correct answers allowed
+    if (selectedAnswerChoice.includes(selectedID)) {
+      setSelectedAnswerChoice(prev => prev.filter(item => item !== selectedID));
+    } else {
+      setSelectedAnswerChoice([...selectedAnswerChoice, selectedID]);
+    }
+  }
+}
+
 
   function handleSerialize() {
     const jsonToSerialize = JSON.stringify({
@@ -19,7 +33,7 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
   }
 
   function checkIfCorrect() {
-    if (selectedAnswerChoice === "") return statusTypes.INCOMP;
+    if (selectedAnswerChoice === []) return statusTypes.INCOMP;
 
     let correctAnswerChoices = [];
     for (const choice of choiceArray) {
@@ -27,12 +41,12 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
         correctAnswerChoices.push(choice.id);
       }
     }
-    if (correctAnswerChoices.includes(selectedAnswerChoice)) {
-      return statusTypes.COMPLE;
-    } else {
-      return statusTypes.INCOMP;
-    }
-  }
+    const allCorrect = selectedAnswerChoice.every(id =>
+    correctAnswerChoices.includes(id)
+  );
+
+  return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
+ }
 
   // Expose checkIfCorrect to parent via ref
   useImperativeHandle(ref, () => ({
@@ -70,8 +84,8 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
         //Edit is false
         <Use 
           choiceArray={choiceArray} 
-          selectedAnswerChoice={selectedAnswerChoice}
-          setSelectedAnswerChoice={setSelectedAnswerChoice}
+          selectedAnswerChoice={selectedAnswerChoice?? []}
+          setSelectedAnswerChoice={handleSelectAnswerChoice}
         />
       )}
     </div>

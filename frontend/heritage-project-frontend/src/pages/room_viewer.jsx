@@ -10,11 +10,20 @@ import { Debug } from "../utils/debugLog";
 import "../styles/pages/room_editor.css";
 import TaskViewer from "../components/TaskAndTaskComponents/TaskViewer";
 import statusTypes from "../utils/statusTypes";
+import { get_random_image_from_list } from "@/utils/default_images";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 
 const RoomViewer = () => {
   const { course_id, section_id, room_id } = useParams();
   const navigate = useNavigate();
   const showError = useErrorStore((state) => state.showError);
+  const [backgroundImage, setBackgroundImage] = useState(get_random_image_from_list())
 
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Question Bank");
@@ -30,7 +39,7 @@ const RoomViewer = () => {
     const loadRoom = async () => {
       try {
         //const room_data = await get_test_room_for_viewer();
-        const room_data = await get_room_data(course_id, section_id, room_id);
+        const room_data = await get_room_data(room_id);
         if (!room_data) {
           showError(
             "Unable to load data for room. You may not have permission to edit the room, the room may have already been created, or the room id may not exist",
@@ -52,6 +61,10 @@ const RoomViewer = () => {
         if (room_data.title) {
           setRoomTitle(room_data.title);
         }
+        if (room_data.image) {
+          setBackgroundImage(room_data.image);
+        }
+
         if (room_data.description) {
           setRoomDesc(room_data.description);
         }
@@ -157,7 +170,12 @@ const RoomViewer = () => {
     // TODO: Show success message or navigate
   };
   return (
-    <div className="room-editor flex flex-col px-8 py-6 gap-6">
+  <div className="relative w-screen h-screen overflow-hidden">
+    <div
+    className="absolute inset-0 bg-cover bg-center"
+    style={{ backgroundImage: `url(${backgroundImage})` }}
+  ></div>
+    <div className="room-editor flex flex-col px-8 py-6">
       <div className="room-editor-header space-y-2">
         <div className="flex items-center justify-between">
            <button
@@ -166,42 +184,47 @@ const RoomViewer = () => {
           >
             ← RETURN
           </button>
+       </div>
           <div>
             <h1 className="text-3xl font-bold">Viewer for Room: {roomTitle}</h1>
             <p className="text-base">{roomDesc}</p>
             <p className="text-sm italic">Created by: {roomCreator}</p>
           </div>
-       </div>
       </div>
 
       <div className="room-editor-body">
-        <div className="task-editor flex flex-col gap-6">
-          {roomTasks.map((task) => (
-            <div
-              key={task.task_id}
-              className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
-            >
-              <TaskViewer
-                key={task.task_id}
-                ref={(el) => (taskRefs.current[task.task_id] = el)}
-                initialComponents={
-                  task.task_components || task.components || []
-                }
-                intialStatus={task.progress?.status || null}
-                initialAttempts={task.progress?.attempts ?? 0}
-                initialMetadata={task.progress?.metadata || {}}
-                taskId={task.task_id}
-              />
-            </div>
-          ))}
-        </div>
+   <div className="task-editor flex flex-col gap-6 items-center">
+  {roomTasks.map((task) => (
+    <Card
+      key={task.task_id}
+      className="w-full max-w-6xl shadow-lg border-gray-200 hover:shadow-xl transition-shadow duration-300"
+>
+      <CardHeader>
+        <CardTitle>Task #{task.task_id}</CardTitle>
+        {task.title && <CardDescription>{task.title}</CardDescription>}
+      </CardHeader>
+      <CardContent>
+        <TaskViewer
+          ref={(el) => (taskRefs.current[task.task_id] = el)}
+          initialComponents={task.task_components || task.components || []}
+          intialStatus={task.progress?.status || null}
+          initialAttempts={task.progress?.attempts ?? 0}
+          initialMetadata={task.progress?.metadata || {}}
+          taskId={task.task_id}
+        />
+      </CardContent>
+    </Card>
+  ))}
+</div>
+
       </div>
 
-      <div className="room_modification_info text-sm text-gray-500 mt-6">
+      <div className="room_modification_info  text-gray-500 mt-6">
         <p>Created On {roomCreationDate}</p>
         <p>Last Modified On {roomLastEdited}</p>
       </div>
 
+   </div>
    </div>
   );
 };
