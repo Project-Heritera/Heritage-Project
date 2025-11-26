@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.website",
     "ordered_model",
     "nested_admin",
+    "friendship",
     'drf_spectacular',
 ]
 
@@ -101,6 +102,7 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

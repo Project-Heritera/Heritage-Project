@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from .permissions import user_has_access  # Keep this for get_can_edit/etc.
 from .models import (
     Badge,
     ProgressOfTask,
@@ -16,7 +15,6 @@ from .models import (
     ProgressOfTask,
 )
 
-
 # -------------------------------
 # TaskComponent Serializer
 # -------------------------------
@@ -27,6 +25,7 @@ class TaskComponentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskComponent
         fields = ["task_component_id", "type", "content"]  # what is sent back
+        read_only_fields = ["task_component_id"]
 
 
 # -------------------------------
@@ -42,6 +41,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ["task_id", "tags", "components"]
+        read_only_fields = ["task_id"]
 
     def create(self, validated_data):
         # pop nested data out
@@ -66,10 +66,27 @@ class BadgeSerializer(serializers.ModelSerializer):
     badge_id = serializers.IntegerField(source="id", read_only=True)
     image = serializers.ImageField()
     title = serializers.CharField()
+    description = serializers.CharField()
 
     class Meta:
         model = Badge
-        fields = ["badge_id", "image", "title"]
+        fields = ["badge_id", "image", "title", "description"]
+        read_only_fields = ["badge_id"]
+
+
+# -------------------------------
+# UserBadge Serializer
+# -------------------------------
+class UserBadgeSerializer(serializers.ModelSerializer):
+    userbadge_id = serializers.IntegerField(source="id", read_only=True)
+    user = serializers.CharField(source="user.username")
+    badge = BadgeSerializer(many=True, required=True)
+    awarded_at = serializers.DateTimeField()
+
+    class Meta:
+        model = Badge
+        fields = ["userbadge_id", "user", "title", "badge", "awarded_at"]
+        read_only_fields = ["userbadge_id", "user", "title", "badge", "awarded_at"]
 
 
 # -------------------------------
@@ -280,17 +297,6 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 # -------------------------------
-# ProgressOfTask Serializer
-# -------------------------------
-class ProgressOfTaskSerializer(serializers.ModelSerializer):
-    task_id = serializers.IntegerField(source="task.id", read_only=True)
-
-    class Meta:
-        model = ProgressOfTask
-        fields = ["task_id", "status", "attempts", "metadata"]
-
-
-# -------------------------------
 # Course Serializer
 # -------------------------------
 class CourseSerializer(serializers.ModelSerializer):
@@ -361,14 +367,3 @@ class CourseSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-
-# -------------------------------
-# ProgressOfTask Serializer
-# -------------------------------
-class ProgressOfTaskSerializer(serializers.ModelSerializer):
-    task_id = serializers.IntegerField(source="task.id", read_only=True)
-
-    class Meta:
-        model = ProgressOfTask
-        fields = ["task_id", "status", "attempts", "metadata"]

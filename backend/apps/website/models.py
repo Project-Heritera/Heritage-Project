@@ -1,15 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from ordered_model.models import (
-    F,
-    OrderedModel,
-)  # this handles auto-reordering when something is deleted
+from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
-
-User = get_user_model()
-
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -219,7 +212,8 @@ def default_badge_image():
 
 class Badge(models.Model):
     image = models.ImageField(upload_to="Images/", default=default_badge_image)
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.title
@@ -511,3 +505,15 @@ class DictionaryEntry(models.Model):
 
     def __str__(self):
         return f"{self.word}"
+
+
+class Geolocation(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    rating = models.FloatField(null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
