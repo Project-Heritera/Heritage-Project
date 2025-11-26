@@ -31,6 +31,7 @@ User = get_user_model()
     tags=["Tasks"],
     summary="Update the progress of a task",
     description="Updates or creates a user's progress for a specific task. If a ProgressOfTask entry does not exist for (user, task), a new one will be created. Only the authenticated user's progress is modified. Make sure you use 'COMPLE', 'NOSTAR', or 'INCOMP' for 'status', otherwise it will have a HTTP 400.",
+    request=None,
     responses={
         200: ProgressOfTaskSerializer,
         400: OpenApiResponse(description='Serializer Failed.'),
@@ -134,6 +135,7 @@ def get_another_badges(request, user_username):
     tags=["Badges"],
     summary="Award a badge",
     description="Creates a UserBadge object to represent the 'User has a Badge' relation.",
+    request=None,
     responses={
         201: UserBadgeSerializer,
         409: OpenApiResponse(description='Badge was already awarded. Cannot be awarded again'),
@@ -690,8 +692,7 @@ def _save_room_logic(request, room_id):
     tags=["Rooms"],
     summary="Save a room",
     description="Overwrites an existing room (and its nested components) with new data. Validation and save are atomic. Removed components are cascade-deleted.",
-    
-    
+    request=None,
     responses={
         200: OpenApiResponse(description='Room saved successfully.'),
         400: OpenApiResponse(description='Serializer Failed.'),
@@ -718,8 +719,7 @@ def save_room(request, room_id):
     tags=["Rooms"],
     summary="Publish a room",
     description="Validates and publishes a room, making it publicly visible. A room must contain at least one task before publishing. Visibility is set to PUBLIC.",
-    
-    
+    request=None,
     responses={
         200: OpenApiResponse(description='Room published successfully.'),
         400: OpenApiResponse(description='Serializer Failed.'),

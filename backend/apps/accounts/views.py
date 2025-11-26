@@ -71,7 +71,7 @@ def delete_account(request):
     request=UserSerializer(),
     responses={
         200: inline_serializer(
-            name="GetUserInfoResponse",
+            name="UpdateUserInfoResponse",
             fields={
                 "user_id": serializers.IntegerField(),
                 "username": serializers.CharField(),
