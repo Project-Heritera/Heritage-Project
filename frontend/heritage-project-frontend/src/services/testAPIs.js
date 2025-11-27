@@ -10,7 +10,7 @@ export async function test_api() {
                 "struggling_with": "time complexity"
             }
         }
-		const response = await api.put(`website/tasks/1/update_progress/`, test_input); //enter url here
+		const response = await api.get(`website/get_courses_created/`, test_input); //enter url here
         console.log("response from call:", response)
 		return response.data
 	}   

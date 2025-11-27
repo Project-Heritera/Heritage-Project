@@ -3,7 +3,7 @@ import ProfileDiv from '../ProfileDiv'
 import { Button } from '@/components/ui/button'
 
 function ProfileContainer({children, title, itemsPerRow}) {
-    const gridColsClass = `md:grid-cols-${itemsPerRow}`
+    itemsPerRow = itemsPerRow || 3//default to 3 ina  row if not provided
 
     //make state for view all button
     const [isOpen, setIsOpen] = useState(false)
@@ -12,6 +12,20 @@ function ProfileContainer({children, title, itemsPerRow}) {
 
     //Check if we even need the view all button
     const overflow = childrenArray.length > itemsPerRow
+
+    if (!overflow) {
+        itemsPerRow=childrenArray.length
+    }
+
+    const gridColsMap = {
+        1: "md:grid-cols-1",
+        2: "md:grid-cols-2",
+        3: "md:grid-cols-3",
+        4: "md:grid-cols-4",
+        5: "md:grid-cols-5",
+        6: "md:grid-cols-6",
+    };
+    const gridColsClass = gridColsMap[itemsPerRow];
 
     //Get the children to show based on if isOpen is set to true or not
     const viewableChildren = isOpen ? childrenArray : childrenArray.slice(0, itemsPerRow)
