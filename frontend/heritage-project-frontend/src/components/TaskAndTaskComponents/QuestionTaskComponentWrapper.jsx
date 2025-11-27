@@ -41,10 +41,6 @@ function QuestionTaskComponentWrapper({
       !questionComponentRef.current ||
       !questionComponentRef.current.checkIfCorrect
     ) {
-    if (
-      !questionComponentRef.current ||
-      !questionComponentRef.current.checkIfCorrect
-    ) {
       console.error("Question component does not expose checkIfCorrect method");
       return;
     }
