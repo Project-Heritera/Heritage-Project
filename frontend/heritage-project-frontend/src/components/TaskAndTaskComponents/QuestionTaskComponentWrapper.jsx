@@ -1,21 +1,19 @@
-import { useState, useContext, useRef, useEffect } from "react";
-import { statusTypes, statusDisplayToKey } from "../../utils/statusTypes";
+import { useState, useContext, useRef } from "react";
+import statusTypes from "../../utils/statusTypes";
 import { TaskGlobalContext } from "./TaskBase";
-import { update_task_progress } from "../../services/room";
+import { Button } from "@/components/ui/button";
 
 function QuestionTaskComponentWrapper({
   jsonData,
   QuestionTaskComponent,
   isEditing,
   serialize,
-  taskID,
-  questionProgressData,
+  initialAttemptsLeft,
+  initialIsCorrect,
 }) {
   // Parse jsonData if it's a string, otherwise use as-is
   let parsedJsonData;
   try {
-    parsedJsonData =
-      typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
     parsedJsonData =
       typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
   } catch (e) {
@@ -30,11 +28,11 @@ function QuestionTaskComponentWrapper({
     parsedJsonData.number_of_chances ?? 1
   );
   const [hint, setHint] = useState(parsedJsonData.hint ?? "");
+  const [isCorrect, setIsCorrect] = useState(initialIsCorrect ?? false);
   const [showHint, setShowHint] = useState(false);
   const questionComponentRef = useRef(null);
 
-  const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext) || {}; // states from task
-  const [isCorrect, setIsCorrect] = useState(taskStatus === "COMPLE");
+  const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext); // states from task
 
   const handleSubmit = () => {
     if (
@@ -48,25 +46,12 @@ function QuestionTaskComponentWrapper({
     const result = questionComponentRef.current.checkIfCorrect();
     setTaskStatus(result);
 
-    //update task progress in serveer
-    const updated_task_progress_data = {
-      attempts: numberOfAttempts,
-      status: statusDisplayToKey[result],
-      metadata: metadata,
-    };
-    try {
-      update_task_progress(taskID, updated_task_progress_data);
-    } catch (error) {
-      console.log("Error", error);
-    }
-
-    //set states that effect question component rendering
     if (result === statusTypes.COMPLE) {
       setIsCorrect(true);
     } else if (result === statusTypes.INCOMP) {
       setIsCorrect(false);
-      if (numberOfAttempts > 0) {
-        setNumberOfAttempts((prev) => prev - 1);
+      if (attemptsLeft > 0) {
+        setAttemptsLeft((prev) => prev - 1);
       }
     }
   };

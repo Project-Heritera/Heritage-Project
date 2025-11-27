@@ -92,7 +92,7 @@ export async function save_room(course_id, section_id, room_id, new_room_data) {
  *  * HTTP 200 if the room was published successfully.
  *  * HTTP 400 or 403 if the user lacks permission or the request is invalid.
  */
-export async function publish_room(course_id, section_id, room_id, publish_room_data) {
+export async function publish_room(course_id, section_id, room_id, publish_room_data) { 
 	try {
 		const response = await api.post(`website/rooms/${room_id}/publish`,publish_room_data);
 		Debug.log('room save successful', response.data);
@@ -104,7 +104,7 @@ export async function publish_room(course_id, section_id, room_id, publish_room_
 }
 
 /**
- * get_task_progress_for_room: Fetches task progress for all tasks in a room.
+L* get_task_progress_for_room: Fetches task progress for all tasks in a room.
  * @ NOTE: backend handles verification that user can access room
  * @course_id :
  *  ID of the parent course
@@ -134,7 +134,7 @@ export async function publish_room(course_id, section_id, room_id, publish_room_
  */
 export async function get_task_progress_for_room(course_id, section_id, room_id) {
 	try {
-		const response = await api.get(`website/rooms/${room_id}/task_progress/`);
+		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/task_progress/`);
 		return response.data
 	} 
 	catch (error) {
