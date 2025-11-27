@@ -4,15 +4,8 @@ import nested_admin
 
 admin.site.register(Course)
 admin.site.register(Section)
-admin.site.register(TaskComponent)
-admin.site.register(UserCourseAccessLevel)
-admin.site.register(UserSectionAccessLevel)
-admin.site.register(UserRoomAccessLevel)
 admin.site.register(ProgressOfTask)
-admin.site.register(Tag)
 admin.site.register(SavedTask)
-admin.site.register(Dictionary)
-admin.site.register(DictionaryEntry)
 admin.site.register(Badge)
 admin.site.register(UserBadge)
 

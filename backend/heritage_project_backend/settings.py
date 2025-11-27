@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "apps.website",
     "ordered_model",
     "nested_admin",
+    "friendship",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -97,8 +99,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Means by default no one can access any API endpoints without login
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
