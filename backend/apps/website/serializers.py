@@ -11,6 +11,7 @@ from .models import (
     Task,
     TaskComponent,
     Tag,
+    UserBadge,
     VisibilityLevel,
     ProgressOfTask,
 )
@@ -80,13 +81,12 @@ class BadgeSerializer(serializers.ModelSerializer):
 class UserBadgeSerializer(serializers.ModelSerializer):
     userbadge_id = serializers.IntegerField(source="id", read_only=True)
     user = serializers.CharField(source="user.username")
-    badge = BadgeSerializer(many=True, required=True)
-    awarded_at = serializers.DateTimeField()
+    badge = BadgeSerializer(read_only=True)
 
     class Meta:
-        model = Badge
-        fields = ["userbadge_id", "user", "title", "badge", "awarded_at"]
-        read_only_fields = ["userbadge_id", "user", "title", "badge", "awarded_at"]
+        model = UserBadge
+        fields = ["userbadge_id", "user", "badge", "awarded_at"]
+        read_only_fields = ["userbadge_id", "user", "badge", "awarded_at"]
 
 
 # -------------------------------
