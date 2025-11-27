@@ -39,7 +39,7 @@ function Profile() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <ProfileDisplay isOwner={isOwner} profImage={profPicLink} name={username} description={description}/>
-      <BadgeContainer/>
+      <BadgeContainer username={username}/>
     </div>
   )
 }
