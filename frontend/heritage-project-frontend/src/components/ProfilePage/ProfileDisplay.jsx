@@ -7,10 +7,11 @@ import ConnectionButton from "./ConnectionButton";
 import EditButton from "./EditButton";
 import ProfileTitle from "./ProfileTitle"
 import ProfileEdit from "./ProfileEdit";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function ProfileDisplay({ profImage, name, description, isOwner }) {
   const editProfile = () => console.log("Editing profile")
+  console.log("Description recieved is: ", description)
 
   //Add label and function (action) for dropdown menu buttons
   const dropDownMenu = [
@@ -20,6 +21,11 @@ function ProfileDisplay({ profImage, name, description, isOwner }) {
   const [currentBio, setCurrentBio] = useState(description);
   const [currentImageUrl, setCurrentImageUrl] = useState(profImage);
 
+  useEffect(() => {
+     setCurrentBio(description);
+     setCurrentImageUrl(profImage);
+  }, [description, profImage]);
+
   return (
     <ProfileDiv>
       <div className="profileDisplayDiv">
@@ -28,7 +34,7 @@ function ProfileDisplay({ profImage, name, description, isOwner }) {
           <div className="flex flex-col ">
             {/* Actions and Title div*/}
             <div className="flex items-center">
-              <ProfileTitle username={"Harry Potter"} />
+              <ProfileTitle username={name} />
               {/* Display actions*/}
               <div className="ml-auto">
                 {/* Handle whats displayed if users page is the owners*/}

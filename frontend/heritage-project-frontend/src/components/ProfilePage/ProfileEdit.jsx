@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import ProfileImage from "./ProfileImage";
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import api from "../../services/api"
 
 function ProfileEdit({ currentBio, currentImageUrl, setCurrentImageUrl, setCurrentBio}) {
     //Store data for whats being edited
@@ -21,6 +22,11 @@ function ProfileEdit({ currentBio, currentImageUrl, setCurrentImageUrl, setCurre
     const [open, setOpen] = useState(false)
     const [imageFile, setImageFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState(currentImageUrl);
+
+    useEffect(() => {
+        setBio(currentBio || "");
+        setPreviewUrl(currentImageUrl || "");
+    }, [currentBio, currentImageUrl])
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -34,12 +40,30 @@ function ProfileEdit({ currentBio, currentImageUrl, setCurrentImageUrl, setCurre
         }
     };
 
-    const saveChanges = () => {
+    const saveChanges = async () => {
         console.log("Saving changes");
         //Submit chanegs to backend
+        try {
+            const formData = new FormData();
+
+            formData.append("description", bio);
+
+            if (imageFile) {
+                formData.append("profile_pic", imageFile);
+            }
+
+            const response = await api.put("/accounts/update_user_info/", formData, {headers: {"Content-Type": "multipart/form-data"},});
+
+            console.log("Success uploading edits")
+
+            if (response.data) {
+                setCurrentBio(bio);
+                setCurrentImageUrl(previewUrl);
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error)
+        }
         //Close menu and set properities for users display
-        setCurrentBio(bio);
-        setCurrentImageUrl(previewUrl);
         setOpen(false);
     }
 
