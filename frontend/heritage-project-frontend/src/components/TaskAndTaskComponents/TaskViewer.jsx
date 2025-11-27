@@ -1,16 +1,16 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
-import statusTypes from "../../utils/statusTypes";
+import statusTypes, { statusDisplayToKey } from "../../utils/statusTypes";
 
 const TaskViewer = forwardRef(
   (
     {
-      intialStatus,
+      initialStatus,
       initialComponents = [],
       initialAttempts = 1,
       initialMetadata = {},
-      taskId,
+      taskID,
     },
     ref
   ) => {
@@ -19,7 +19,25 @@ const TaskViewer = forwardRef(
     //specifics for viewer
     const [attempts, setAttempts] = useState(initialAttempts);
     const [metadata, setMetadata] = useState(initialMetadata);
-    const [taskStatus, setTaskStatus] = useState(intialStatus);
+
+    // Normalize incoming status (accept either key like 'COMPLE' or display like 'COMPLETE')
+    const getStatusKey = (s) => {
+      if (!s) return null;
+      // if s is already a key (e.g. 'COMPLE') and exists in statusTypes, return it
+      if (Object.prototype.hasOwnProperty.call(statusTypes, s)) return s;
+      // if s is a display string (e.g. 'COMPLETE'), map to key
+      if (statusDisplayToKey && statusDisplayToKey[s]) return statusDisplayToKey[s];
+      return null;
+    };
+
+    // store canonical status key in state (e.g. 'COMPLE')
+    const [taskStatus, setTaskStatusState] = useState(getStatusKey(initialStatus) ?? "NOSTAR");
+
+    // Expose a setter that accepts either display or key and normalizes to the canonical key
+    const setTaskStatus = (val) => {
+      const k = getStatusKey(val);
+      if (k) setTaskStatusState(k);
+    };
     //influences component behavior if no question task component is present in task
     const [questionTaskPresent, setQuestionTaskPresent] = useState(false);
 
@@ -28,21 +46,8 @@ const TaskViewer = forwardRef(
       const hasQuestion = taskComponents.some(
         (tc) => taskComponentTypes[tc.type]?.category === "Question"
       );
-      console.log("does task have a question component", hasQuestion);
       setQuestionTaskPresent(hasQuestion);
     }, [taskComponents]);
-
-    useImperativeHandle(ref, () => ({
-      serialize: () => {
-        let taskData = {
-          status: taskStatus,
-          attempts: attempts,
-          metadata: metadata,
-          task: taskId,
-        };
-        return taskData;
-      },
-    }));
 
     const contextValues = {
       taskStatus,
@@ -51,14 +56,19 @@ const TaskViewer = forwardRef(
 
     // Render different content based on taskStatus
     const renderContent = () => {
-      if (taskStatus === statusTypes.COMPLE) {
+      const questionProgressData = {
+        attempts: attempts,
+        status: taskStatus,
+        metadata: metadata,
+      };
+      if (taskStatus === "COMPLE") {
         return (
           <div className="task-complete">
             <h3>✓ Task Complete</h3>
             <p>You have successfully completed this task!</p>
           </div>
         );
-      } else if (taskStatus === statusTypes.INCOMP) {
+      } else if (taskStatus === "INCOMP") {
         return (
           <div className="task-incomplete">
             <h3>✗ Incorrect Answer</h3>
@@ -67,6 +77,8 @@ const TaskViewer = forwardRef(
               components={taskComponents}
               isEditing={false}
               contextValues={contextValues}
+              taskID={taskID}
+              questionProgressData={questionProgressData}
             />
           </div>
         );
@@ -76,7 +88,9 @@ const TaskViewer = forwardRef(
           <TaskBase
             components={taskComponents}
             isEditing={false}
+            taskID={taskID}
             contextValues={contextValues}
+            questionProgressData={questionProgressData}
           />
         );
       }

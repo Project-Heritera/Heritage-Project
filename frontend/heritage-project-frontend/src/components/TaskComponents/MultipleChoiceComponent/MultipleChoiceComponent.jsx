@@ -9,7 +9,11 @@ import { taskComponentTypes } from "../../../utils/taskComponentTypes";
 //edit is the toggle for weather its editable or not
 const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, ref) => {
   const [choiceApi, setChoiceApi] = useState(null); //Used to provide functions to parent of MarkdownArea
-  const [selectedAnswerChoice, setSelectedAnswerChoice] = useState(""); //set to id of selected button for viewer
+  // store selected answer ids as an array to support single- and multi-select modes
+  const [selectedAnswerChoices, setSelectedAnswerChoices] = useState([]);
+  // after submit, reveal which selections were correct/incorrect
+  const [revealedCorrect, setRevealedCorrect] = useState(new Set());
+  const [revealedIncorrect, setRevealedIncorrect] = useState(new Set());
 
   function handleSerialize() {
     const jsonToSerialize = JSON.stringify({
@@ -19,19 +23,39 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
   }
 
   function checkIfCorrect() {
-    if (selectedAnswerChoice === "") return statusTypes.INCOMP;
+    // If no selection made
+    if (!selectedAnswerChoices || selectedAnswerChoices.length === 0) return statusTypes.INCOMP;
 
-    let correctAnswerChoices = [];
-    for (const choice of choiceArray) {
-      if (choice.correct === true) {
-        correctAnswerChoices.push(choice.id);
-      }
+    // For comparisons we use string ids
+    const selectedSet = new Set(selectedAnswerChoices.map((s) => String(s)));
+    const correctSet = new Set(correctAnswerChoices.map((c) => String(c)));
+
+    // compute revealed sets for UI
+    const newRevealedCorrect = new Set();
+    const newRevealedIncorrect = new Set();
+
+    // mark selected choices as correct/incorrect
+    for (const s of selectedSet) {
+      if (correctSet.has(s)) newRevealedCorrect.add(s);
+      else newRevealedIncorrect.add(s);
     }
-    if (correctAnswerChoices.includes(selectedAnswerChoice)) {
+
+    setRevealedCorrect(newRevealedCorrect);
+    setRevealedIncorrect(newRevealedIncorrect);
+
+    // If any selected choice is incorrect, immediately return INCOMP
+    for (const s of selectedSet) if (!correctSet.has(s)) return statusTypes.INCOMP;
+
+    // Multi-correct mode: require exact match of sets
+    if (correctSet.size > 1) {
+      if (selectedSet.size !== correctSet.size) return statusTypes.INCOMP;
+      for (const c of correctSet) if (!selectedSet.has(c)) return statusTypes.INCOMP;
       return statusTypes.COMPLE;
-    } else {
-      return statusTypes.INCOMP;
     }
+
+    // Single-correct mode: allow only one selection, and it must be correct
+    if (selectedSet.size === 1) return statusTypes.COMPLE;
+    return statusTypes.INCOMP;
   }
 
   // Expose checkIfCorrect to parent via ref
@@ -40,21 +64,16 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
   }));
 
   let initChoiceArray = jsonData.choiceArray;
-  console.log("choiceArray is: ", initChoiceArray);
-  //Check if there is already choices added else init default 2 editable choices
-  //todo: from malik: you dont need to supply default values we alr do that in parent component. Just assume you are getting a valid json
   if (initChoiceArray === undefined || initChoiceArray === null) {
-    console.log("array was null adding init values");
-    initChoiceArray = [
-      { id: "a", text: "Edit Text", correct: false },
-      { id: "b", text: "Edit Text", correct: false },
-    ];
+    error.log("mcq task component does not contain choice array when it should");
   }
 
   const [choiceArray, setChoiceArray] = useState(initChoiceArray);
-  //Handle non edit case where user submits their choice
 
-  console.log("Am I editing?", isEditing);
+  // Precompute correct answer ids and single/multi mode
+  const correctAnswerChoices = choiceArray ? choiceArray.filter((c) => c.correct === true).map((c) => String(c.id)) : [];
+  const singleCorrectMode = correctAnswerChoices.length === 1;
+
 
   return (
     <div className="text-component">
@@ -68,10 +87,13 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
         />
       ) : (
         //Edit is false
-        <Use 
-          choiceArray={choiceArray} 
-          selectedAnswerChoice={selectedAnswerChoice}
-          setSelectedAnswerChoice={setSelectedAnswerChoice}
+        <Use
+          choiceArray={choiceArray}
+          selectedAnswerChoices={selectedAnswerChoices}
+          setSelectedAnswerChoices={setSelectedAnswerChoices}
+          singleCorrectMode={singleCorrectMode}
+          revealedCorrect={revealedCorrect}
+          revealedIncorrect={revealedIncorrect}
         />
       )}
     </div>

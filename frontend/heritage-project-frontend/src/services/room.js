@@ -1,5 +1,6 @@
 import api from "./api";
 import { Debug } from "../utils/debugLog";
+import { ca } from "zod/v4/locales";
 /**
  * create_room: Creates a new room in the database.
  *
@@ -36,7 +37,9 @@ export async function create_room(create_room_data) {
 */
 export async function get_room_data(course_id, section_id, room_id) {
 	try {
-		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
+		//const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
+		const response = await api.get(`website/rooms/${room_id}/`);
+
 		Debug.log('room fetch successful', response.data);
 		return response.data
 	} 
@@ -69,7 +72,7 @@ export async function get_room_data(course_id, section_id, room_id) {
  */
 export async function save_room(course_id, section_id, room_id, new_room_data) {
 	try {
-		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/save/`, new_room_data);
+		const response = await api.post(`website/rooms/${room_id}/save/`, new_room_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
@@ -93,7 +96,7 @@ export async function save_room(course_id, section_id, room_id, new_room_data) {
  */
 export async function publish_room(course_id, section_id, room_id, publish_room_data) {
 	try {
-		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/publish`,publish_data);
+		const response = await api.post(`website/rooms/${room_id}/publish`,publish_room_data);
 		Debug.log('room save successful', response.data);
 		return response.data
 	} 
@@ -133,10 +136,20 @@ export async function publish_room(course_id, section_id, room_id, publish_room_
  */
 export async function get_task_progress_for_room(course_id, section_id, room_id) {
 	try {
-		const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/task_progress/`);
+		const response = await api.get(`website/rooms/${room_id}/task_progress/`);
 		return response.data
 	} 
 	catch (error) {
+		throw(error);
+	}
+}
+export async function update_task_progress(task_id, updated_task_progress_data){
+	try{
+		console.log(updated_task_progress_data)
+		const response = await api.put(`website/tasks/${task_id}/update_progress/`, updated_task_progress_data)
+		return response.data
+	}
+	catch(error) {
 		throw(error);
 	}
 }

@@ -12,7 +12,7 @@ TaskComponent.propTypes = {
   isEditing: PropTypes.bool
 };
 
-function TaskComponent({ componentType, taskComponentSpecificData="", isEditing }) {
+function TaskComponent({ componentType, taskComponentSpecificData="", isEditing, taskID, questionProgressData  }) {
   const [jsonData, setJsondata] = useState(taskComponentSpecificData);
   useEffect(()=>{
      //if newly created, assign a default schema
@@ -37,7 +37,6 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
   }
 
     {
-       console.log("component is ", taskComponentTypes[componentType].component)
        const Component = taskComponentTypes[componentType].component;
        if (Component != null){
         if (taskComponentTypes[componentType].category==="Question"){
@@ -47,6 +46,8 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing 
             QuestionTaskComponent={Component}
             isEditing={isEditing}
             jsonData={jsonData}
+            taskID={taskID}
+questionProgressData={questionProgressData}
             />
           )
         }

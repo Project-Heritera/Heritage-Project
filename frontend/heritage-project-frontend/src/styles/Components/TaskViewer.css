@@ -1,0 +1,77 @@
+.task-content-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-status-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.task-complete-overlay {
+  background: rgba(22, 163, 74, 0.15);
+}
+
+.task-incomplete-overlay {
+  background: rgba(220, 38, 38, 0.15);
+}
+
+.status-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInBadge 0.4s ease-out;
+}
+
+.status-icon {
+  font-size: 3rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.task-complete-overlay .status-icon {
+  color: #16a34a;
+}
+
+.task-incomplete-overlay .status-icon {
+  color: #dc2626;
+}
+
+.status-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.task-complete-overlay .status-text {
+  color: #16a34a;
+}
+
+.task-incomplete-overlay .status-text {
+  color: #dc2626;
+}
+
+@keyframes slideInBadge {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

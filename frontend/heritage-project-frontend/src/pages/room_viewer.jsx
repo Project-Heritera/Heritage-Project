@@ -160,7 +160,7 @@ const RoomViewer = () => {
     <div className="room-editor flex flex-col px-8 py-6 gap-6">
       <div className="room-editor-header space-y-2">
         <div className="flex items-center justify-between">
-           <button
+          <button
             onClick={() => navigate(-1)}
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
@@ -171,7 +171,7 @@ const RoomViewer = () => {
             <p className="text-base">{roomDesc}</p>
             <p className="text-sm italic">Created by: {roomCreator}</p>
           </div>
-       </div>
+        </div>
       </div>
 
       <div className="room-editor-body">
@@ -187,10 +187,10 @@ const RoomViewer = () => {
                 initialComponents={
                   task.task_components || task.components || []
                 }
-                intialStatus={task.progress?.status || null}
+                initialStatus={task.progress?.status || null}
                 initialAttempts={task.progress?.attempts ?? 0}
                 initialMetadata={task.progress?.metadata || {}}
-                taskId={task.task_id}
+                taskID={task.task_id}
               />
             </div>
           ))}
@@ -201,8 +201,7 @@ const RoomViewer = () => {
         <p>Created On {roomCreationDate}</p>
         <p>Last Modified On {roomLastEdited}</p>
       </div>
-
-   </div>
+    </div>
   );
 };
 
