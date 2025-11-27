@@ -141,6 +141,10 @@ def get_another_badges(request, user_username):
     # Get all badges for that user
     user_badges = UserBadge.objects.filter(user=user).select_related("badge")
 
+    # If the user has no badges → return 204 No Content
+    if not user_badges.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     serializer = UserBadgeSerializer(user_badges, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
