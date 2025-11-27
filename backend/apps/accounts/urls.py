@@ -15,4 +15,7 @@ urlpatterns = [
     path("user_info/", views.get_user_info),
     path("update_user_info/", views.update_user_info),
     path("another_user_info/<str:user_username>", views.get_another_user_info),
+    # user courses info
+    path("courses_created/<str:user_username>", views.get_courses_created),
+    path("courses_completed/<str:user_username>", views.get_courses_completed),
 ]
