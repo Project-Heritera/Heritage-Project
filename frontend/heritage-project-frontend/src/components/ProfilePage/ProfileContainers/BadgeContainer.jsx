@@ -3,17 +3,13 @@ import Badge from "@/components/Common/Badge/Badge";
 import api from "../../../services/api";
 import { useState, useEffect } from "react";
 
-function BadgeContainer() {
-  const getBadges = () => {
-    const badges = api.get("/website/badges/")
-  }
-
+function BadgeContainer({username}) {
   const [badges, setBadges] = useState([]);
 
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response = await api.get("/website/badges/");
+        const response = await api.get(`/website/another_badges/${username}`);
         console.log("API badges response:", response.data)
         setBadges(response.data);
       } catch (error) {
