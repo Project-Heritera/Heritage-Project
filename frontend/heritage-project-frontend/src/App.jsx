@@ -22,12 +22,12 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<AuthLogin />} />
         <Route path='/login' element={<AuthLogin />} />
-        <Route path="/profile" element={<ProfilePage/>}></Route>
         {/*Protected Routes*/}
         <Route element={<ProtectedRoute />}>
           <Route path='/courses' element={<CourseView />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/view' element={<RoomViewer />} />
+          <Route path='/u/:username' element={<ProfilePage/>}></Route>
         </Route>
       </Route>
       </Routes>
