@@ -1,15 +1,16 @@
 import {Card, CardContent, CardTitle, CardDescription} from "../../ui/card"
 import BadgeImage from "./BadgeImage";
 
-function Badge({image, title}) {
+function Badge({image, title, description}) {
   console.log("Image is:", image)
+  const badgePicLink = `${import.meta.env.VITE_API_URL_FOR_TEST}${image}`
   return (
     <Card>
         <CardContent className="badgeContent">
             {/* Display the Image */}
-            <BadgeImage badgeImage={image}></BadgeImage>
+            <BadgeImage badgeImage={badgePicLink}></BadgeImage>
             <CardTitle>{title}</CardTitle>
-            <CardDescription>This badge is awared for the completion of the Creole Course</CardDescription>
+            <CardDescription>{description}</CardDescription>
         </CardContent>
     </Card>
   )

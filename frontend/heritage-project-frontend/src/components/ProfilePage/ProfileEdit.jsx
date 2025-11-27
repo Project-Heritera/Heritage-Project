@@ -46,18 +46,22 @@ function ProfileEdit({ currentBio, currentImageUrl, setCurrentImageUrl, setCurre
         try {
             const formData = new FormData();
 
-            formData.append("description", bio);
+            let newDescription = bio
+            if (!bio || bio == "") {
+                newDescription="No Description"
+            }
+            formData.append("description", newDescription);
 
             if (imageFile) {
                 formData.append("profile_pic", imageFile);
             }
 
-            const response = await api.put("/accounts/update_user_info/", formData, {headers: {"Content-Type": "multipart/form-data"},});
+            const response = await api.put("/accounts/update_user_info/", formData);
 
             console.log("Success uploading edits")
 
             if (response.data) {
-                setCurrentBio(bio);
+                setCurrentBio(newDescription);
                 setCurrentImageUrl(previewUrl);
             }
         } catch (error) {

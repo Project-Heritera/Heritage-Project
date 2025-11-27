@@ -20,13 +20,18 @@ function BadgeContainer({username}) {
     fetchBadges();
   }, []);
 
+  if (!badges) {
+      return <div>Loading...</div>;
+  }
+
   return (
     <ProfileContainer title={"Badges"} itemsPerRow={3}>
         {badges && badges.map((badge) => (
           <Badge
-            key={badge.title}
-            title={badge.title}
-            image={badge.image}
+            key={badge.badge.title}
+            title={badge.badge.title}
+            image={badge.badge.image}
+            description={badge.badge.description}
           />
         ))}
     </ProfileContainer>
