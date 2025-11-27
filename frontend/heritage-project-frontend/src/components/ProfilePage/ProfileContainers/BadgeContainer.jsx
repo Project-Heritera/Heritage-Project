@@ -26,7 +26,7 @@ function BadgeContainer() {
 
   return (
     <ProfileContainer title={"Badges"} itemsPerRow={3}>
-        {badges.map((badge) => (
+        {badges && badges.map((badge) => (
           <Badge
             key={badge.title}
             title={badge.title}
