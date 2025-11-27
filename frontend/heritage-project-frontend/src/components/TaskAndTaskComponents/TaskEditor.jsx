@@ -8,111 +8,115 @@ import { Button } from "@/components/ui/button";
 import { TaskComponentMenu } from "./TaskComponentMenu";
 import { TagSelectionMenu } from "./TagSelectionMenu";
 
-const TaskEditor = forwardRef(({ initialTags = [], initialComponents = [] }, ref) => {
-  const [taskComponents, setTaskComponents] = useState(initialComponents);
-  const [taskComponentMenu, setTaskComponentMenu] = useState(false);
-  //for tags
-  const [tags, setTags] = useState(initialTags);
-  const [availableTags, setAvailableTags] = useState(["Easy", "Medium", "Hard"]) //todo: load all from database onto global zustland state on user login 
-  const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
+const TaskEditor = forwardRef(
+  ({ initialTags = [], initialComponents = [], taskID }, ref) => {
+    const [taskComponents, setTaskComponents] = useState(initialComponents);
+    const [taskComponentMenu, setTaskComponentMenu] = useState(false);
+    //for tags
+    const [tags, setTags] = useState(initialTags);
+    const [availableTags, setAvailableTags] = useState([
+      "Easy",
+      "Medium",
+      "Hard",
+    ]); //todo: load all from database onto global zustland state on user login
+    const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
 
-  const addNewTaskComponent = (type) => {
-    const jsonData = taskComponentTypes[type].defaultValue;
-    const newComponent = {
-      task_component_id: Date.now(),
-      type,
-      content: jsonData,
+    const addNewTaskComponent = (type) => {
+      const jsonData = taskComponentTypes[type].defaultValue;
+      const newComponent = {
+        task_component_id: Date.now(),
+        type,
+        content: jsonData,
+      };
+      setTaskComponents((prev) => [...prev, newComponent]);
     };
-    setTaskComponents((prev) => [...prev, newComponent]);
-  };
 
-  useImperativeHandle(ref, () => ({
-    serialize: () => taskComponents,
-  }));
+    useImperativeHandle(ref, () => ({
+      serialize: () => taskComponents,
+    }));
 
-
-
- return (
-    <Card className="task-editor bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
-      {/* Tag Section */}
-      <CardHeader className="pb-2">
-        <h3 className="text-lg font-bold">Tags</h3>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {/* Display current tags */}
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
-            <div
-              key={index}
-              className="flex items-center bg-indigo-100/60 text-indigo-700 px-3 py-1 rounded-full gap-1"
-            >
-              <span>{tag}</span>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-indigo-500 hover:text-indigo-700 p-0"
-                onClick={() => setTags(tags.filter((t) => t !== tag))}
+    return (
+      <Card className="task-editor bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
+        {/* Tag Section */}
+        <CardHeader className="pb-2">
+          <h3 className="text-lg font-bold">Tags</h3>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {/* Display current tags */}
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag, index) => (
+              <div
+                key={index}
+                className="flex items-center bg-indigo-100/60 text-indigo-700 px-3 py-1 rounded-full gap-1"
               >
-                ×
-              </Button>
-            </div>
-          ))}
-        </div>
+                <span>{tag}</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-indigo-500 hover:text-indigo-700 p-0"
+                  onClick={() => setTags(tags.filter((t) => t !== tag))}
+                >
+                  ×
+                </Button>
+              </div>
+            ))}
+          </div>
 
-        {/* Add Tag Button */}
-        <Button
-          onClick={() => setTagSelectionMenu(true)}
-          className="flex items-center gap-1 bg-indigo-600 text-white hover:bg-indigo-700"
-        >
-          <CirclePlus className="w-4 h-4" />
-          Add Tag
-        </Button>
+          {/* Add Tag Button */}
+          <Button
+            onClick={() => setTagSelectionMenu(true)}
+            className="flex items-center gap-1 bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            <CirclePlus className="w-4 h-4" />
+            Add Tag
+          </Button>
 
-        {/* Tag Selection Modal */}
-        <Modal
-          isOpen={tagSelectionMenu}
-          onClose={() => setTagSelectionMenu(false)}
-          animationType="slide"
-        >
-          <TagSelectionMenu
-            onSelect={(selectedTag) => {
-              if (!tags.includes(selectedTag)) {
-                setTags([...tags, selectedTag]);
-              }
-              setTagSelectionMenu(false);
-            }}
+          {/* Tag Selection Modal */}
+          <Modal
+            isOpen={tagSelectionMenu}
             onClose={() => setTagSelectionMenu(false)}
-            tagCatalogue={availableTags}
-          />
-        </Modal>
-      </CardContent>
+            animationType="slide"
+          >
+            <TagSelectionMenu
+              onSelect={(selectedTag) => {
+                if (!tags.includes(selectedTag)) {
+                  setTags([...tags, selectedTag]);
+                }
+                setTagSelectionMenu(false);
+              }}
+              onClose={() => setTagSelectionMenu(false)}
+              tagCatalogue={availableTags}
+            />
+          </Modal>
+        </CardContent>
 
-      {/* Task Components Section */}
-      <CardHeader className="pt-4 pb-2">
-        <h3 className="text-lg font-bold">Task Components</h3>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <TaskBase components={taskComponents} isEditing={true} />
+        {/* Task Components Section */}
+        <CardHeader className="pt-4 pb-2">
+          <h3 className="text-lg font-bold">Task Components</h3>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <TaskBase components={taskComponents} isEditing={true} />
 
-        {/* Add Task Component Button */}
-        <Button
-          onClick={() => setTaskComponentMenu(true)}
-          className="flex items-center gap-1"
-        >
-          <CirclePlus className="w-4 h-4" />
-          Add Task Component
-        </Button>
+          {/* Add Task Component Button */}
+          <Button
+            onClick={() => setTaskComponentMenu(true)}
+            className="flex items-center gap-1"
+          >
+            <CirclePlus className="w-4 h-4" />
+            Add Task Component
+          </Button>
 
-        {/* Task Component Modal */}
-        <Modal
-          isOpen={taskComponentMenu}
-          onClose={() => setTaskComponentMenu(false)}
-        >
-          <TaskComponentMenu onSelect={addNewTaskComponent} />
-        </Modal>
-      </CardContent>
-    </Card>
-  );
-});
+          {/* Task Component Modal */}
+          <Modal
+            isOpen={taskComponentMenu}
+            onClose={() => setTaskComponentMenu(false)}
+          >
+            <TaskComponentMenu onSelect={addNewTaskComponent} />
+          </Modal>
+        </CardContent>
+      </Card>
+    );
+  }
+);
 
 export default TaskEditor;

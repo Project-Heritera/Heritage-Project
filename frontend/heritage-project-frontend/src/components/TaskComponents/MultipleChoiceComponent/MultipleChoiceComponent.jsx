@@ -54,21 +54,16 @@ function handleSelectAnswerChoice(selectedID) {
   }));
 
   let initChoiceArray = jsonData.choiceArray;
-  console.log("choiceArray is: ", initChoiceArray);
-  //Check if there is already choices added else init default 2 editable choices
-  //todo: from malik: you dont need to supply default values we alr do that in parent component. Just assume you are getting a valid json
   if (initChoiceArray === undefined || initChoiceArray === null) {
-    console.log("array was null adding init values");
-    initChoiceArray = [
-      { id: "a", text: "Edit Text", correct: false },
-      { id: "b", text: "Edit Text", correct: false },
-    ];
+    error.log("mcq task component does not contain choice array when it should");
   }
 
   const [choiceArray, setChoiceArray] = useState(initChoiceArray);
-  //Handle non edit case where user submits their choice
 
-  console.log("Am I editing?", isEditing);
+  // Precompute correct answer ids and single/multi mode
+  const correctAnswerChoices = choiceArray ? choiceArray.filter((c) => c.correct === true).map((c) => String(c.id)) : [];
+  const singleCorrectMode = correctAnswerChoices.length === 1;
+
 
   return (
     <div className="text-component">

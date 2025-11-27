@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
 
 from apps.website.models import Course
+from apps.website.serializers import CourseSerializer
 from .serializer import UserSerializer
 
 User = get_user_model()
@@ -76,8 +77,7 @@ def delete_account(request):
                 "user_id": serializers.IntegerField(),
                 "username": serializers.CharField(),
                 "profile_pic": serializers.ImageField(),
-                "description": serializers.CharField(),
-                "courses_created": serializers.IntegerField(),
+                "description": serializers.CharField()
             }
         ),
     }
@@ -104,8 +104,7 @@ def update_user_info(request):
     tags=["Users"],
     summary="Get the user's info",
     description="Get the information of the currently logged in user.",
-
-    
+    request=None,    
     responses={
         200: inline_serializer(
             name="GetUserInfoResponse",
@@ -115,6 +114,7 @@ def update_user_info(request):
                 "profile_pic": serializers.ImageField(),
                 "description": serializers.CharField(),
                 "courses_created": serializers.IntegerField(),
+                "courses_completed": serializers.IntegerField()
             }
         ),
     }
@@ -125,12 +125,17 @@ def get_user_info(request):
     user = request.user
 
     courses_created_int = Course.objects.filter(creator=user).count()
+    courses_completed_int = Course.objects.filter(
+        userprogress__user=user,
+        userprogress__percent=100
+    ).count()
 
     user_serializer = UserSerializer(user)
 
     return Response({
         **user_serializer.data,
-        "courses_created": courses_created_int
+        "courses_created": courses_created_int,
+        "courses_completed": courses_completed_int
     }, status=status.HTTP_200_OK)
 
 
@@ -138,6 +143,7 @@ def get_user_info(request):
     tags=["Users"],
     summary="Get another user's info",
     description="Gets the information of another user (not the one logged in). You must provide the user's ID in the url.",
+    request=None,
     responses={
         200: inline_serializer(
             name="GetAnotherUserInfoResponse",
@@ -147,6 +153,7 @@ def get_user_info(request):
                 "profile_pic": serializers.ImageField(),
                 "description": serializers.CharField(),
                 "courses_created": serializers.IntegerField(),
+                "courses_completed": serializers.IntegerField()
             }
         ),
         404: OpenApiResponse(description='Could not get user.'),
@@ -158,10 +165,71 @@ def get_another_user_info(request, user_username):
     user = get_object_or_404(User, username=user_username)
 
     courses_created_int = Course.objects.filter(creator=user).count()
+    courses_completed_int = Course.objects \
+        .filter_by_user_access(user) \
+        .user_progress_percent(user) \
+        .filter(progress_percent=100) \
+        .count()
 
     serializer = UserSerializer(user)
 
     return Response({
         **serializer.data,
-        "courses_created": courses_created_int
+        "courses_created": courses_created_int,
+        "courses_completed": courses_completed_int
     }, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Users"],
+    summary="Get courses completed details",
+    description="Get all the standard serializer info about all of the courses completed by a certain user.",
+    request=None,
+    responses={
+        200: CourseSerializer,
+        204: OpenApiResponse(description='No completed courses found.'),
+        404: OpenApiResponse(description="Could not get user.")
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_courses_completed(request, user_username):
+    user = get_object_or_404(User, username=user_username)
+
+    courses_completed = Course.objects \
+        .filter_by_user_access(user) \
+        .user_progress_percent(user) \
+        .filter(progress_percent=100)
+
+    if not courses_completed.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(courses_completed, many=True, context={"request": request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Users"],
+    summary="Get courses created details",
+    description="Get all the standard serializer info about all of the courses created by a certain user.",
+    request=None,
+    responses={
+        200: CourseSerializer,
+        204: OpenApiResponse(description='No created courses found.'),
+        404: OpenApiResponse(description="Could not get user.")
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_courses_created(request, user_username):
+    user = get_object_or_404(User, username=user_username)
+
+    courses_created = Course.objects.filter(creator=user)
+
+    if not courses_created.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(courses_created, many=True, context={"request": request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)

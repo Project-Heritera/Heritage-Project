@@ -3,7 +3,7 @@ import TaskComponent from "./TaskComponent";
 
 export const TaskGlobalContext = createContext(null);
 
-export default function TaskBase({ components, isEditing, contextValues={} }) {
+export default function TaskBase({ components, isEditing, contextValues={}, taskID, questionProgressData}) {
   return (
     <TaskGlobalContext.Provider value={contextValues}>
       <div className="task-body space-y-6">
@@ -13,6 +13,8 @@ export default function TaskBase({ components, isEditing, contextValues={} }) {
             componentType={tc.type}
             taskComponentSpecificData={tc.content}
             isEditing={isEditing}
+            taskID={taskID}
+questionProgressData={questionProgressData}
           />
         ))}
       </div>

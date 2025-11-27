@@ -32,8 +32,9 @@ import { get_random_image_from_list } from "@/utils/default_images";
 const RoomEditor = () => {
   //get ids from url
   const { course_id, section_id, room_id } = useParams();
-  const [backgroundImage, setBackgroundImage] = useState(get_random_image_from_list())
-
+  const [backgroundImage, setBackgroundImage] = useState(
+    get_random_image_from_list()
+  );
 
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
@@ -227,134 +228,134 @@ const RoomEditor = () => {
   };
 
   return (
-       <div className="relative w-screen min-h-screen">
-    {/* Background layer: repeats infinitely */}
-    <div
-      className="fixed inset-0 -z-10"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundRepeat: "repeat",   // repeats in both directions
-        backgroundPosition: "top left",
-        backgroundSize: "auto",       // keep natural size
-      }}
-    />
+    <div className="relative w-screen min-h-screen">
+      {/* Background layer: repeats infinitely */}
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundRepeat: "repeat", // repeats in both directions
+          backgroundPosition: "top left",
+          backgroundSize: "auto", // keep natural size
+        }}
+      />
 
-    {/* Foreground content */}
-    <div className="room-editor min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative z-10">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-4xl mb-2">{roomTitle}</CardTitle>
-                <CardDescription className="text-base mb-3">
-                  {roomDesc}
-                </CardDescription>
-                <p className="text-sm text-muted-foreground italic">
-                  Created By: {roomCreator}
-                </p>
+      {/* Foreground content */}
+      <div className="room-editor min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative z-10">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header Card */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-4xl mb-2">{roomTitle}</CardTitle>
+                  <CardDescription className="text-base mb-3">
+                    {roomDesc}
+                  </CardDescription>
+                  <p className="text-sm text-muted-foreground italic">
+                    Created By: {roomCreator}
+                  </p>
+                </div>
+                <Button onClick={serializeAllTasks} size="lg" className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save Room
+                </Button>
               </div>
-              <Button onClick={serializeAllTasks} size="lg" className="gap-2">
-                <Save className="w-4 h-4" />
-                Save Room
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Badge variant="outline" className="w-fit">
+                  Visibility: {roomVisibility}
+                </Badge>
+                <Badge variant="outline" className="w-fit">
+                  Created: {roomCreationDate}
+                </Badge>
+                <Badge variant="outline" className="w-fit">
+                  Last Edited: {roomLastEdited}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tasks Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-900">Tasks</h2>
+              <Badge variant="secondary">{roomTasks.length} tasks</Badge>
+            </div>
+
+            <div className="space-y-4">
+              {roomTasks.map((task, index) => (
+                <Card
+                  key={task.task_id}
+                  className="group hover:shadow-md transition-shadow"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">{index + 1}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          Task ID: {String(task.task_id).slice(0, 8)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveTaskUp(task.task_id)}
+                          disabled={index === 0}
+                          title="Move task up"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveTaskDown(task.task_id)}
+                          disabled={index === roomTasks.length - 1}
+                          title="Move task down"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                        <Separator orientation="vertical" className="h-6" />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteTask(task.task_id)}
+                          className="gap-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="pt-4">
+                    <TaskEditor
+                      key={task.task_id}
+                      ref={(el) => (taskRefs.current[task.task_id] = el)}
+                      tags={task.tags}
+                      initialComponents={task.components}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Add Task Button */}
+              <Button
+                onClick={addNewTask}
+                variant="outline"
+                className="w-full h-12 gap-2 border-dashed"
+              >
+                <CirclePlus className="w-5 h-5" />
+                <span>Add New Task</span>
               </Button>
             </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Badge variant="outline" className="w-fit">
-                Visibility: {roomVisibility}
-              </Badge>
-              <Badge variant="outline" className="w-fit">
-                Created: {roomCreationDate}
-              </Badge>
-              <Badge variant="outline" className="w-fit">
-                Last Edited: {roomLastEdited}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tasks Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">Tasks</h2>
-            <Badge variant="secondary">{roomTasks.length} tasks</Badge>
-          </div>
-
-          <div className="space-y-4">
-            {roomTasks.map((task, index) => (
-              <Card
-                key={task.task_id}
-                className="group hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">{index + 1}</Badge>
-                      <span className="text-sm text-muted-foreground">
-                        Task ID: {String(task.task_id).slice(0, 8)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveTaskUp(task.task_id)}
-                        disabled={index === 0}
-                        title="Move task up"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveTaskDown(task.task_id)}
-                        disabled={index === roomTasks.length - 1}
-                        title="Move task down"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                      <Separator orientation="vertical" className="h-6" />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteTask(task.task_id)}
-                        className="gap-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <Separator />
-                <CardContent className="pt-4">
-                  <TaskEditor
-                    key={task.task_id}
-                    ref={(el) => (taskRefs.current[task.task_id] = el)}
-                    tags={task.tags}
-                    initialComponents={task.components}
-                  />
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* Add Task Button */}
-            <Button
-              onClick={addNewTask}
-              variant="outline"
-              className="w-full h-12 gap-2 border-dashed"
-            >
-              <CirclePlus className="w-5 h-5" />
-              <span>Add New Task</span>
-            </Button>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };
