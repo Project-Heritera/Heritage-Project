@@ -27,9 +27,6 @@ urlpatterns = [
     path("website/", include("apps.website.urls")),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path("api/friendship/", include("friendship.urls")),
-    # friendship urls here: https://github.com/revsys/django-friendship/blob/main/friendship/urls.py
-    # call them by doing: /api/userdata/friendship/<rest of the path>
 ]
 
 if settings.DEBUG:
