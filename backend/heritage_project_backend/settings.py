@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "ordered_model",
     "nested_admin",
     "friendship",
-    'drf_spectacular',
+    'drf_spectacular'
 ]
 
 MIDDLEWARE = [
