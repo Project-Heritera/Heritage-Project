@@ -8,6 +8,7 @@ admin.site.register(ProgressOfTask)
 admin.site.register(SavedTask)
 admin.site.register(Badge)
 admin.site.register(UserBadge)
+admin.site.register(Tag)
 
 class TaskComponentInline(nested_admin.NestedTabularInline):
     model = TaskComponent

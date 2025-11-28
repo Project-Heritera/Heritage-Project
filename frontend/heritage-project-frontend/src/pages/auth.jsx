@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { login } from "../services/auth";
 import { useErrorStore } from "../stores/ErrorStore";
-import Modal from "../components/Modal";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { test_api } from "../services/testAPIs";
 //Define AuthLogin component
 const AuthLogin = () => {
-  const [username, setUsernmae] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-const showError = useErrorStore((state) => state.showError);
+  const showError = useErrorStore((state) => state.showError);
 
   // Function to handle sign in
   async function handleLogin() {
@@ -17,7 +20,7 @@ const showError = useErrorStore((state) => state.showError);
         const data = await login(username, password);//Wait for external login function reply
         showError("Login success", "success");
         Debug.log("Login success:", data);
-        setUsernmae("");
+        setUsername("");
         setPassword("");
       } catch (error) {
         //If somthing in try failed, default to here
@@ -47,25 +50,47 @@ const showError = useErrorStore((state) => state.showError);
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <input
-        type="username"
-        placeholder="enter username"
-        value={username}
-        onChange={(e) => setUsernmae(e.target.value)}
-      />
+    <div className="flex items-center justify-center p-6">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Sign in</CardTitle>
+          <CardDescription>Welcome back — please sign in to your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
 
-      <input
-        type="password"
-        placeholder="Password..."
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Sign In</button>
-      <button onClick={handleSignOut}>Sign Out</button>
-    <div>
-      <button onClick={() => test_api()}>click to test apis</button>
-    </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <Button onClick={handleLogin}>Sign In</Button>
+              <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+            </div>
+
+            <div className="pt-2">
+              <Button variant="ghost" size="sm" onClick={() => test_api()}>Test APIs</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

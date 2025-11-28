@@ -35,10 +35,8 @@ const UseMultipleChoice = ({choiceArray, selectedAnswerChoices, setSelectedAnswe
                             choiceId={choice.id} 
                             isCorrect={choice.correct} 
                             text={choice.text}
-                            selected={selectedAnswerChoices.includes(String(choice.id))}
-                            revealedCorrect={revealedCorrect}
-                            revealedIncorrect={revealedIncorrect}
-                            onClick={() => toggleChoice(choice.id)}
+                            selected={selectedAnswerChoice.includes(choice.id)}
+                            onClick={() => setSelectedAnswerChoice(choice.id)}
                         />
                     </div>
                 ))}

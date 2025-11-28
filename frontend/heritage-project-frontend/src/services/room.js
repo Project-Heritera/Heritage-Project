@@ -35,11 +35,9 @@ export async function create_room(create_room_data) {
  *  * HTTP 200 with full room data if found.
  *  * HTTP 404 if the room ID does not exist.
 */
-export async function get_room_data(course_id, section_id, room_id) {
+export async function get_room_data(room_id) {
 	try {
-		//const response = await api.get(`website/courses/${course_id}/sections/${section_id}/rooms/${room_id}/`);
 		const response = await api.get(`website/rooms/${room_id}/`);
-
 		Debug.log('room fetch successful', response.data);
 		return response.data
 	} 

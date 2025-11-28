@@ -16,16 +16,18 @@ function QuestionTaskComponentWrapper({
   try {
     parsedJsonData =
       typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
+    parsedJsonData =
+      typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
   } catch (e) {
     console.error("Failed to parse jsonData:", e);
     parsedJsonData = jsonData || {};
   }
 
-  const [numberOfAttempts, setNumberOfAttempts] = useState(
-    questionProgressData?.attempts ?? 0
+  const [attemptsLeft, setAttemptsLeft] = useState(
+    initialAttemptsLeft ?? parsedJsonData.number_of_chances ?? 1
   );
-  const [metadata, setMetadata] = useState(
-    questionProgressData?.metadata ?? {}
+  const [numberOfAttempts, setNumberOfAttempts] = useState(
+    parsedJsonData.number_of_chances ?? 1
   );
   const [hint, setHint] = useState(parsedJsonData.hint ?? "");
   const [showHint, setShowHint] = useState(false);
@@ -70,29 +72,60 @@ function QuestionTaskComponentWrapper({
   };
 
   return (
-    <div className="question-wrapper">
-      <QuestionTaskComponent
-        ref={questionComponentRef}
-        jsonData={parsedJsonData}
-        isEditing={isEditing}
-        serialize={serialize}
-      />
-      {!isEditing && (
-        <div className="question-actions">
-          <button
-            onClick={handleSubmit}
-            className="submit-question-button"
-            disabled={taskStatus === statusTypes.COMPLE}
-          >
-            Submit
-          </button>
+    <>
+      {isEditing ? (
+        <div className="question-meta-editor flex gap-2 items-center">
+          <label className="meta-field">
+            <span>Number of attempts:</span>
+            <input
+              type="number"
+              min={1}
+              value={numberOfAttempts}
+              onChange={(e) => setNumberOfAttempts(Number(e.target.value) || 1)}
+              className="meta-input number-of-attempts"
+            />
+          </label>
+          <label className="meta-field">
+            <span>Hint:</span>
+            <input
+              type="text"
+              value={hint}
+              onChange={(e) => setHint(e.target.value)}
+              placeholder="Enter hint"
+              className="meta-input hint-input"
+            />
+          </label>
+        </div>
+      ) : (
+        <div className="question-meta-display">
+          <div>Number of attempts: {numberOfAttempts}</div>
         </div>
       )}
-      {!isCorrect && numberOfAttempts === 0 && hint && (
-        <p className="hint">{hint}</p>
-      )}
-      {showHint && <p className="hint">{hint}</p>}
-    </div>
+      <div className="question-wrapper">
+        <QuestionTaskComponent
+          ref={questionComponentRef}
+          jsonData={parsedJsonData}
+          isEditing={isEditing}
+          serialize={serialize}
+        />
+        {!isEditing && (
+          <div className="question-actions">
+            <Button
+                          onClick={handleSubmit}
+              className="submit-question-button bg-blue-500"
+              disabled={taskStatus === statusTypes.COMPLE}
+            > 
+Submit
+
+            </Button>
+         </div>
+        )}
+        {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
+          <p className="hint">{parsedJsonData.hint}</p>
+        )}
+        {showHint && <p className="hint">{parsedJsonData.hint}</p>}
+      </div>
+    </>
   );
 }
 

@@ -1,5 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { CirclePlus, List, Save } from "lucide-react";
+import {
+  CirclePlus,
+  List,
+  Save,
+  ChevronUp,
+  ChevronDown,
+  Trash2,
+} from "lucide-react";
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
@@ -7,10 +14,27 @@ import { useParams } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
 import { v4 as uuidv4 } from "uuid";
 import { objectToFormData } from "../utils/objectToFormData";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { get_random_image_from_list } from "@/utils/default_images";
 
 const RoomEditor = () => {
   //get ids from url
   const { course_id, section_id, room_id } = useParams();
+  const [backgroundImage, setBackgroundImage] = useState(
+    get_random_image_from_list()
+  );
 
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
@@ -29,7 +53,7 @@ const RoomEditor = () => {
     const loadRoom = async () => {
       try {
         //const room_data = await get_test_room();
-        const room_data = await get_room_data(course_id, section_id, room_id);
+        const room_data = await get_room_data(room_id);
         if (!room_data) {
           showError(
             "Unable to load data for room. You may not have permission to edit the room, the room may have already been created, or the room id may not exist",
@@ -54,6 +78,9 @@ const RoomEditor = () => {
         if (room_data.title) {
           setRoomTitle(room_data.title);
         }
+        if (room_data.image) {
+          setBackgroundImage(room_data.image);
+        }
         if (room_data.description) {
           setRoomDesc(room_data.description);
         }
@@ -69,18 +96,18 @@ const RoomEditor = () => {
         if (room_data.visibility) {
           setRoomVisibility(room_data.visibility);
         }
-        
+
         //load username from creator field and set room creater state
         //else set state to user_unavailable
         const tasks = Array.isArray(room_data.tasks) ? room_data.tasks : [];
         const normalizedTasks = tasks.map((task) => ({
           ...task,
           task_components: Array.isArray(task.components)
-          ? task.components
-          : [],
+            ? task.components
+            : [],
         }));
         setRoomTasks(normalizedTasks);
-        setRoomData(room_data)
+        setRoomData(room_data);
       } catch (err) {
         showError(
           "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
@@ -91,7 +118,7 @@ const RoomEditor = () => {
     };
     loadRoom();
   }, []);
-  
+
   const addNewTask = () => {
     const newTask = {
       task_id: uuidv4(),
@@ -103,6 +130,32 @@ const RoomEditor = () => {
 
   const deleteTask = (taskId) => {
     setRoomTasks((prev) => prev.filter((task) => task.task_id !== taskId));
+  };
+
+  const moveTaskUp = (taskId) => {
+    setRoomTasks((prev) => {
+      const index = prev.findIndex((task) => task.task_id === taskId);
+      if (index <= 0) return prev; // Already at top
+      const newTasks = [...prev];
+      [newTasks[index], newTasks[index - 1]] = [
+        newTasks[index - 1],
+        newTasks[index],
+      ];
+      return newTasks;
+    });
+  };
+
+  const moveTaskDown = (taskId) => {
+    setRoomTasks((prev) => {
+      const index = prev.findIndex((task) => task.task_id === taskId);
+      if (index >= prev.length - 1) return prev; // Already at bottom
+      const newTasks = [...prev];
+      [newTasks[index], newTasks[index + 1]] = [
+        newTasks[index + 1],
+        newTasks[index],
+      ];
+      return newTasks;
+    });
   };
 
   // Function to serialize everything to ever exist
@@ -133,7 +186,7 @@ const RoomEditor = () => {
       };
       */
       //get the updated task and task components
-     let updatedRoomTasks = []
+      let updatedRoomTasks = [];
       for (const taskId in taskRefs.current) {
         const taskRef = taskRefs.current[taskId];
         if (taskRef?.serialize) {
@@ -141,15 +194,15 @@ const RoomEditor = () => {
           updatedRoomTasks.push(serializedTask);
         }
       }
-      updatedRoomData.tasks=updatedRoomTasks
+      updatedRoomData.tasks = updatedRoomTasks;
       Debug.log("Serialized Room Data:", updatedRoomData);
-    //convert object to formData object
-     const formData = await objectToFormData(updatedRoomData);
+      //convert object to formData object
+      const formData = await objectToFormData(updatedRoomData);
 
       Debug.log("Form data is :", formData);
-    
+
       //now make request to overwrite room
-const room_status = await save_room(
+      const room_status = await save_room(
         course_id,
         section_id,
         room_id,
@@ -175,61 +228,133 @@ const room_status = await save_room(
   };
 
   return (
-    <div className="room-editor flex flex-col px-8 py-6 gap-6">
-      <div className="room-editor-header space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Editor for Room: {roomTitle}</h1>
-            <p className="text-base">{roomDesc}</p>
-            <p className="text-sm italic">{roomCreator}</p>
-          </div>
+    <div className="relative w-screen min-h-screen">
+      {/* Background layer: repeats infinitely */}
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundRepeat: "repeat", // repeats in both directions
+          backgroundPosition: "top left",
+          backgroundSize: "auto", // keep natural size
+        }}
+      />
 
-          <button
-            onClick={serializeAllTasks}
-            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            <Save className="w-5 h-5" />
-            <span className="font-medium">Save Room</span>
-          </button>
-        </div>
-      </div>
+      {/* Foreground content */}
+      <div className="room-editor min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative z-10">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header Card */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-4xl mb-2">{roomTitle}</CardTitle>
+                  <CardDescription className="text-base mb-3">
+                    {roomDesc}
+                  </CardDescription>
+                  <p className="text-sm text-muted-foreground italic">
+                    Created By: {roomCreator}
+                  </p>
+                </div>
+                <Button onClick={serializeAllTasks} size="lg" className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save Room
+                </Button>
+              </div>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Badge variant="outline" className="w-fit">
+                  Visibility: {roomVisibility}
+                </Badge>
+                <Badge variant="outline" className="w-fit">
+                  Created: {roomCreationDate}
+                </Badge>
+                <Badge variant="outline" className="w-fit">
+                  Last Edited: {roomLastEdited}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
 
-      <div className="room-editor-body">
-        <div className="task-editor flex flex-col gap-6">
-          {roomTasks.map((task) => (
-            <div
-              key={task.task_id}
-              className="rounded-lg border border-gray-300 p-4 shadow-sm space-y-4"
-            >
-              <TaskEditor
-                key={task.task_id}
-                ref={(el) => (taskRefs.current[task.task_id] = el)}
-                tags={task.tags}
-                initialComponents={task.components}
-                taskID={task.task_id}
-              />
-              <button
-                onClick={() => deleteTask(task.task_id)}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
-              >
-                Delete Task
-              </button>
+          {/* Tasks Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-900">Tasks</h2>
+              <Badge variant="secondary">{roomTasks.length} tasks</Badge>
             </div>
-          ))}
 
-          <button
-            className="add-task flex items-center gap-2 rounded-md px-4 py-2 border border-dashed hover:border-gray-600 transition"
-            onClick={addNewTask}
-          >
-            <CirclePlus className="w-5 h-5" />
-            <span className="text-sm font-medium">Add Task</span>
-          </button>
+            <div className="space-y-4">
+              {roomTasks.map((task, index) => (
+                <Card
+                  key={task.task_id}
+                  className="group hover:shadow-md transition-shadow"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">{index + 1}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          Task ID: {String(task.task_id).slice(0, 8)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveTaskUp(task.task_id)}
+                          disabled={index === 0}
+                          title="Move task up"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveTaskDown(task.task_id)}
+                          disabled={index === roomTasks.length - 1}
+                          title="Move task down"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                        <Separator orientation="vertical" className="h-6" />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteTask(task.task_id)}
+                          className="gap-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="pt-4">
+                    <TaskEditor
+                      key={task.task_id}
+                      ref={(el) => (taskRefs.current[task.task_id] = el)}
+                      tags={task.tags}
+                      initialComponents={task.components}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Add Task Button */}
+              <Button
+                onClick={addNewTask}
+                variant="outline"
+                className="w-full h-12 gap-2 border-dashed"
+              >
+                <CirclePlus className="w-5 h-5" />
+                <span>Add New Task</span>
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="room_modification_info text-sm text-gray-500 mt-6">
-        <p>Created On {roomCreationDate}</p>
-        <p>Last Modified On {roomLastEdited}</p>
       </div>
     </div>
   );

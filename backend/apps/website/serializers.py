@@ -128,6 +128,7 @@ class RoomSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True, required=False)
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
+    last_updated = serializers.DateTimeField(required=False)
     image = serializers.ImageField(required=False, allow_null=True)
     badge = BadgeSerializer(many=False, required=False)
 
@@ -146,6 +147,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "tasks",
             "creator",
             "created_on",
+            "last_updated",
             "image",
             "badge",
         ]
