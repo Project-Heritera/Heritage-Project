@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { USER_NAME } from "@/services/LocalStorage";
 import api from "../services/api"
 import { useState, useEffect } from "react";
+import ConnectionsContainer from "@/components/ProfilePage/ProfileContainers/ConnectionsContainer";
 
 
 function Profile() {
@@ -40,6 +41,7 @@ function Profile() {
     <div className="flex flex-col gap-6 p-6">
       <ProfileDisplay isOwner={isOwner} profImage={profPicLink} name={username} description={description}/>
       <BadgeContainer username={username}/>
+      <ConnectionsContainer username={username}/>
     </div>
   )
 }
