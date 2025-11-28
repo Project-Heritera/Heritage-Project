@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from friendship.models import FriendshipRequest
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -15,5 +16,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["user_id", "username", "profile_pic", "description", "date_joined"]
+        fields = ["user_id", "username", "profile_pic", "description", "date_joined", "email"]
         read_only_fields = ["user_id", "date_joined"]
+
+
+# -------------------------------
+# FriendshipRequest Serializer
+# -------------------------------
+class FriendshipRequestSerializer(serializers.ModelSerializer):
+    to_user = serializers.CharField(source="to_user.username")
+    from_user = serializers.CharField(source="from_user.username")
+    created = serializers.SerializerMethodField()
+
+    def get_created(self, obj):
+        return obj.created.isoformat() if obj.created else None
+
+    class Meta:
+        model = FriendshipRequest
+        fields = ["id", "to_user", "from_user", "created", "rejected"]

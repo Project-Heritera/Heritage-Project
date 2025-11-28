@@ -4,16 +4,26 @@ import Edit from "./EditMultipleChoice";
 import Use from "./UseMultipleChoice";
 import { taskComponentTypes } from "../../../utils/taskComponentTypes";
 
-//This is the overall text component for text.
-//text is the initial text if any used to load into the read or editor
-//edit is the toggle for weather its editable or not
 const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, ref) => {
   const [choiceApi, setChoiceApi] = useState(null); //Used to provide functions to parent of MarkdownArea
-  // store selected answer ids as an array to support single- and multi-select modes
-  const [selectedAnswerChoices, setSelectedAnswerChoices] = useState([]);
-  // after submit, reveal which selections were correct/incorrect
-  const [revealedCorrect, setRevealedCorrect] = useState(new Set());
-  const [revealedIncorrect, setRevealedIncorrect] = useState(new Set());
+  const [selectedAnswerChoice, setSelectedAnswerChoice] = useState([]); //set to id of selected button for viewer
+  
+function handleSelectAnswerChoice(selectedID) {
+  const correctAnswerChoices = choiceArray.filter(c => c.correct).map(c => c.id);
+
+  // If only one correct answer, enforce single selection
+  if (correctAnswerChoices.length === 1) {
+    setSelectedAnswerChoice([selectedID]);
+  } else {
+    // Multiple correct answers allowed
+    if (selectedAnswerChoice.includes(selectedID)) {
+      setSelectedAnswerChoice(prev => prev.filter(item => item !== selectedID));
+    } else {
+      setSelectedAnswerChoice([...selectedAnswerChoice, selectedID]);
+    }
+  }
+}
+
 
   function handleSerialize() {
     const jsonToSerialize = JSON.stringify({
@@ -23,40 +33,20 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
   }
 
   function checkIfCorrect() {
-    // If no selection made
-    if (!selectedAnswerChoices || selectedAnswerChoices.length === 0) return statusTypes.INCOMP;
+    if (selectedAnswerChoice === []) return statusTypes.INCOMP;
 
-    // For comparisons we use string ids
-    const selectedSet = new Set(selectedAnswerChoices.map((s) => String(s)));
-    const correctSet = new Set(correctAnswerChoices.map((c) => String(c)));
-
-    // compute revealed sets for UI
-    const newRevealedCorrect = new Set();
-    const newRevealedIncorrect = new Set();
-
-    // mark selected choices as correct/incorrect
-    for (const s of selectedSet) {
-      if (correctSet.has(s)) newRevealedCorrect.add(s);
-      else newRevealedIncorrect.add(s);
+    let correctAnswerChoices = [];
+    for (const choice of choiceArray) {
+      if (choice.correct === true) {
+        correctAnswerChoices.push(choice.id);
+      }
     }
+    const allCorrect = selectedAnswerChoice.every(id =>
+    correctAnswerChoices.includes(id)
+  );
 
-    setRevealedCorrect(newRevealedCorrect);
-    setRevealedIncorrect(newRevealedIncorrect);
-
-    // If any selected choice is incorrect, immediately return INCOMP
-    for (const s of selectedSet) if (!correctSet.has(s)) return statusTypes.INCOMP;
-
-    // Multi-correct mode: require exact match of sets
-    if (correctSet.size > 1) {
-      if (selectedSet.size !== correctSet.size) return statusTypes.INCOMP;
-      for (const c of correctSet) if (!selectedSet.has(c)) return statusTypes.INCOMP;
-      return statusTypes.COMPLE;
-    }
-
-    // Single-correct mode: allow only one selection, and it must be correct
-    if (selectedSet.size === 1) return statusTypes.COMPLE;
-    return statusTypes.INCOMP;
-  }
+  return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
+ }
 
   // Expose checkIfCorrect to parent via ref
   useImperativeHandle(ref, () => ({
@@ -87,13 +77,10 @@ const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, 
         />
       ) : (
         //Edit is false
-        <Use
-          choiceArray={choiceArray}
-          selectedAnswerChoices={selectedAnswerChoices}
-          setSelectedAnswerChoices={setSelectedAnswerChoices}
-          singleCorrectMode={singleCorrectMode}
-          revealedCorrect={revealedCorrect}
-          revealedIncorrect={revealedIncorrect}
+        <Use 
+          choiceArray={choiceArray} 
+          selectedAnswerChoice={selectedAnswerChoice?? []}
+          setSelectedAnswerChoice={handleSelectAnswerChoice}
         />
       )}
     </div>

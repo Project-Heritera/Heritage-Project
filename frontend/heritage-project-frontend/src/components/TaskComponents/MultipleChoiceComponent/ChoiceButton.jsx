@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
 
 //Component used to render the choice button for the reading side of the component
 const ChoiceButton = ({ choiceId, text, selected, onClick, revealedCorrect, revealedIncorrect }) => {
@@ -13,21 +14,29 @@ const ChoiceButton = ({ choiceId, text, selected, onClick, revealedCorrect, reve
   else if (selected) borderColor = "#2563eb"; // blue for current selection
 
   return (
-    <button
-      onClick={onClick}
-      className={`choice-button ${selected ? "selected" : ""}`}
-      style={{
-        backgroundColor: selected ? "#3b82f6" : "#f3f4f6",
-        color: selected ? "white" : "black",
-        border: `2px solid ${borderColor}`,
-        padding: "0.5rem 1rem",
-        borderRadius: "0.5rem",
-        cursor: "pointer",
-        margin: "0.25rem 0",
-      }}
-    >
-      {choiceId}: {text}
-    </button>
+  <Button
+  onClick={onClick}
+  className={`choice-button ${selected ? "selected" : ""}`}
+  style={{
+    backgroundColor: selected ? "" : "#f3f4f6",
+    color: selected ? "white" : "black",
+    padding: "0.5rem 1rem",
+    borderRadius: "0.5rem",
+    cursor: "pointer",
+    margin: "0.25rem 0",
+    minWidth: "40%"
+  }}
+>
+  <div
+    style={{
+      textAlign: "left",
+      whiteSpace: "pre-wrap",   // <-- makes spaces show
+      width: "100%"
+    }}
+  >
+    {`${choiceId}:     ${text}`}
+  </div>
+</Button>
   );
 };
 
