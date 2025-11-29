@@ -69,10 +69,11 @@ function ConnectionButton({ pageUser, viewUser }) {
 
   console.log("Searching for friended user: ", pageUser)
   const requestObject = requests.find((req) => req.from_user.username === pageUser)
+  const pendingObject = sentRequests.find((req) => req.User.username === pageUser)
 
   const isFriend = connections && connections.some((friend) => friend.username === pageUser);
   const isRequest = !!requestObject
-  const isPending = sentRequests && sentRequests.some((request) => request.User.username === pageUser)
+  const isPending = !!pendingObject
 
   console.log("ALL APIS LOADED");
 
@@ -118,8 +119,15 @@ function ConnectionButton({ pageUser, viewUser }) {
     }
   }
 
-  const cancelConnection = () => {
-    console.log("Cancel request")
+  const cancelConnection =  async () => {
+    console.log("Canceling FR")
+    const reqId = pendingObject.friendship_request_id
+    try {
+      const response = await api.post(`/accounts/friend/cancel/${reqId}/`);
+      console.log("Canceld FRIEND REQUEST")
+    } catch (error) {
+      console.error("Error canceling friend request: ", error)
+    }
   }
 
   if (isFriend) {
