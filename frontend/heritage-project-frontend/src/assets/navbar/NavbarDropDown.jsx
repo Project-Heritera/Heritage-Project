@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { USER_NAME } from "@/services/LocalStorage";
+import SearchBar from "@/components/Common/Search/SearchBar";
 
 function NavbarDropDown() {
     const user = localStorage.getItem(USER_NAME)
@@ -30,6 +31,8 @@ function NavbarDropDown() {
                     </SheetDescription>
                 </SheetHeader>
 
+                {/* Add search bar */}
+                <SearchBar/>
                 {/* Links go here */}
                 <div className="flex flex-col gap-4 mt-8 px-6">
                     <Link to="/" className="text-lg font-medium hover:text-primary">
