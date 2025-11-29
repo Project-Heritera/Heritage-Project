@@ -9,25 +9,29 @@ function ConnectionsContainer({username}) {
   useEffect(() => {
     const fetchConnections = async () => {
       try {
-        const response = await api.get(``);
-        console.log("API connections response:", response.data)
-         setConnections(response.data);
+        const response = await api.get(`/accounts/friends/${username}/`);
+        console.log("API connections response:", response.data.friends)
+         setConnections(response.data.friends);
       } catch (error) {
         console.error("Error geting badges:", error)
       }
     };
 
-    //fetchConnections();
+    fetchConnections();
   }, []);
 
   if (!connections) {
-      return <div>Loading...</div>;
+      return (
+        <ProfileContainer title={"Connections"} itemsPerRow={3}>
+        </ProfileContainer>
+      )
   }
 
   return (
     <ProfileContainer title={"Connections"} itemsPerRow={3}>
-        <ConnectionProfile username={"Harry Potter"} picUrl={"https://github.com/shadcn.png"}/>
-        <ConnectionProfile username={"Harry Potter Frances acapone lenuiser"} picUrl={"https://github.com/shadcn.png"}/>
+        {connections && connections.map((connection) => (
+          <ConnectionProfile username={connection.username} key={connection.username} picUrl={`${import.meta.env.VITE_API_URL_FOR_TEST}${connection.profile_pic}`}></ConnectionProfile>
+        ))}
     </ProfileContainer>
   )
 }

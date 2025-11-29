@@ -615,3 +615,42 @@ def block_remove(request, blocked_username):
     blocked = get_object_or_404(User, username=blocked_username)
     Block.objects.remove_block(request.user, blocked)
     return Response({"message": "User unblocked"}, status=204)
+
+@extend_schema(
+    tags=["Friends"],
+    summary="List sent requests",
+    description="Get a list of friend requests SENT by the logged-in user (outgoing pending requests).",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="PendingRequestsResponse",
+            fields={
+                "pending_users": serializers.ListField(
+                    child=inline_serializer(
+                        name="PendingRequestItem",
+                        fields={
+                            "User": UserSerializer(),
+                            # If you decide to add 'request_id' later, add: 
+                            # "request_id": serializers.IntegerField() 
+                        }
+                    )
+                )
+            }
+        ),
+        401: OpenApiResponse(description="Not authenticated")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def pending_friend_requests(request):
+    requests = Friend.objects.sent_requests(user=request.user)
+
+    if not requests:
+        return Response({"pending_users": []}, status=200)
+    
+    return Response({
+        "pending_users": [{
+            "User": UserSerializer(r.to_user).data,
+            "friendship_request_id": r.id,
+        } for r in requests]
+    }, status=200)

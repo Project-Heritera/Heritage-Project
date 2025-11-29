@@ -101,4 +101,9 @@ urlpatterns = [
         view=block_remove,
         name="block_remove",
     ),
+    path(
+        "friend/requests/sent/",
+        view=pending_friend_requests,
+        name="pending_friend_requests"
+    )
 ]
