@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../../services/api";
 import {
   DropdownMenu,
@@ -16,52 +16,53 @@ function ConnectionButton({ pageUser, viewUser }) {
   const [requests, setRequests] = useState(null);
   const [sentRequests, setSentRequests] = useState(null);
 
+
+  const refreshData = useCallback(async () => {
+    //Get friends of viewUser
+    try {
+      console.log("Retireving friends for button of user:", viewUser)
+      const response = await api.get(`/accounts/friends/${viewUser}/`);
+      console.log("API connections button response:", response)
+      if (response.status === 204 || !response.data) {
+        setConnections([]);
+      } else {
+        setConnections(response.data.friends || []);
+      }
+    } catch (error) {
+      console.error("Error geting connections for button:", error)
+    }
+
+    //Get friend requests of viewuser
+    try {
+      const response = await api.get(`/accounts/friend/requests/`);
+      console.log("API connections request button response:", response)
+      if (response.status === 204 || !response.data) {
+        setRequests([]);
+      } else {
+        setRequests(response.data.requests || []);
+      }
+    } catch (error) {
+      console.error("Error geting requests for button:", error)
+    }
+
+    //Get a list of the logged in users sent friend requests
+    try {
+      const response = await api.get(`/accounts/friend/requests/sent/`);
+      console.log("API connections pending request button response:", response)
+      if (response.status === 204 || !response.data) {
+        setSentRequests([]);
+      } else {
+        setSentRequests(response.data.pending_users || []);
+      }
+    } catch (error) {
+      console.error("Error geting requests for  pending button:", error)
+    }
+
+  }, [viewUser])
+
   useEffect(() => {
-    const fetchConnections = async () => {
-      //Get friends of viewUser
-      try {
-        console.log("Retireving friends for button of user:", viewUser)
-        const response = await api.get(`/accounts/friends/${viewUser}/`);
-        console.log("API connections button response:", response)
-        if (response.status === 204 || !response.data) {
-          setConnections([]);
-        } else {
-          setConnections(response.data.friends || []);
-        }
-      } catch (error) {
-        console.error("Error geting connections for button:", error)
-      }
-
-      //Get friend requests of viewuser
-      try {
-        const response = await api.get(`/accounts/friend/requests/`);
-        console.log("API connections request button response:", response)
-        if (response.status === 204 || !response.data) {
-          setRequests([]);
-        } else {
-          setRequests(response.data.requests || []);
-        }
-      } catch (error) {
-        console.error("Error geting requests for button:", error)
-      }
-
-      //Get a list of the logged in users sent friend requests
-      try {
-        const response = await api.get(`/accounts/friend/requests/sent/`);
-        console.log("API connections pending request button response:", response)
-        if (response.status === 204 || !response.data) {
-          setSentRequests([]);
-        } else {
-          setSentRequests(response.data.pending_users || []);
-        }
-      } catch (error) {
-        console.error("Error geting requests for  pending button:", error)
-      }
-
-    };
-
-    fetchConnections();
-  }, []);
+    refreshData();
+  }, [refreshData]);
 
   if (!connections || !requests || !sentRequests) {
     return (<Button>Loading...</Button>)
@@ -75,60 +76,51 @@ function ConnectionButton({ pageUser, viewUser }) {
   const isRequest = !!requestObject
   const isPending = !!pendingObject
 
+  const useAction = async (actionFnc) => {
+    try {
+      await actionFnc();
+      await refreshData();
+    } catch (error) {
+      console.error("Action failed", error)
+    } finally {
+      console.log("Completed action")
+    }
+  }
+
   console.log("ALL APIS LOADED");
 
-  const acceptConnection = async () => {
+  const acceptConnection = () => useAction(async () => {
     console.log("Accepting FR")
     const reqId = requestObject.id
-    try {
-      const response = await api.post(`/accounts/friend/accept/${reqId}/`);
-      console.log("Accepted FRIEND REQUEST")
-    } catch (error) {
-      console.error("Error accepting friend request: ", error)
-    }
-  }
+    const response = await api.post(`/accounts/friend/accept/${reqId}/`);
+    console.log("Accepted FRIEND REQUEST")
+  })
 
-  const denyConnection = async () => {
+  const denyConnection = () =>  useAction(async () => {
     console.log("Denying FR")
     const reqId = requestObject.id
-    try {
-      const response = await api.post(`/accounts/friend/reject/${reqId}/`);
-      console.log("Denyed FRIEND REQUEST")
-    } catch (error) {
-      console.error("Error denying friend request: ", error)
-    }
-  }
+    const response = await api.post(`/accounts/friend/reject/${reqId}/`);
+    console.log("Denyed FRIEND REQUEST")
+  })
 
-  const removeConnection = async () => {
+  const removeConnection = () =>  useAction(async () => {
     console.log("Removing connection")
 
-    try {
-      const response = await api.post(`/accounts/friend/remove/${pageUser}/`);
-      console.log("REMOVED FRIEND")
-    } catch (error) {
-      console.error("Error removing friend: ", error)
-    }
-  }
+    const response = await api.post(`/accounts/friend/remove/${pageUser}/`);
+    console.log("REMOVED FRIEND")
+  })
 
-  const addConnection = async () => {
-    try {
-      const response = await api.post(`/accounts/friend/add/${pageUser}/`);
-      console.log("SENT FRIEND REQUEST")
-    } catch (error) {
-      console.error("Error sending friend request: ", error)
-    }
-  }
+  const addConnection = () =>  useAction(async () => {
+    const response = await api.post(`/accounts/friend/add/${pageUser}/`);
+    console.log("SENT FRIEND REQUEST")
+  })
 
-  const cancelConnection =  async () => {
+  const cancelConnection = () =>  useAction(async () => {
     console.log("Canceling FR")
     const reqId = pendingObject.friendship_request_id
-    try {
-      const response = await api.post(`/accounts/friend/cancel/${reqId}/`);
-      console.log("Canceld FRIEND REQUEST")
-    } catch (error) {
-      console.error("Error canceling friend request: ", error)
-    }
-  }
+    const response = await api.post(`/accounts/friend/cancel/${reqId}/`);
+    console.log("Canceld FRIEND REQUEST")
+  })
 
   if (isFriend) {
     return (
