@@ -654,3 +654,24 @@ def pending_friend_requests(request):
             "friendship_request_id": r.id,
         } for r in requests]
     }, status=200)
+
+@extend_schema(
+    tags=["Friends"],
+    summary="Remove friend",
+    description="Removes an existing friendship between the logged-in user and the specified user.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description='Friend removed successfully.'),
+        400: OpenApiResponse(description='Users were not friends.'),
+        404: OpenApiResponse(description="Could not find user.")
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def remove_friend(request, username):
+    other_user = get_object_or_404(User, username=username)
+
+    if Friend.objects.remove_friend(request.user, other_user):
+        return Response({"message": "Friend removed successfully"}, status=200)
+    else:
+        return Response({"message": "You are not friends with this user"}, status=400)

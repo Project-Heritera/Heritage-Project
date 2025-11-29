@@ -81,8 +81,15 @@ function ConnectionButton({ pageUser, viewUser }) {
     }
   }
 
-  const removeConnection = () => {
+  const removeConnection = async () => {
     console.log("Removing connection")
+
+    try {
+       const response = await api.post(`/accounts/friend/remove/${pageUser}/`);
+       console.log("REMOVED FRIEND")
+    } catch (error) {
+      console.error("Error removing friend: ", error)
+    }
   }
 
   const addConnection = async () => {
