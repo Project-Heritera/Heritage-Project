@@ -309,6 +309,15 @@ def view_friends(request, username):
 @permission_classes([IsAuthenticated])
 def friendship_add_friend(request, to_username):
     to_user = get_object_or_404(User, username=to_username)
+
+    existing_rejected = FriendshipRequest.objects.filter(
+        from_user=request.user,
+        to_user=to_user,
+        rejected__isnull=False
+    )
+    if existing_rejected.exists():
+        existing_rejected.delete()
+        
     try:
         Friend.objects.add_friend(request.user, to_user)
     except AlreadyExistsError as e:
@@ -332,7 +341,10 @@ def friendship_add_friend(request, to_username):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def friendship_request_list(request):
-    requests = Friend.objects.requests(request.user)
+    requests = FriendshipRequest.objects.filter(
+        to_user=request.user, 
+        rejected__isnull=True
+    )
     if not requests:
         return Response(status=204)
     return Response({
@@ -369,7 +381,7 @@ def friendship_accept(request, friendship_request_id):
 @extend_schema(
     tags=["Friends"],
     summary="Reject request",
-    description="Reject a friend request. Deletes the request so it cannot be accepted.",
+    description="Reject a friend request. Does not delete the FriendshipRequest relation.",
     request=None,
     responses={
         200: OpenApiResponse(description='Friend request rejected successfully.'),
@@ -384,7 +396,7 @@ def friendship_reject(request, friendship_request_id):
         request.user.friendship_requests_received,
         id=friendship_request_id
     )
-    f_request.delete()
+    f_request.reject()
     return Response({"message": "Friend request rejected"}, status=200)
 
 
@@ -643,7 +655,10 @@ def block_remove(request, blocked_username):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pending_friend_requests(request):
-    requests = Friend.objects.sent_requests(user=request.user)
+    requests = FriendshipRequest.objects.filter(
+        from_user=request.user,
+        rejected__isnull=True
+    )
 
     if not requests:
         return Response({"pending_users": []}, status=200)
