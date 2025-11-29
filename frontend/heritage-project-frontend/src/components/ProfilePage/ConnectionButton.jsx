@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import api from "../../services/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function ConnectionButton({ pageUser, viewUser }) {
   //Add functionality to button based on weather or not they are friended, pending, or not friended
@@ -66,18 +72,29 @@ function ConnectionButton({ pageUser, viewUser }) {
 
   const isFriend = connections && connections.some((friend) => friend.username === pageUser);
   const isRequest = !!requestObject
-  const isPending = sentRequests && sentRequests.some((request) => request.username === pageUser)
+  const isPending = sentRequests && sentRequests.some((request) => request.User.username === pageUser)
 
   console.log("ALL APIS LOADED");
 
   const acceptConnection = async () => {
     console.log("Accepting FR")
-    const reqId=requestObject.id
+    const reqId = requestObject.id
     try {
-       const response = await api.post(`/accounts/friend/accept/${reqId}/`);
-       console.log("Accepted FRIEND REQUEST")
+      const response = await api.post(`/accounts/friend/accept/${reqId}/`);
+      console.log("Accepted FRIEND REQUEST")
     } catch (error) {
       console.error("Error accepting friend request: ", error)
+    }
+  }
+
+  const denyConnection = async () => {
+    console.log("Denying FR")
+    const reqId = requestObject.id
+    try {
+      const response = await api.post(`/accounts/friend/reject/${reqId}/`);
+      console.log("Denyed FRIEND REQUEST")
+    } catch (error) {
+      console.error("Error denying friend request: ", error)
     }
   }
 
@@ -85,8 +102,8 @@ function ConnectionButton({ pageUser, viewUser }) {
     console.log("Removing connection")
 
     try {
-       const response = await api.post(`/accounts/friend/remove/${pageUser}/`);
-       console.log("REMOVED FRIEND")
+      const response = await api.post(`/accounts/friend/remove/${pageUser}/`);
+      console.log("REMOVED FRIEND")
     } catch (error) {
       console.error("Error removing friend: ", error)
     }
@@ -94,8 +111,8 @@ function ConnectionButton({ pageUser, viewUser }) {
 
   const addConnection = async () => {
     try {
-       const response = await api.post(`/accounts/friend/add/${pageUser}/`);
-       console.log("SENT FRIEND REQUEST")
+      const response = await api.post(`/accounts/friend/add/${pageUser}/`);
+      console.log("SENT FRIEND REQUEST")
     } catch (error) {
       console.error("Error sending friend request: ", error)
     }
@@ -120,9 +137,21 @@ function ConnectionButton({ pageUser, viewUser }) {
   } else if (isRequest) {
     //User has sent you a request. Accept it with button or use three dot menu to reject it
     return (
-      <Button onClick={acceptConnection}>
-        Accept Connection
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="default">
+            Incoming Request
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={acceptConnection}>
+            Accept
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={denyConnection}>
+            Deny
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
   } else {
     return (

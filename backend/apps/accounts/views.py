@@ -369,7 +369,7 @@ def friendship_accept(request, friendship_request_id):
 @extend_schema(
     tags=["Friends"],
     summary="Reject request",
-    description="Reject a friend request. Does not delete the FriendshipRequest relation.",
+    description="Reject a friend request. Deletes the request so it cannot be accepted.",
     request=None,
     responses={
         200: OpenApiResponse(description='Friend request rejected successfully.'),
@@ -384,7 +384,7 @@ def friendship_reject(request, friendship_request_id):
         request.user.friendship_requests_received,
         id=friendship_request_id
     )
-    f_request.reject()
+    f_request.delete()
     return Response({"message": "Friend request rejected"}, status=200)
 
 
