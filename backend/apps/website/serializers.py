@@ -16,6 +16,7 @@ from .models import (
     ProgressOfTask,
 )
 
+
 # -------------------------------
 # TaskComponent Serializer
 # -------------------------------
@@ -307,8 +308,10 @@ class CourseSerializer(serializers.ModelSerializer):
     )  # Changed from PK field for clarity
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
-    badge = BadgeSerializer(many=False, required=False)
+    image = serializers.ImageField()
+    badge = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = Course

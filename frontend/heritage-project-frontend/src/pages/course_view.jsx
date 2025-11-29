@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { List } from "lucide-react";
 import "../styles/pages/course_view.css";
+import { Button } from "@/components/ui/button";
 import CourseCard from "../components/CourseViewer/CourseCard";
+import PublicationForm from "@/components/PublicationForm";
+import { useParams } from "react-router-dom";
+import Modal from "@/components/Modal";
 
 const CourseView = () => {
+  const [courseCreationForm, setCourseCreationForm] = useState(false);
+  const {user_id} = useParams();
   // Function to handle sign in
   async function loadUserCourses() {
     /*
@@ -36,6 +42,19 @@ const CourseView = () => {
             <div className="search-bar">
               <input type="search" placeholder="Search Courses" />
             </div>
+<div className="create-course">
+  <Button onClick={() => setCourseCreationForm(true)}>
+    Create Course
+  </Button>
+
+  <Modal
+    isOpen={courseCreationForm}
+    onClose={() => setCourseCreationForm(false)}
+  >
+    <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Course"} />
+  </Modal>
+</div>
+
           </div>
           <div className="course-view-body-body grid grid-cols-3 gap-4">
             <CourseCard

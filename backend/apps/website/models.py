@@ -256,8 +256,9 @@ class Course(models.Model):
         null=True,
         related_name="created_courses",
     )
+    #todo: when adding private courses/sections/rooms, have visibility also be a settable param
     visibility = models.CharField(
-        max_length=50, choices=VisibilityLevel, default=VisibilityLevel.PRIVATE
+        max_length=50, choices=VisibilityLevel, default=VisibilityLevel.PUBLIC
     )
     access_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,

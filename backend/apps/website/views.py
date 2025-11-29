@@ -11,7 +11,7 @@ from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
 
 from .permissions import user_has_access
-from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 User = get_user_model()
@@ -226,6 +226,24 @@ def get_badges(request):
         404: OpenApiResponse(description='Could not get course.'),
     }
 )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_badge(request):
+    data = {
+        "title": request.data.get("title", ""),
+        "image": request.data.get("icon", ""),
+        "description": request.data.get("description", ""),
+    }
+
+    serializer = BadgeSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):

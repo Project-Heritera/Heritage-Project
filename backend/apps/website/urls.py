@@ -28,6 +28,7 @@ urlpatterns = [
     path("courses/<int:course_id>/sections/<int:section_id>/rooms/<int:room_id>/task_progress/", views.get_task_progress_for_room,),
     # user badges api
     path("badges/", views.get_badges),
+    path("create_badge/", views.create_badge),
     path("another_badges/<str:user_username>", views.get_another_badges),
     path("badges/<int:badge_id>/award_badge/", views.award_badge),
 ]
