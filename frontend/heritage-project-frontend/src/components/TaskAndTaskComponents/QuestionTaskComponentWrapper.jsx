@@ -42,7 +42,6 @@ function QuestionTaskComponentWrapper({
       console.error("Question component does not expose checkIfCorrect method");
       return;
     }
-
     const result = questionComponentRef.current.checkIfCorrect();
     setTaskStatus(result);
 
@@ -55,7 +54,12 @@ function QuestionTaskComponentWrapper({
       }
     }
   };
-
+const handleSerialize = (componentTypeToSerialize, jsonToSerialize) => {
+      jsonToSerialize["number_of_chances"] = numberOfAttempts
+      jsonToSerialize["hints"] = hint
+      console.log("in middlewear", jsonToSerialize)
+      serialize(taskComponentTypes.OPTION, jsonToSerialize);
+    }
   return (
     <>
       {isEditing ? (
@@ -91,7 +95,7 @@ function QuestionTaskComponentWrapper({
           ref={questionComponentRef}
           jsonData={parsedJsonData}
           isEditing={isEditing}
-          serialize={serialize}
+          serialize={handleSerialize}
         />
         {!isEditing && (
           <div className="question-actions">

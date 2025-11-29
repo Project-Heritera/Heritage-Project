@@ -3,17 +3,17 @@ import { json, safeParse } from "zod";
 import TextTaskComponent from "./TextComponent/TextTaskComponent";
 import ImageTaskComponent from "./imageTaskComponent";
 import {taskComponentTypes} from "../../utils/taskComponentTypes";
-import { useEffect, useState } from "react";
+import {useImperativeHandle, forwardRef, useEffect, useState } from "react";
 import QuestionTaskComponentWrapper from "./QuestionTaskComponentWrapper";
 import { Component } from "lucide-react";
-TaskComponent.propTypes = {
-  componentType: taskComponentTypes, 
-  taskComponentSpecificData: PropTypes.string,
-  isEditing: PropTypes.bool
-};
 
-function TaskComponent({ componentType, taskComponentSpecificData="", isEditing, taskID, questionProgressData  }) {
+const TaskComponent = forwardRef(function TaskComponent(
+  { componentType, taskComponentSpecificData = "", isEditing, taskID, questionProgressData },
+  ref
+) {
+
   const [jsonData, setJsondata] = useState(taskComponentSpecificData);
+
   useEffect(()=>{
      //if newly created, assign a default schema
     if (jsonData==""){
@@ -21,7 +21,11 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing,
     }
   },[]);
 
-  function serialize(componentTypeToSerialize, jsonToSerialize){
+  useImperativeHandle(ref, () => ({
+    serialize: serializeInternal,
+  }));
+
+  function serializeInternal(componentTypeToSerialize, jsonToSerialize){
     if (!Object.values(taskComponentTypes).includes(componentTypeToSerialize)){
       throw new TypeError("Invalid task component type passed");
     }
@@ -42,7 +46,7 @@ function TaskComponent({ componentType, taskComponentSpecificData="", isEditing,
         if (taskComponentTypes[componentType].category==="Question"){
           return (
             <QuestionTaskComponentWrapper 
-            serialize={serialize}
+            serialize={serializeInternal}
             QuestionTaskComponent={Component}
             isEditing={isEditing}
             jsonData={jsonData}
@@ -54,7 +58,7 @@ questionProgressData={questionProgressData}
         else{
           return (
            <Component
-           serialize={serialize}
+           serialize={serializeInternal}
            jsonData={taskComponentSpecificData}
            isEditing={isEditing}
             />
@@ -70,4 +74,10 @@ questionProgressData={questionProgressData}
       
     }
   }
+);
+TaskComponent.propTypes = {
+  componentType: taskComponentTypes, 
+  taskComponentSpecificData: PropTypes.string,
+  isEditing: PropTypes.bool
+};
 export default TaskComponent;

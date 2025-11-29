@@ -23,13 +23,19 @@ function handleSelectAnswerChoice(selectedID) {
     }
   }
 }
-
-
+/*
+  choiceArray: [
+        { id: "a", text: "Edit Text", correct: false },
+        { id: "b", text: "Edit Text", correct: false },
+      ],
+      number_of_chances: 1,
+      hint: ""
+*/
   function handleSerialize() {
     const jsonToSerialize = JSON.stringify({
-      text: areaApi?.getContent(),
+      choiceArray: choiceArray,
     });
-    serialize(taskComponentTypes.TEXT, jsonToSerialize);
+    serialize(taskComponentTypes.OPTION, jsonToSerialize);
   }
 
   function checkIfCorrect() {

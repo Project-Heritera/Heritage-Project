@@ -20,6 +20,15 @@ const TaskEditor = forwardRef(
       "Hard",
     ]); //todo: load all from database onto global zustland state on user login
     const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
+    const componentRefs = useRef([]);
+
+    useImperativeHandle(ref, () => ({
+      serialize: () => {
+        return componentRefs.current
+          .map((ref) => ref?.serialize?.())
+          .filter(Boolean);
+      },
+    }));
 
     const addNewTaskComponent = (type) => {
       const jsonData = taskComponentTypes[type].defaultValue;
@@ -111,7 +120,10 @@ const TaskEditor = forwardRef(
             isOpen={taskComponentMenu}
             onClose={() => setTaskComponentMenu(false)}
           >
-            <TaskComponentMenu onSelect={addNewTaskComponent} />
+            <TaskComponentMenu
+              onSelect={addNewTaskComponent}
+              onClose={() => setTaskComponentMenu(false)}
+            />
           </Modal>
         </CardContent>
       </Card>
