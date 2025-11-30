@@ -494,6 +494,65 @@ def get_sections(request, course_id):
 
 @extend_schema(
     tags=["Sections"],
+    summary="Get all sections",
+    description="Returns sections and progress information for all sections the user can access.",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="GetAllSectionProgressResponse",
+            many=True,
+            fields={
+                "course_id" : serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            }
+        ),
+        204: OpenApiResponse(description='No sections found. Maybe check user permissions.'),
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_sections_by_title(request, course_title):
+    user = request.user
+    course = get_object_or_404(Course, title=course_title)
+
+    viewable_sections_qs = (
+        Section.objects
+               .filter(course_id=course.id)
+               .filter_by_user_access(user)
+               .user_progress_percent(user)
+    )
+
+    if not viewable_sections_qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = SectionSerializer(viewable_sections_qs, many=True)
+
+    results = []
+    for serialized, section in zip(serializer.data, viewable_sections_qs):
+        results.append({
+            **serialized,
+            "progress_percent": round(section.progress_percent or 0, 2),
+            "completed_tasks": section.completed_tasks,
+            "total_tasks": section.total_tasks,
+        })
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Sections"],
     summary="Create a new section",
     description="Creates a section and assigns the current user as creator. The authenticated user is automatically set as the section creator.",
     request=inline_serializer(
@@ -673,6 +732,66 @@ def get_rooms(request, section_id):
     viewable_rooms_qs = (
         Room.objects
                .filter(section_id=section_id)
+               .filter_by_user_access(user)
+               .user_progress_percent(user)
+    )
+
+    if not viewable_rooms_qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = RoomSerializer(viewable_rooms_qs, many=True)
+
+    results = []
+    for serialized, room in zip(serializer.data, viewable_rooms_qs):
+        results.append({
+            **serialized,
+            "progress_percent": round(room.progress_percent or 0, 2),
+            "completed_tasks": room.completed_tasks,
+            "total_tasks": room.total_tasks,
+        })
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Rooms"],
+    summary="Get all rooms",
+    description="Returns rooms and progress information for all rooms the user can access.",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="GetAllRoomProgressResponse",
+            many=True,
+            fields={
+                "course_id" : serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "room_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField,
+                "completed_tasks": serializers.IntegerField,
+                "total_tasks": serializers.IntegerField,
+            }
+        ),
+        204: OpenApiResponse(description='No rooms found. Maybe check user permissions.'),
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_rooms_by_title(request, section_title):
+    user = request.user
+    section = get_object_or_404(Section, title=section_title)
+
+    viewable_rooms_qs = (
+        Room.objects
+               .filter(section_id=section.id)
                .filter_by_user_access(user)
                .user_progress_percent(user)
     )
