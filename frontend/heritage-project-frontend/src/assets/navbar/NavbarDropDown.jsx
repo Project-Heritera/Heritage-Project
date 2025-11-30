@@ -44,7 +44,7 @@ function NavbarDropDown() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Menu className="w-10 h-10" strokeWidth={2.5} />
+                <Menu className="" strokeWidth={2.5} />
             </SheetTrigger>
 
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">

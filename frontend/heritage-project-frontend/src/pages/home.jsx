@@ -15,7 +15,7 @@ export default function Home() {
     <div className="flex flex-col p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
+        <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
           Welcome back, {username}
         </h1>
       </div>

@@ -1,11 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
+import { LuScrollText } from "react-icons/lu";
+
+import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
-import {useState} from 'react'
+
 
 export default function Navbar() {
   const location = useLocation();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); 
 
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
@@ -14,53 +20,53 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { path: "/login", label: "LOGIN/SIGNUP" },
+    { path: "/", label: "HOME" },
     { path: "/courses", label: "COURSES" },
     { path: "/create", label: "CREATE" },
-    { path: "/", label: "HOME" },
     { path: "/about", label: "ABOUT" },
     { path: "/contact", label: "CONTACT" },
+    { path: "/login", label: "LOGIN/SIGNUP" },
   ];
 
   return (
-    <nav className="w-full bg-[#023B4E] fixed top-0 left-0 right-0 z-50 min-h-[60px] relative">
+    <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
+<div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
 
-      <div className="absolute left-[25px] top-1/2 transform -translate-y-1/2">
-        <Link to="/" className="flex items-center">
-          <h1
-            className="text-3xl font-bold"
-            style={{ fontFamily: "'Lobster Two', cursive", color: "#FDD023" }}
-          >
-            vivan
+        <Link to="/" className="flex items-center gap-2">
+                    <LuScrollText className = "text-2xl" />
+
+          <h1 className="text-3xl font-bold tracking-tight text-primary ">
+
+            VIVAN
           </h1>
         </Link>
-      </div>
 
-      <div className="max-w-7xl mx-auto hidden md:flex items-center justify-center min-h-[60px]">
-        <ul className="flex items-center gap-8">
-          {navLinks.map((link) => (
-            <li key={link.path}>
-              <Link
-                to={link.path}
-                className={`font-medium transition-colors ${isActive(link.path)
-                    ? "text-[#FDD023]"
-                    : "text-[#FFFFFF] hover:text-[#FDD023]"
+        <div className="hidden md:flex flex-1 justify-center">
+          <ul className="flex items-center gap-2"> 
+            {navLinks.map((link) => (
+              <li key={link.path}>
+                <Button
+                  asChild
+                  variant="ghost" 
+                  className={`text-base font-medium h-auto px-4 py-2 ${ 
+                    isActive(link.path)
+                      ? "text-primary hover:text-primary-foreground" 
+                      : "text-foreground hover:text-primary" 
                   }`}
-                style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+                >
+                  <Link to={link.path}>{link.label}</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <div
-        className="flex items-center justify-center text-[#FFFFFF] hover:text-[#FDD023] transition-colors"
-        aria-label="Menu"
-      >
-        <NavbarDropDown />
+        
+
+        <div className="">
+          <NavbarDropDown/>
+        </div>
       </div>
-    </nav >
+    </nav>
   );
 }
