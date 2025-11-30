@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
+import json
 
 from .permissions import user_has_access
 from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
@@ -719,20 +720,33 @@ def _save_room_logic(request, room_id):
         404: OpenApiResponse(description='Could not get room.'),
     }
 )
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
-    # room is a room instance, not the serializer
-    room, errors = _save_room_logic(request, room_id)
+    # Fetch the room instance
+    room = get_object_or_404(Room, id=room_id)
+    print("incoming data", request.data)
 
-    if errors:
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    # Check permissions
     if not user_has_access(room, request.user, edit=True):
         raise PermissionDenied("You do not have permission to edit this room.")
 
-    return Response(status=status.HTTP_200_OK)
 
+    allowed_fields = ['title', 'description', 'can_edit','metadata', 'visibility', 'created_on', 'last_updated', 'is_published',  'image' ]  # add other safe fields here
+
+    for field, value in request.data.items():
+        if field in allowed_fields:
+            setattr(room, field, value)
+        if field == 'tasks':
+            try:
+                tasks_list = json.loads(value)  
+                task_ids = [t['id'] for t in tasks_list]
+                room.tasks.set(Task.objects.filter(id__in=task_ids))
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid tasks JSON"}, status=400)
+
+    room.save()
+    return Response({"detail": "Room updated successfully"}, status=status.HTTP_200_OK)
 
 @extend_schema(
     tags=["Rooms"],
