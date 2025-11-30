@@ -1,16 +1,16 @@
-import { useState, useContext, useRef } from "react";
+import { useState, useContext,ref, forwardRef, useImperativeHandle, useRef } from "react";
 import statusTypes from "../../utils/statusTypes";
 import { TaskGlobalContext } from "./TaskBase";
 import { Button } from "@/components/ui/button";
 
-function QuestionTaskComponentWrapper({
+const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWrapper(
+{
   jsonData,
   QuestionTaskComponent,
   isEditing,
-  serialize,
   initialAttemptsLeft,
   initialIsCorrect,
-}) {
+},ref) {
   // Parse jsonData if it's a string, otherwise use as-is
   let parsedJsonData;
   try {
@@ -21,6 +21,7 @@ function QuestionTaskComponentWrapper({
     parsedJsonData = jsonData || {};
   }
 
+  const childRef = useRef();
   const [attemptsLeft, setAttemptsLeft] = useState(
     initialAttemptsLeft ?? parsedJsonData.number_of_chances ?? 1
   );
@@ -54,12 +55,21 @@ function QuestionTaskComponentWrapper({
       }
     }
   };
-const handleSerialize = (componentTypeToSerialize, jsonToSerialize) => {
-      jsonToSerialize["number_of_chances"] = numberOfAttempts
-      jsonToSerialize["hints"] = hint
-      console.log("in middlewear", jsonToSerialize)
-      serialize(taskComponentTypes.OPTION, jsonToSerialize);
+  const handleSerialize = () => {
+  if (!childRef.current?.serialize) {
+      console.warn("Child component has no serialize method");
+      return null;
     }
+    console.log("in handle serialize in question wrapper with", attemptsLeft, hint)
+  parsedJsonData = childRef.current.serialize();
+  const customJson = { ...parsedJsonData, number_of_chances: numberOfAttempts, hint };
+  return customJson;
+}
+
+useImperativeHandle(ref, () => ({
+  serialize: handleSerialize,
+}));
+
   return (
     <>
       {isEditing ? (
@@ -70,7 +80,7 @@ const handleSerialize = (componentTypeToSerialize, jsonToSerialize) => {
               type="number"
               min={1}
               value={numberOfAttempts}
-              onChange={(e) => setNumberOfAttempts(Number(e.target.value) || 1)}
+              onChange={(e) => setNumberOfAttempts(Number(e.target.value))}
               className="meta-input number-of-attempts"
             />
           </label>
@@ -95,19 +105,18 @@ const handleSerialize = (componentTypeToSerialize, jsonToSerialize) => {
           ref={questionComponentRef}
           jsonData={parsedJsonData}
           isEditing={isEditing}
-          serialize={handleSerialize}
+          ref={childRef}
         />
         {!isEditing && (
           <div className="question-actions">
             <Button
-                          onClick={handleSubmit}
+              onClick={handleSubmit}
               className="submit-question-button bg-blue-500"
               disabled={taskStatus === statusTypes.COMPLE}
-            > 
-Submit
-
+            >
+              Submit
             </Button>
-         </div>
+          </div>
         )}
         {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
           <p className="hint">{parsedJsonData.hint}</p>
@@ -115,7 +124,7 @@ Submit
         {showHint && <p className="hint">{parsedJsonData.hint}</p>}
       </div>
     </>
-  );
+  )
 }
-
+);
 export default QuestionTaskComponentWrapper;

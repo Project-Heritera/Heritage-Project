@@ -8,9 +8,8 @@ import "../../../styles/Components/TaskComponents/TextComponent.css"
 //initText is the initial text to load in
 //isRenderd is the state used to represent if the render is activated for the markdown
 //setAreaApi us a state used in parent to have the api functions passed up to it.
-const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
+const MarkdownArea = ({ initText, isRenderd, setAreaApi, setText }) => {
     //Save state of markdown when changes occur for toggle
-    const [rawMarkdown, setRawMarkdown] = useState(initText);
 
     const editor = useEditor({
         extensions: [
@@ -25,7 +24,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         content: initText,//Initial text
         //Listen for updates to editor
         onUpdate: ({ editor }) => {
-            setRawMarkdown(editor.storage.markdown.getMarkdown());
+            setText(editor.storage.markdown.getMarkdown());
         }
     });
 
@@ -63,7 +62,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         console.log(updatedText);
 
         //Update text for editor and textarea
-        setRawMarkdown(updatedText);
+        setText(updatedText);
 
         //Adjust cursor to be after what we just wrapped. Load after react rerender
         setTimeout(() => {
@@ -95,7 +94,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
         const updatedText = `${prevText}${lineMark} ${endText}`
 
         //Update
-        setRawMarkdown(updatedText);
+        setText(updatedText);
         editor?.commands.setContent(updatedText);
 
         //Move cursor back
@@ -190,13 +189,13 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
 
     //retrieve text
     const getContent = () => {
-        return rawMarkdown;
+        return initText;
     }
 
     //Create text area view for non renderd mode. Handles when the text area changes
     const textAreaChange = (e) => {
         const newText = e.target.value;
-        setRawMarkdown(newText);
+        setText(newText);
         //Update editor as well for renderd
         editor.commands.setContent(newText)
     }
@@ -227,7 +226,7 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi }) => {
                 <EditorContent className="ProseMirror" editor={editor} />
             ) : (
                 //render is false
-                <textarea className="text-area" value={rawMarkdown} onChange={textAreaChange} ref={textAreaRef} />
+                <textarea className="text-area" value={initText} onChange={textAreaChange} ref={textAreaRef} />
             )}
         </>
     )

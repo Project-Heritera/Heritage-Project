@@ -4,7 +4,7 @@ import Edit from "./EditMultipleChoice";
 import Use from "./UseMultipleChoice";
 import { taskComponentTypes } from "../../../utils/taskComponentTypes";
 
-const MultipleChoiceComponent = forwardRef(({ serialize, jsonData, isEditing }, ref) => {
+const MultipleChoiceComponent = forwardRef(({ jsonData, isEditing }, ref) => {
   const [choiceApi, setChoiceApi] = useState(null); //Used to provide functions to parent of MarkdownArea
   const [selectedAnswerChoice, setSelectedAnswerChoice] = useState([]); //set to id of selected button for viewer
   
@@ -23,21 +23,7 @@ function handleSelectAnswerChoice(selectedID) {
     }
   }
 }
-/*
-  choiceArray: [
-        { id: "a", text: "Edit Text", correct: false },
-        { id: "b", text: "Edit Text", correct: false },
-      ],
-      number_of_chances: 1,
-      hint: ""
-*/
-  function handleSerialize() {
-    const jsonToSerialize = JSON.stringify({
-      choiceArray: choiceArray,
-    });
-    serialize(taskComponentTypes.OPTION, jsonToSerialize);
-  }
-
+  
   function checkIfCorrect() {
     if (selectedAnswerChoice === []) return statusTypes.INCOMP;
 
@@ -54,10 +40,25 @@ function handleSelectAnswerChoice(selectedID) {
   return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
  }
 
-  // Expose checkIfCorrect to parent via ref
-  useImperativeHandle(ref, () => ({
-    checkIfCorrect,
-  }));
+
+useImperativeHandle(ref, () => ({
+  serialize: () => {
+    console.log("in serialize in question component");
+    return { type: "OPTION", choiceArray };   
+  },
+  checkIfCorrect: () => {
+    const correct = choiceArray.filter(c => c.correct).map(c => c.id);
+
+    if (selectedAnswerChoice.length === 0) return statusTypes.INCOMP;
+
+    const allCorrect = selectedAnswerChoice.every(id =>
+      correct.includes(id)
+    );
+
+    return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
+  }
+}));
+
 
   let initChoiceArray = jsonData.choiceArray;
   if (initChoiceArray === undefined || initChoiceArray === null) {

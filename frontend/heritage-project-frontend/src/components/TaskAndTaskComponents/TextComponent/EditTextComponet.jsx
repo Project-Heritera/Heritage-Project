@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 //Commponet used to render the edit version of the text componet
-const EditTextComponent = ({ text, areaApi, setAreaApi }) => {
+const EditTextComponent = ({ text, setText, areaApi, setAreaApi }) => {
 
     //Handle toggle for render
     const [isRenderd, setIsRenderd] = useState(true);//Holds bool for render toggle
@@ -70,7 +70,7 @@ const EditTextComponent = ({ text, areaApi, setAreaApi }) => {
 
             </Toolbar>
             {/*Display text that can be easily editable and be able to select where to edit with cursor*/}
-            <MarkdownArea initText={text} isRenderd={isRenderd} setAreaApi={setAreaApi} />
+            <MarkdownArea initText={text} setText={setText} isRenderd={isRenderd} setAreaApi={setAreaApi} />
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { CirclePlus } from "lucide-react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
@@ -20,16 +20,23 @@ const TaskEditor = forwardRef(
       "Hard",
     ]); //todo: load all from database onto global zustland state on user login
     const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
-    const componentRefs = useRef([]);
+    const taskBaseRef = useRef([]);
 
-    useImperativeHandle(ref, () => ({
-      serialize: () => {
-        return componentRefs.current
+const handleSerialize = () => {
+  console.log("inside of handle serialze intask editor")
+        return taskBaseRef.current
           .map((ref) => ref?.serialize?.())
           .filter(Boolean);
-      },
-    }));
+    }
 
+  useImperativeHandle(ref, () => ({
+   serialize: () => {
+   if (!taskBaseRef.current?.serialize) return [];
+  console.log("inside of handle serialize in TaskEditor");
+  return taskBaseRef.current.serialize(); 
+    }}));
+
+      
     const addNewTaskComponent = (type) => {
       const jsonData = taskComponentTypes[type].defaultValue;
       const newComponent = {
@@ -39,10 +46,6 @@ const TaskEditor = forwardRef(
       };
       setTaskComponents((prev) => [...prev, newComponent]);
     };
-
-    useImperativeHandle(ref, () => ({
-      serialize: () => taskComponents,
-    }));
 
     return (
       <Card className="task-editor bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
@@ -104,7 +107,7 @@ const TaskEditor = forwardRef(
           <h3 className="text-lg font-bold">Task Components</h3>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <TaskBase components={taskComponents} isEditing={true} />
+          <TaskBase components={taskComponents} isEditing={true} ref={(el) => (taskBaseRef.current = el)} />
 
           {/* Add Task Component Button */}
           <Button
