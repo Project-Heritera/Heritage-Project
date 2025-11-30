@@ -22,18 +22,21 @@ function NavbarDropDown() {
     const [userObject, setUserObject] = useState(null)
 
     useEffect(() => {
-        if (!user) {
-            return
+        const getUserData = async () => {
+            if (!user) {
+                return
+            }
+            try {
+                const response = await api.get("/accounts/user_info/")
+                const userData = response.data
+                console.log("user object is:", userData)
+                setUserObject(userData)
+            } catch (error) {
+                console.error("Error geting user object: ", error)
+            }
         }
-        try {
-            const response = api.get("/accounts/user_info/")
-            const userData = response.data
-            console.log("user object is:", userData)
-            setUserObject(userData)
-        } catch (error) {
-            console.error("Error geting user object: ", error)
-        }
-    })
+        getUserData();
+    }, [user])
 
     return (
         <Sheet>
@@ -88,7 +91,7 @@ function NavbarDropDown() {
                         {/* Account Info */}
                         <div className="flex items-center gap-3 mb-4 px-2">
                             <Avatar>
-                                <AvatarImage src={userObject.profile_pic} />
+                                <AvatarImage src={`${import.meta.env.VITE_API_URL_FOR_TEST}${userObject.profile_pic}`} />
                                 <AvatarFallback>{user && user.charAt(0).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div>
