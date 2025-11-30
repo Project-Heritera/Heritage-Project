@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { Debug } from "../utils/debugLog";
 import { publish_room } from "../services/room";
 import { create_course } from "@/services/course";
+import { create_section } from "@/services/section"; 
 import { create_badge } from "@/services/badge";
 import { useErrorStore } from "../stores/ErrorStore";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -17,7 +18,7 @@ PublicationForm.propTypes = {
   room_id: PropTypes.number, //required if form type is course
 };
 
-function PublicationForm({ onClose, FormType, room_id, user_id }) {
+function PublicationForm({ onClose, FormType, course_id, room_id, user_id }) {
   const {
     register,
     handleSubmit,
@@ -37,6 +38,9 @@ function PublicationForm({ onClose, FormType, room_id, user_id }) {
     else if (FormType=="Section"){ return handleCreateSection(data)}
     else if (FormType=="Room"){ return handleCreateRoom(data)}
   }
+
+
+
 const handleCreateCourse = async (data) => {
     //create badge for course first
     let badge_status;
@@ -70,10 +74,52 @@ const handleCreateCourse = async (data) => {
       return course_status;
     } catch (err) {
       Debug.error("Error in course.js or in course api at backend:", err);
-      showError("Failed to Create Room") 
+      showError("Failed to Create Course") 
       return null;
     }
   };
+
+const handleCreateSection = async (data) => {
+    //create badge for course first
+    let badge_status;
+    try {
+  const form_data = new FormData();
+  form_data.append("title", data.badge_title);
+  form_data.append("description", data.badge_description);
+  if (data.badge_icon && data.badge_icon[0]) {
+    form_data.append("icon", data.badge_icon[0]);
+  }
+       badge_status = await create_badge(form_data);
+    } catch (err) {
+      Debug.error("Error in course.js or in course api at backend:", err);
+      showError("Failed to Create Room") 
+      return null;
+    }
+    try {
+      const publish_data = new FormData()
+      publish_data.append("course", course_id)
+      publish_data.append("title", data.title)
+      publish_data.append("description", data.description)
+    if (data.image && data.image[0]) {
+        publish_data.append("image", data.image[0]);
+      }
+      if (badge_status && badge_status.badge_id) {
+      publish_data.append("badge", badge_status.badge_id);
+    }
+      const section_status = await create_section(
+        course_id,
+        publish_data
+      );
+      setIsPublished(true)
+      return section_status;
+    } catch (err) {
+      Debug.error("Error in section.js or in section api at backend:", err);
+      showError("Failed to Section") 
+      return null;
+    }
+  };
+
+
 
 
   const handleCreateRoom = async (data) => {

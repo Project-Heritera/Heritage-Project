@@ -463,13 +463,7 @@ def get_sections(request, course_id):
 @permission_classes([IsAuthenticated])
 def create_section(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = SectionSerializer(data=data)
+    serializer = SectionSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             course=course,

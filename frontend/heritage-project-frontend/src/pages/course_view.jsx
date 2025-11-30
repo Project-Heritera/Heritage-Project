@@ -44,14 +44,17 @@ const CourseView = () => {
             </div>
 <div className="create-course">
   <Button onClick={() => setCourseCreationForm(true)}>
-    Create Course
+    Create Section
   </Button>
 
   <Modal
     isOpen={courseCreationForm}
     onClose={() => setCourseCreationForm(false)}
   >
+    {/*
     <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Course"} />
+    */}
+    <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Section"} course_id={1} />
   </Modal>
 </div>
 
