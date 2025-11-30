@@ -15,11 +15,13 @@ import { USER_NAME } from "@/services/LocalStorage";
 import SearchBar from "@/components/Common/Search/SearchBar";
 import { useEffect, useState } from "react";
 import api from "@/services/api";
+import {useLogout} from "../../services/logout"
 
 function NavbarDropDown() {
     const user = localStorage.getItem(USER_NAME)
     const navigate = useNavigate();
     const [userObject, setUserObject] = useState(null)
+    const performLogout = useLogout();
 
     useEffect(() => {
         const getUserData = async () => {
@@ -107,7 +109,7 @@ function NavbarDropDown() {
                             <Link to={`/u/${user}`} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
                                 <User className="h-4 w-4" /> Profile
                             </Link>
-                            <button className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-100 text-red-600 text-sm w-full text-left">
+                            <button className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-100 text-red-600 text-sm w-full text-left" onClick={performLogout}>
                                 <LogOut className="h-4 w-4" /> Logout
                             </button>
                         </div>
