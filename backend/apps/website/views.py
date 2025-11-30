@@ -307,12 +307,7 @@ def get_courses(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_course(request):
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = CourseSerializer(data=data)
+    serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             creator=request.user,
