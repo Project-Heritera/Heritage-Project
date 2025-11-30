@@ -1,6 +1,6 @@
 import * as z from "zod";
 import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
-import ImageTaskComponent from "../components/TaskAndTaskComponents/imageTaskComponent";
+import ImageTaskComponent from "../components/TaskComponents/ImageComponent/ImageTaskComponent";
 import MultipleChoiceComponent from "../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent";
 // Universal enum for task components
 //Label is just its name
@@ -19,8 +19,8 @@ const taskComponentTypes = Object.freeze({
     label: "Image",
     category: "Static",
     component: ImageTaskComponent,
-    schema: z.object({ url: z.string(), alt: z.string() }),
-    defaultValue: { url: "", alt: "" },
+    schema: z.object({ src: z.string(), alt: z.string() }),
+    defaultValue: { src: "", alt: "" },
   },
   OPTION: {
     label: "Multiple Choice Question",
