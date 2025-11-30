@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
+from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer, OpenApiParameter
 
 from apps.website.models import Course
 from friendship.models import Block, Friend, FriendshipRequest
@@ -34,6 +34,31 @@ def all_users(request):
     users = User.objects.all()
     data = [{"id": u.id, "username": u.username} for u in users]
     return Response(data, status=status.HTTP_200_OK)
+
+@extend_schema(
+    tags=["Users"],
+    summary="Search users",
+    description="Returns a list of users matching the query.",
+    parameters=[
+        OpenApiParameter(name="user_prefix", description="The search term", required=False, type=str),
+    ],
+    responses={
+        200: UserSerializer(many=True), # Document that it returns the standard User object
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_users(request):
+    query = request.query_params.get('user_prefix', '')
+
+    if query:
+        users = User.objects.filter(username__istartswith=query)
+    else:
+        users = User.objects.none()
+    
+    serializer = UserSerializer(users, many=True, context={"request": request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(

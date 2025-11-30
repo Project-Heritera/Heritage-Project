@@ -107,4 +107,5 @@ urlpatterns = [
         name="pending_friend_requests"
     ),
     path('friend/remove/<slug:username>/', remove_friend, name='remove_friend'),
+    path("search/", search_users, name="search_users"),
 ]
