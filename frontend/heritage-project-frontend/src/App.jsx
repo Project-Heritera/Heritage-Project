@@ -24,6 +24,7 @@ function App() {
         <Route path='/login' element={<AuthLogin />} />
         {/*Protected Routes*/}
         <Route element={<ProtectedRoute />}>
+          <Route path='/home/:username' element={<Home />} />
           <Route path='/courses' element={<CourseView />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/view' element={<RoomViewer />} />

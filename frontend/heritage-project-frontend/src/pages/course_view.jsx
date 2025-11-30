@@ -1,81 +1,122 @@
 import { useState } from "react";
 import { List } from "lucide-react";
-import "../styles/pages/course_view.css";
 import CourseCard from "../components/CourseViewer/CourseCard";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+
+// Helper to generate a random progress value (0–1)
+const rand = () => Math.random().toFixed(2);
 
 const CourseView = () => {
-  // Function to handle sign in
-  async function loadUserCourses() {
-    /*
-    if (username && password){
-      try {
-        const data = await login(username, password);
-        console.log("Login success:", data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    else{
-      console.warn("enter username and password");
-    }
-      */
-  }
-
   return (
     <>
       <div className="courses-view flex flex-col">
-        <div className="courses-view-header flex justify-center ">
-          <img src="./src/assets/logos/temp_logo.png" />
-          <h1>Courses</h1>
-          <button>
-            <List />
-          </button>
+        <div className="courses-view-header flex  ">
+          <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
+            Course List
+          </h2>
         </div>
-        <div className="course-view-body flex flex-col">
-          <div className="course-view-body-header">
-            <div className="search-bar">
-              <input type="search" placeholder="Search Courses" />
-            </div>
-          </div>
+        <Input type="text" placeholder="Search Courses" className="w-60 m-4" />
+
+        <Card className="course-view-body flex flex-col p-4 m-4">
           <div className="course-view-body-body grid grid-cols-3 gap-4">
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="Creole | Kouri-Vini Language"
-              progress={0.3}
+              title="🌺 Creole | Kouri-Vini Language"
+              description="Explore the roots of Louisiana Creole and learn essential phrases used in everyday conversation. Perfect for beginners interested in cultural heritage."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_1.png"
             />
+
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="Standard Hawaiian Language"
-              progress={0.3}
+              title="🌴 Standard Hawaiian Language"
+              description="Learn pronunciation, vocabulary, and the rich history behind the Hawaiian language. Begin your journey into one of the world's most melodic languages."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_2.png"
             />
+
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="Lantern Building"
-              progress={0.3}
+              title="🏮 Lantern Building"
+              description="Discover traditional lantern crafting techniques from across Asia. This hands-on course teaches you how to design and create your own lantern."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_3.png"
             />
+
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="Ancestry Tree Cutout"
-              progress={0.3}
+              title="🌳 Ancestry Tree Cutout"
+              description="Learn how to assemble a personalized ancestry tree using guided templates. A great creative project for families and heritage exploration."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_4.png"
             />
+
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="Lost Icons | Louisiana"
-              progress={0.3}
+              title="🎭 Lost Icons | Louisiana"
+              description="Explore forgotten cultural icons from Louisiana’s past and their impact on local history. A deep dive into art, folklore, and regional identity."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_5.png"
             />
+
             <CourseCard
               link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="History of Recycling"
-              progress={0.3}
+              title="♻️ History of Recycling"
+              description="Trace the evolution of recycling practices from ancient civilizations to the modern era. Learn how global efforts shape today’s sustainability challenges."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_6.png"
+            />
+
+                        <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="🌺 Creole | Kouri-Vini Language"
+              description="Explore the roots of Louisiana Creole and learn essential phrases used in everyday conversation. Perfect for beginners interested in cultural heritage."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_1.png"
+            />
+
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="🌴 Standard Hawaiian Language"
+              description="Learn pronunciation, vocabulary, and the rich history behind the Hawaiian language. Begin your journey into one of the world's most melodic languages."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_2.png"
+            />
+
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="🏮 Lantern Building"
+              description="Discover traditional lantern crafting techniques from across Asia. This hands-on course teaches you how to design and create your own lantern."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_3.png"
+            />
+
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="🌳 Ancestry Tree Cutout"
+              description="Learn how to assemble a personalized ancestry tree using guided templates. A great creative project for families and heritage exploration."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_4.png"
+            />
+
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="🎭 Lost Icons | Louisiana"
+              description="Explore forgotten cultural icons from Louisiana’s past and their impact on local history. A deep dive into art, folklore, and regional identity."
+              progress={rand() * 100}
+              imageLink="./src/assets/course_image_placeholder_5.png"
+            />
+
+            <CourseCard
+              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
+              title="♻️ History of Recycling"
+              description="Trace the evolution of recycling practices from ancient civilizations to the modern era. Learn how global efforts shape today’s sustainability challenges."
+              progress={rand() * 100}
               imageLink="./src/assets/course_image_placeholder_6.png"
             />
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );
