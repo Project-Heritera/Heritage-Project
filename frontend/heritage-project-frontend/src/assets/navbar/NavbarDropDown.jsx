@@ -35,10 +35,16 @@ function NavbarDropDown() {
                 {/* Add search bar */}
                 <div className="px-6 mt-4">
                     <SearchBar
+                        includeUsers={true}
                         usersAction={(selectedUser) => {
                             console.log("Navigating to users page")
                             navigate(`/u/${selectedUser.username}`)
-                        }} />
+                        }}
+                        includeCourses={true}
+                        courseAction={() => {
+                            console.log("Navigating to course")//Add functionality here!
+                        }}
+                    />
                 </div>
                 {/* Links go here */}
                 <div className="flex flex-col gap-4 mt-8 px-6">

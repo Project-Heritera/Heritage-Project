@@ -13,9 +13,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useEffect, useState } from "react";
 
-function SearchBar({ includeUsers, includeCourses, usersAction }) {
+function SearchBar({ includeUsers, includeCourses, usersAction, courseAction }) {
     const [open, setOpen] = useState(false)
     const [searchedUsers, setSearchedUsers] = useState([])
+    const [searchedCourses, setSearchedCourses] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
     const [loading, setLoading] = useState(false)
 
@@ -35,8 +36,14 @@ function SearchBar({ includeUsers, includeCourses, usersAction }) {
 
                 console.log("Userlist is:", userList)
                 setSearchedUsers(userList)
+
+                const courseResponse = await api.get(`/website/courses/search/?course_prefix=${searchQuery}`)
+                const courseList = courseResponse.data;
+
+                console.log("Courselist is:", courseList)
+                setSearchedCourses(courseList)
             } catch (error) {
-                console.error("Error retrieving searched users:", error)
+                console.error("Error retrieving searches:", error)
             } finally {
                 setLoading(false)
             }
@@ -48,6 +55,10 @@ function SearchBar({ includeUsers, includeCourses, usersAction }) {
 
     const onUserSelect = (user) => {
         usersAction(user)
+    }
+
+    const onCourseSelect = (course) => {
+        courseAction(course)
     }
 
     return (
@@ -70,24 +81,39 @@ function SearchBar({ includeUsers, includeCourses, usersAction }) {
 
                         <CommandEmpty>No results found.</CommandEmpty>
 
-                        <CommandGroup heading="Friends">
-                            {/* Load Friends here */}
-                            {searchedUsers.map((user) => (
-                                <CommandItem key={user.username} value={user.username}>
-                                    <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onUserSelect(user)}>
-                                        <Avatar>
-                                            <AvatarImage src={user.profile_pic} />
-                                            <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
-                                        </Avatar>
-                                        <span>{user.username}</span>
-                                    </div>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
+                        {includeUsers && (
+                            <CommandGroup heading="Friends">
+                                {/* Load Friends here */}
+                                {searchedUsers.map((user) => (
+                                    <CommandItem key={user.username} value={user.username}>
+                                        <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onUserSelect(user)}>
+                                            <Avatar>
+                                                <AvatarImage src={user.profile_pic} />
+                                                <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <span>{user.username}</span>
+                                        </div>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        )}
 
-                        <CommandGroup heading="Courses">
-                            {/* Load Courses here */}
-                        </CommandGroup>
+                        {includeCourses && (
+                            <CommandGroup heading="Courses">
+                                {/* Load Courses here */}
+                                {searchedCourses.map((course) => (
+                                    <CommandItem key={course.title} value={course.title}>
+                                        <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onCourseSelect(course)}>
+                                            <Avatar>
+                                                <AvatarImage src={course.image} />
+                                                <AvatarFallback>{course.title.charAt(0).toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <span>{course.title}</span>
+                                        </div>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        )}
                     </CommandList>
                 )}
             </Command>

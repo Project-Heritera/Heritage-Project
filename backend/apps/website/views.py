@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from rest_framework import serializers
 
 from .permissions import user_has_access
@@ -264,6 +264,39 @@ def get_courses(request):
     if not viewable_courses_qs.exists():
         # permissiondenied also gives HTTP 403
         raise PermissionDenied("You do not have permission to view any courses.")
+
+    serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Search courses",
+    description="Search for courses by title. Only returns courses the user has access to.",
+    parameters=[
+        OpenApiParameter(name="course_prefix", description="The start of the course title", required=False, type=str),
+    ],
+    responses={
+        200: CourseSerializer(many=True),
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_courses(request):
+    user = request.user
+    searchQuery = request.query_params.get('course_prefix', '')
+
+    viewable_courses_qs = (
+        Course.objects
+              .filter_by_user_access(user)
+              .user_progress_percent(user)
+    )
+
+    if not viewable_courses_qs.exists():
+        # permissiondenied also gives HTTP 403
+        raise PermissionDenied("You do not have permission to view any courses.")
+    
+    viewable_courses_qs = viewable_courses_qs.filter(title__istartswith=searchQuery)
 
     serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
 

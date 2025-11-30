@@ -30,4 +30,5 @@ urlpatterns = [
     path("badges/", views.get_badges),
     path("another_badges/<str:user_username>", views.get_another_badges),
     path("badges/<int:badge_id>/award_badge/", views.award_badge),
+    path("courses/search/", views.search_courses),
 ]
