@@ -173,15 +173,16 @@ def get_user_info(request):
     user = request.user
 
     courses_created_int = Course.objects.filter(creator=user).count()
-    courses_completed_int = Course.objects.filter(
-        userprogress__user=user,
-        userprogress__percent=100
-    ).count()
+    courses_completed_int = Course.objects \
+        .filter_by_user_access(user) \
+        .user_progress_percent(user) \
+        .filter(progress_percent=100) \
+        .count()
 
-    user_serializer = UserSerializer(user)
+    serializer = UserSerializer(user)
 
     return Response({
-        **user_serializer.data,
+        **serializer.data,
         "courses_created": courses_created_int,
         "courses_completed": courses_completed_int
     }, status=status.HTTP_200_OK)
