@@ -223,10 +223,10 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi, setText }) => {
             {/* If render is toggled used render editor, else use normal markdown text */}
             {isRenderd ? (
                 //Render if true
-                <EditorContent className="ProseMirror" editor={editor} />
+                <EditorContent className="ProseMirror border border-gray-800" editor={editor} />
             ) : (
                 //render is false
-                <textarea className="text-area" value={initText} onChange={textAreaChange} ref={textAreaRef} />
+                <textarea className="text-area border border-gray-800" value={initText} onChange={textAreaChange} ref={textAreaRef} />
             )}
         </>
     )

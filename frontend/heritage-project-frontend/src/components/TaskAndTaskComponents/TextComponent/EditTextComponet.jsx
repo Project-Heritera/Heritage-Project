@@ -33,39 +33,39 @@ const EditTextComponent = ({ text, setText, areaApi, setAreaApi }) => {
             {/*Display tool bar at top*/}
             <Toolbar>
                 <MarkdownButton onClick={() => areaApi?.italicize()}>
-                    <Italic size={18} />
+                    <Italic size={18} className='text-gray-800' />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bulletpoint()}>
-                    <List size={18} />
+                    <List size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.bold()}>
-                    <Bold size={18} />
+                    <Bold size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading1()}>
-                    <Heading1 size={18} />
+                    <Heading1 size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading2()}>
-                    <Heading2 size={18} />
+                    <Heading2 size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.heading3()}>
-                    <Heading3 size={18} />
+                    <Heading3 size={18}className='text-gray-800' />
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.strike()}>
-                    <Strikethrough size={18} />
+                    <Strikethrough size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={() => areaApi?.blockquote()}>
-                    <TextQuote size={18} />
+                    <TextQuote size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
                 <MarkdownButton onClick={toggleRender}>
-                    <ScrollText size={18} />
+                    <ScrollText size={18} className='text-gray-800'/>
                 </MarkdownButton>
 
             </Toolbar>
