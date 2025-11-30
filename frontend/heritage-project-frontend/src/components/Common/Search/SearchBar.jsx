@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/command"
 import api from "../../../services/api"
 import { Link, useNavigate } from "react-router-dom"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useEffect, useState } from "react";
 
-function SearchBar({ image, title, description }) {
+function SearchBar({ includeUsers, includeCourses, usersAction }) {
     const [open, setOpen] = useState(false)
     const [searchedUsers, setSearchedUsers] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
@@ -42,36 +43,44 @@ function SearchBar({ image, title, description }) {
         }, 300)
 
         return () => clearTimeout(delayDebounceFn)
-        
+
     }, [searchQuery])
+
+    const onUserSelect = (user) => {
+        usersAction(user)
+    }
 
     return (
         <div className="relative w-full max-w-lg z-50">
             <Command className="rounded-lg border shadow-sm overflow-visible">
-                <CommandInput 
-                placeholder="Search friends or courses..." 
-                onFocus={() => setOpen(true)} 
-                onBlur={() => setTimeout(() => setOpen(false), 200)} 
-                onValueChange={setSearchQuery}/>
+                <CommandInput
+                    placeholder="Search friends or courses..."
+                    onFocus={() => setOpen(true)}
+                    onBlur={() => setTimeout(() => setOpen(false), 200)}
+                    onValueChange={setSearchQuery} />
 
                 {open && (
                     <CommandList className="absolute top-12 w-full bg-background border rounded-md shadow-xl animate-in fade-in-0 zoom-in-95">
                         {loading && (
                             <div className="p-4 text-sm text-muted-foreground flex items-center justify-center">
                                 Searching...
-                             </div>
+                            </div>
                         )}
 
-                        
+
                         <CommandEmpty>No results found.</CommandEmpty>
 
                         <CommandGroup heading="Friends">
                             {/* Load Friends here */}
                             {searchedUsers.map((user) => (
                                 <CommandItem key={user.username} value={user.username}>
-                                    <Link to={`/u/${user.username}` } className="w-full flex items-center gap-2">
-                                    <span>{user.username}</span>
-                                    </Link>
+                                    <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onUserSelect(user)}>
+                                        <Avatar>
+                                            <AvatarImage src={user.profile_pic} />
+                                            <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{user.username}</span>
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

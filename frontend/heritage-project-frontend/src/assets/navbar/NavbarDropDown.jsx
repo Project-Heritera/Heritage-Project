@@ -8,7 +8,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { USER_NAME } from "@/services/LocalStorage";
@@ -16,6 +16,7 @@ import SearchBar from "@/components/Common/Search/SearchBar";
 
 function NavbarDropDown() {
     const user = localStorage.getItem(USER_NAME)
+    const navigate = useNavigate();
 
     return (
         <Sheet>
@@ -32,7 +33,13 @@ function NavbarDropDown() {
                 </SheetHeader>
 
                 {/* Add search bar */}
-                <SearchBar/>
+                <div className="px-6 mt-4">
+                    <SearchBar
+                        usersAction={(selectedUser) => {
+                            console.log("Navigating to users page")
+                            navigate(`/u/${selectedUser.username}`)
+                        }} />
+                </div>
                 {/* Links go here */}
                 <div className="flex flex-col gap-4 mt-8 px-6">
                     <Link to="/" className="text-lg font-medium hover:text-primary">
@@ -62,7 +69,7 @@ function NavbarDropDown() {
                         </Avatar>
                         <div>
                             <p className="font-medium">{user}</p>
-                        <p className="text-xs text-muted-foreground">clayton@example.com</p>
+                            <p className="text-xs text-muted-foreground">clayton@example.com</p>
                         </div>
                     </div>
                     {/* Account Actions */}
