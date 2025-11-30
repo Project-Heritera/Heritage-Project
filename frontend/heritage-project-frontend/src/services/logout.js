@@ -7,7 +7,7 @@ export const useLogout = () => {
 
     const logout = () => {
         localStorage.clear();
-        navigate("/login");
+        window.location.href = "/login";
     }
 
     // 3. Return the function so the component can call it
