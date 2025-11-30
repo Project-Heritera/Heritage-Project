@@ -67,6 +67,7 @@ function NavbarDropDown() {
                         courseAction={() => {
                             console.log("Navigating to course")//Add functionality here!
                         }}
+                        searchFiller={"Search courses or users"}
                     />
                 </div>
                 {/* Links go here */}

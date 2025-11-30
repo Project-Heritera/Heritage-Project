@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useEffect, useState } from "react";
 
-function SearchBar({ includeUsers, includeCourses, usersAction, courseAction }) {
+function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, searchFiller }) {
     const [open, setOpen] = useState(false)
     const [searchedUsers, setSearchedUsers] = useState([])
     const [searchedCourses, setSearchedCourses] = useState([])
@@ -65,7 +65,7 @@ function SearchBar({ includeUsers, includeCourses, usersAction, courseAction }) 
         <div className="relative w-full max-w-lg z-50">
             <Command className="rounded-lg border shadow-sm overflow-visible">
                 <CommandInput
-                    placeholder="Search friends or courses..."
+                    placeholder={searchFiller}
                     onFocus={() => setOpen(true)}
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
                     onValueChange={setSearchQuery} />
