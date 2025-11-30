@@ -12,7 +12,7 @@ from rest_framework import serializers
 
 from .permissions import user_has_access
 from .serializers import (
-    ProgressOfTaskSerializer, UserBadgeSerializer,
+    BadgeSerializer, ProgressOfTaskSerializer, UserBadgeSerializer,
     RoomSerializer, CourseSerializer, SectionSerializer, 
     UserRoomAccessLevelSerializer, UserCourseAccessLevelSerializer, UserSectionAccessLevelSerializer)
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, UserCourseAccessLevel, UserRoomAccessLevel, UserSectionAccessLevel, VisibilityLevel
@@ -235,34 +235,6 @@ def delete_course(request, course_id):
 
 @extend_schema(
     tags=["Courses"],
-    summary="Get courses",
-    description="Retrieves all courses the user can view, annotated with progress.",
-    responses={
-        200: CourseSerializer(),
-        403: OpenApiResponse(description='You do not have permission to view any courses.'),
-    }
-)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_courses(request):
-    user = request.user
-
-    viewable_courses_qs = (
-        Course.objects
-              .filter_by_user_access(user)
-              .user_progress_percent(user)
-    )
-
-    if not viewable_courses_qs.exists():
-        # permissiondenied also gives HTTP 403
-        raise PermissionDenied("You do not have permission to view any courses.")
-
-    serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@extend_schema(
-    tags=["Courses"],
     summary="Search courses",
     description="Search for courses by title. Only returns courses the user has access to.",
     parameters=[
@@ -333,8 +305,6 @@ def create_course(request):
     tags=["Courses"],
     summary="Get course progress",
     description="Get the total progress of the course as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetCourseProgressResponse",
@@ -375,6 +345,93 @@ def get_course_progress(request, course_id):
     }
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Get all courses",
+    description="Returns course and progress information for all courses the user can access.",
+    responses={
+        200: inline_serializer(
+            name="GetAllCourseProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            }
+        ),
+        204: OpenApiResponse(description='No courses found. Maybe check user permissions.'),
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_courses(request):
+    user = request.user
+
+    # Only courses the user can access
+    qs = (
+        Course.objects
+            .filter_by_user_access(user)
+            .user_progress_percent(user)
+    )
+
+    if not qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(qs, many=True)
+
+    results = []
+    for serialized, course in zip(serializer.data, qs):
+        results.append({
+            **serialized,
+            "progress_percent": round(course.progress_percent or 0, 2),
+            "completed_tasks": course.completed_tasks,
+            "total_tasks": course.total_tasks,
+        })
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+
+# @extend_schema(
+#     tags=["Courses"],
+#     summary="Get courses",
+#     description="Retrieves all courses the user can view, annotated with progress.",
+#     responses={
+#         200: CourseSerializer(),
+#         403: OpenApiResponse(description='You do not have permission to view any courses.'),
+#     }
+# )
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_courses(request):
+#     user = request.user
+
+#     viewable_courses_qs = (
+#         Course.objects
+#               .filter_by_user_access(user)
+#               .user_progress_percent(user)
+#     )
+
+#     if not viewable_courses_qs.exists():
+#         # permissiondenied also gives HTTP 403
+#         raise PermissionDenied("You do not have permission to view any courses.")
+
+#     serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
+
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 # -------------------------------
