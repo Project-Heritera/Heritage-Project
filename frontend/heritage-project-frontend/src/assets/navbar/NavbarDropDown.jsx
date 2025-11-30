@@ -8,7 +8,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { USER_NAME } from "@/services/LocalStorage";
@@ -22,6 +22,7 @@ function NavbarDropDown() {
     const navigate = useNavigate();
     const [userObject, setUserObject] = useState(null)
     const performLogout = useLogout();
+    const location = useLocation();
 
     useEffect(() => {
         const getUserData = async () => {
@@ -38,7 +39,7 @@ function NavbarDropDown() {
             }
         }
         getUserData();
-    }, [user])
+    }, [user, useLocation])
 
     return (
         <Sheet>
