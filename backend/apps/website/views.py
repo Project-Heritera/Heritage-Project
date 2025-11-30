@@ -11,18 +11,14 @@ from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParam
 from rest_framework import serializers
 
 from .permissions import user_has_access
-from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer
-from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
+from .serializers import (
+    ProgressOfTaskSerializer, UserBadgeSerializer,
+    RoomSerializer, CourseSerializer, SectionSerializer, 
+    UserRoomAccessLevelSerializer, UserCourseAccessLevelSerializer, UserSectionAccessLevelSerializer)
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, UserCourseAccessLevel, UserRoomAccessLevel, UserSectionAccessLevel, VisibilityLevel
 
 User = get_user_model()
 
-
-# # user info apis
-#     path("user_info/", views.get_user_info),
-#     path("other_user_info/", views.get_another_user_info),
-
-#     # user badges apis
-#     path("another_badges/", views.get_another_badges),
 
 # -------------------------------
 # Task-related API calls
@@ -70,8 +66,6 @@ def update_task_progress(request, task_id):
     tags=["Tasks"],
     summary="Get the progress of a room",
     description="Retrieves task progress for all tasks in a room.",
-    
-    
     responses={
         200: ProgressOfTaskSerializer,
         403: OpenApiResponse(description='User does not have permission to view this room.'),
@@ -124,8 +118,6 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
     tags=["Badges"],
     summary="Get the badges of another user.",
     description="Retrieves task progress for all tasks in a room.",
-    
-    
     responses={
         200: UserBadgeSerializer,
         204: OpenApiResponse(description='User has no badges.'),
@@ -419,8 +411,6 @@ def delete_section(request, section_id):
     tags=["Sections"],
     summary="Get sections",
     description="Retrieves all sections the user can view, annotated with progress.",
-    
-    
     responses={
         200: SectionSerializer(),
         403: OpenApiResponse(description='You do not have permission to view any sections.'),
@@ -463,7 +453,6 @@ def get_sections(request, course_id):
     tags=["Sections"],
     summary="Create a new section",
     description="Creates a section and assigns the current user as creator. The authenticated user is automatically set as the section creator.",
-    
     request=inline_serializer(
         name="CreateSectionRequest",
         fields={
@@ -471,8 +460,6 @@ def get_sections(request, course_id):
             "description": serializers.CharField(),
         }
     ), 
-    
-    
     responses={
         201: SectionSerializer(),
         404: OpenApiResponse(description='Could not get course that the section is in.'),
@@ -504,8 +491,6 @@ def create_section(request, course_id):
     tags=["Sections"],
     summary="Get section progress",
     description="Get the total progress of the section as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetSectionProgressResponse",
@@ -555,8 +540,6 @@ def get_section_progress(request, section_id):
     tags=["Rooms"],
     summary="Delete a room",
     description="Deletes a room and everything that that room contains: tasks/etc..",
-    
-    
     responses={
         204: OpenApiResponse(description='Room deleted successfully.'),
         403: OpenApiResponse(description='You do not have permission to delete this room.'),
@@ -582,8 +565,6 @@ def delete_room(request, room_id):
     tags=["Rooms"],
     summary="Get rooms",
     description="Retrieves all rooms the user can view, annotated with progress.",
-    
-    
     responses={
         200: RoomSerializer(),
         403: OpenApiResponse(description='You do not have permission to view any rooms.'),
@@ -614,16 +595,13 @@ def get_rooms(request, section_id):
     tags=["Rooms"],
     summary="Create a new room",
     description="Creates a room and assigns the current user as creator. The authenticated user is automatically set as the room creator.",
-    
     request=inline_serializer(
         name="CreateRoomRequest",
         fields={
             "title": serializers.CharField(),
             "description": serializers.CharField(),
         }
-    ), 
-    
-    
+    ),
     responses={
         201: RoomSerializer(),
         404: OpenApiResponse(description='Could not get course or section that the room is in.'),
@@ -657,8 +635,6 @@ def create_room(request, course_id, section_id):
     tags=["Rooms"],
     summary="Get room progress",
     description="Get the total progress of the room as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetRoomProgressResponse",
@@ -708,8 +684,6 @@ def get_room_progress(request, room_id):
     tags=["Rooms"],
     summary="Get a room",
     description="Retrieves a room the user can view",
-    
-    
     responses={
         200: RoomSerializer(),
         403: OpenApiResponse(description='You do not have permission to view this room.'),
@@ -783,17 +757,6 @@ def save_room(request, room_id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def publish_room(request, room_id):
-    """
-    publish_room: Validates and publishes a room, making it publicly visible.
-
-    @param request: HTTP request containing room data for validation and publishing.
-    @param room_id: ID of the room being published.
-    @return:
-        * HTTP 200: If published successfully.
-        * HTTP 400: If validation fails or room has no tasks.
-    @note:
-        A room must contain at least one task before publishing. Visibility is set to PUBLIC.
-    """
     room, errors = _save_room_logic(request, room_id)
     if errors:
         return Response(
@@ -810,3 +773,98 @@ def publish_room(request, room_id):
     room.save(update_fields=["visibility", "is_published"])
 
     return Response(status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Contribution-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["Contribution"],
+    summary="Add user as an editor",
+    description="Creates User(Room/Section/Course)AccessLevel objects that has AccessLevel set to EDITOR",
+    request=None,
+    responses={
+        201: OpenApiResponse(description='Added user successfully.'),
+        404: OpenApiResponse(description='Could not get user, room, section, or course.'),
+        409: OpenApiResponse(description='Cannot create access level for public room.'),
+    }
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_as_editor(request, room_id, user_username):
+    user = get_object_or_404(User, username=user_username)
+    room = get_object_or_404(Room, id=room_id)
+
+    if room:
+        if room.visibility == "PUB": 
+            return Response({"message": "Cannot create access level for public room."}, status=status.HTTP_409_CONFLICT)
+
+    section = room.section
+    course = room.course
+
+    ### Course ACCESS
+    # Look for ANY existing access, regardless of level
+    old_access = UserCourseAccessLevel.objects.filter(
+        user=user,
+        course=course
+    ).first()
+
+    if old_access:
+        # Delete old non-EDITOR (or even EDITOR, so we always recreate cleanly)
+        old_access.delete()
+
+    # Create a fresh EDITOR access (not saved yet)
+    user_course_access = UserCourseAccessLevel(
+        user=user,
+        course=course,
+        access_level='EDITOR',
+    )
+
+    # Save AFTER validation
+    user_course_access.save()
+
+
+    ### Section ACCESS
+    # Look for ANY existing access, regardless of level
+    old_section_access = UserSectionAccessLevel.objects.filter(
+        user=user,
+        section=section
+    ).first()
+
+    if old_section_access:
+        # Remove old level (VIEWER, READER, whatever)
+        old_section_access.delete()
+
+    # Create fresh EDITOR access
+    user_section_access = UserSectionAccessLevel(
+        user=user,
+        section=section,
+        access_level='EDITOR',
+    )
+
+    # Save after validation
+    user_section_access.save()
+
+
+    ### Room ACCESS
+    # Look for ANY existing access, regardless of level
+    old_room_access = UserRoomAccessLevel.objects.filter(
+        user=user,
+        room=room
+    ).first()
+
+    if old_room_access:
+        # Delete previous access (any level)
+        old_room_access.delete()
+
+    # Create new EDITOR access
+    user_room_access = UserRoomAccessLevel(
+        user=user,
+        room=room,
+        access_level='EDITOR',
+    )
+
+    # Save after validation
+    user_room_access.save()
+
+    return Response(UserRoomAccessLevelSerializer(user_room_access).data, status=status.HTTP_201_CREATED)
