@@ -62,7 +62,7 @@ function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, se
     }
 
     return (
-        <div className="relative w-full max-w-lg z-50">
+        <div className="relative w-full max-w-lg ">
             <Command className="rounded-lg border shadow-sm overflow-visible">
                 <CommandInput
                     placeholder={searchFiller}
