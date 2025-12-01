@@ -49,21 +49,29 @@ function CourseDashboard() {
 
   return (
 
-    <div className="flex justify-center w-full min-h-screen p-6 bg-gray-50">
-      <div className="flex w-full max-w-[95%] gap-6 items-start">
-        {/* Main div*/}
-        <div className="w-3/4">
-          <SectionsHolder>
-            {sections && sections.map((section) => (
-              <SectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} />
-            ))}
-          </SectionsHolder>
-        </div>
-        {/* Side div*/}
-        <div className="flex-1">
-          <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} />
+    <div className="flex flex-col items-center w-full min-h-screen p-6 bg-gray-50">
+      <div className="w-full max-w-[95%]">
+        <h2 className="text-2xl font-bold tracking-tight mb-6">
+          Track your progress and continue your learning path
+        </h2>
+
+        <div className="flex gap-6 items-start">
+          {/* Main div*/}
+          <div className="w-3/4">
+            <SectionsHolder>
+              {sections && sections.map((section) => (
+                <SectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} />
+              ))}
+            </SectionsHolder>
+          </div>
+          {/* Side div*/}
+          <div className="flex-1">
+            <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} />
+          </div>
         </div>
       </div>
+
+
     </div>
   )
 }

@@ -1,18 +1,11 @@
-//Handle what the buttons look like for toolbar
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 const SectionsHolder = ({ children }) => {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    View your learning path
-                </CardTitle>
-            </CardHeader>
-
-            <CardContent>
+        <div className="w-full">
+            {/* 2. Just a transparent container for spacing */}
+            <div className="flex flex-col gap-4">
                 {children}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };
 
