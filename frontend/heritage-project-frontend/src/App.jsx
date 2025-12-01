@@ -10,6 +10,7 @@ import RoomViewer from './pages/room_viewer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorPopup from './components/ErrorPopup'
 import ProfilePage from './pages/profile.jsx'
+import CourseDashboard from './pages/CourseDashboard'
 
 function App() {
  return (
@@ -29,6 +30,7 @@ function App() {
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
           <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/view' element={<RoomViewer />} />
           <Route path='/u/:username' element={<ProfilePage/>}></Route>
+          <Route path ='/c/:coursename' element={<CourseDashboard/>}></Route>
         </Route>
       </Route>
       </Routes>
