@@ -48,17 +48,10 @@ const CourseView = () => {
 
         <Card className="course-view-body flex flex-col p-4 m-4">
           <div className="course-view-body-body grid grid-cols-3 gap-4">
-            <CourseCard
-              link="https://youtu.be/dQw4w9WgXcQ?si=wcAqKqR5aXuu3R53"
-              title="🌺 Creole | Kouri-Vini Language"
-              description="Explore the roots of Louisiana Creole and learn essential phrases used in everyday conversation. Perfect for beginners interested in cultural heritage."
-              progress={rand() * 100}
-              imageLink="./src/assets/course_image_placeholder_1.png"
-            />
 
             {!loading && (
               courses.map((course) => (
-                <CourseCard key={course.title} link="" title={course.title} description={course.description} imageLink={course.image}/>
+                <CourseCard key={course.title} link="" title={course.title} description={course.description} imageLink={course.image} courseId={course.course_id}/>
               ))
             )}
 
