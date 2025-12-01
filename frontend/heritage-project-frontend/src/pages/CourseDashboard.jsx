@@ -66,7 +66,7 @@ function CourseDashboard() {
           </div>
           {/* Side div*/}
           <div className="flex-1">
-            <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} />
+            <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
           </div>
         </div>
       </div>
