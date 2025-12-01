@@ -51,7 +51,7 @@ const CourseView = () => {
 
             {!loading && (
               courses.map((course) => (
-                <CourseCard key={course.title} link="" title={course.title} description={course.description} imageLink={course.image} courseId={course.course_id}/>
+                <CourseCard key={course.title} link="" title={course.title} description={course.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`} courseId={course.course_id} progress={course.progress_percent}/>
               ))
             )}
 
