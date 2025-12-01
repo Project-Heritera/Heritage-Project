@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import RoomProgress from "./RoomProgress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom"
-const RoomCard = ({ title, description, imageLink, navigateLink }) => {
+const RoomCard = ({ title, description, imageLink, navigateLink, progress }) => {
     return (
         <Link to={navigateLink || "#"} className="block group">
             <Card className="
@@ -35,7 +35,7 @@ const RoomCard = ({ title, description, imageLink, navigateLink }) => {
                                 )}
                             </div>
                             <div className="pt-2">
-                                <RoomProgress progress={54} />
+                                <RoomProgress progress={progress} />
                             </div>
                         </div>
                     </div>

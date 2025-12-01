@@ -40,7 +40,7 @@ const SectionDropdown = ({ title, description, sectionId }) => {
         <Accordion type="single" collapsible className="w-full border rounded-lg shadow-sm">
             <AccordionItem value="item-1">
                 <AccordionTrigger className="px-4 hover:no-underline hover:bg-gray-50 rounded-t-lg">
-                    <span>Section 1</span>
+                    <span>{title}</span>
                 </AccordionTrigger>
 
                 <AccordionContent>
@@ -51,7 +51,7 @@ const SectionDropdown = ({ title, description, sectionId }) => {
                     {/* Display all rooms of section */}
                     <div className="flex flex-col gap-4 px-4 py-4">
                         {rooms && rooms.map((room) => (
-                            <RoomCard key={room.title} title={room.title} description={"This is a random description to be added right now"} />
+                            <RoomCard key={room.title} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent}/>
                         ))}
                     </div>
                 </AccordionContent>
