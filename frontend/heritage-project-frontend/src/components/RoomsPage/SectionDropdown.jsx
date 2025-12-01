@@ -8,7 +8,34 @@ import {
 } from "@/components/ui/accordion"
 import SectionDescription from "./SectionDescription";
 import RoomCard from "./RoomCard";
-const SectionDropdown = ({ title, description, rooms }) => {
+import { useEffect, useState } from "react";
+import api from "@/services/api";
+
+const SectionDropdown = ({ title, description, sectionId }) => {
+    const [loading, setLoading] = useState(true)
+
+    const [rooms, setRooms] = useState([])
+    useEffect(() => {
+        setLoading(true)
+        const getRooms = async () => {
+            try {
+                const response = await api.get(`/website/sections/${sectionId}/rooms/`)
+                const roomsData = response.data
+                console.log("Retrieved course rooms:", roomsData)
+                setRooms(roomsData)
+            } catch (error) {
+                console.error("Error retrieving course rooms: ", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        getRooms();
+    }, [])
+
+    if (loading) {
+        return (<div>Loading...</div>)
+    }
+
     return (
         <Accordion type="single" collapsible className="w-full border rounded-lg shadow-sm">
             <AccordionItem value="item-1">
@@ -24,7 +51,7 @@ const SectionDropdown = ({ title, description, rooms }) => {
                     {/* Display all rooms of section */}
                     <div className="flex flex-col gap-4 px-4 py-4">
                         {rooms && rooms.map((room) => (
-                            <RoomCard key={room.title} title={room.title} description={"This is a random description to be added right now"}/>
+                            <RoomCard key={room.title} title={room.title} description={"This is a random description to be added right now"} />
                         ))}
                     </div>
                 </AccordionContent>
