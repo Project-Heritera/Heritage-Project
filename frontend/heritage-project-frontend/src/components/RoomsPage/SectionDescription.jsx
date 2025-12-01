@@ -2,9 +2,9 @@
 
 const SectionDescription = ({ description }) => {
     return (
-        <div>
-            <h1>{description}</h1>
-        </div>
+        <p className="text-sm text-gray-500 leading-relaxed max-w-3xl">
+            {description}
+        </p>
     );
 };
 
