@@ -10,21 +10,28 @@ import { tr } from "date-fns/locale";
 function CourseDashboard() {
   const { courseId } = useParams();
   const [loading, setLoading] = useState(true)
-  
+
 
   const rooms = [
     { title: "Room 1", link: "/" },
     { title: "Room 2", link: "/" }
   ]
 
-  //Get the sections of the course
   const [sections, setSections] = useState([])
+  const [courseInfo, setCourseInfo] = useState(null)
   useEffect(() => {
     setLoading(true)
-    const getSections = async () => {
+
+    const getData = async () => {
       try {
-        const response = await api.get(`/website/courses/${courseId}/sections/`)
-        const sectionsData = response.data
+        //Get course data
+        const courseResponse = await api.get(`/website/course/${courseId}/`)
+        const courseData = courseResponse.data
+        console.log("Retrieved course data:", courseData)
+        setCourseInfo(courseData)
+        //Get sections
+        const sectionsResponse = await api.get(`/website/courses/${courseId}/sections/`)
+        const sectionsData = sectionsResponse.data
         console.log("Retrieved course sections:", sectionsData)
         setSections(sectionsData)
       } catch (error) {
@@ -33,7 +40,7 @@ function CourseDashboard() {
         setLoading(false)
       }
     }
-    getSections();
+    getData();
   }, [])
 
   if (loading) {
@@ -41,20 +48,20 @@ function CourseDashboard() {
   }
 
   return (
-    
+
     <div className="flex justify-center w-full min-h-screen p-6 bg-gray-50">
       <div className="flex w-full max-w-[95%] gap-6 items-start">
         {/* Main div*/}
         <div className="w-3/4">
           <SectionsHolder>
             {sections && sections.map((section) => (
-              <SectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id}/>
+              <SectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} />
             ))}
           </SectionsHolder>
         </div>
         {/* Side div*/}
         <div className="flex-1">
-          <CourseCard title={"Data Structures"} description={"This is the description of the data structures. it all starts with random data structures. it also talks alot abotu randoming networking stuff."} progress={50} />
+          <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} />
         </div>
       </div>
     </div>
