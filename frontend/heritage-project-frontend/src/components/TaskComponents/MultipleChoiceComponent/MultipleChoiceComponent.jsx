@@ -43,7 +43,6 @@ function handleSelectAnswerChoice(selectedID) {
 
 useImperativeHandle(ref, () => ({
   serialize: () => {
-    console.log("in serialize in question component");
     return { type: "OPTION", choiceArray };   
   },
   checkIfCorrect: () => {

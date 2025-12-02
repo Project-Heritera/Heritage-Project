@@ -3,6 +3,7 @@ import statusTypes from "../../utils/statusTypes";
 import { TaskGlobalContext } from "./TaskBase";
 import { Button } from "@/components/ui/button";
 
+
 const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWrapper(
 {
   jsonData,
@@ -21,7 +22,6 @@ const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWr
     parsedJsonData = jsonData || {};
   }
 
-  const childRef = useRef();
   const [attemptsLeft, setAttemptsLeft] = useState(
     initialAttemptsLeft ?? parsedJsonData.number_of_chances ?? 1
   );
@@ -56,12 +56,11 @@ const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWr
     }
   };
   const handleSerialize = () => {
-  if (!childRef.current?.serialize) {
+  if (!questionComponentRef.current?.serialize) {
       console.warn("Child component has no serialize method");
       return null;
     }
-    console.log("in handle serialize in question wrapper with", attemptsLeft, hint)
-  parsedJsonData = childRef.current.serialize();
+  parsedJsonData = questionComponentRef.current.serialize();
   const customJson = { ...parsedJsonData, number_of_chances: numberOfAttempts, hint };
   return customJson;
 }
@@ -102,10 +101,9 @@ useImperativeHandle(ref, () => ({
       )}
       <div className="question-wrapper">
         <QuestionTaskComponent
-          ref={questionComponentRef}
           jsonData={parsedJsonData}
           isEditing={isEditing}
-          ref={childRef}
+          ref={questionComponentRef}
         />
         {!isEditing && (
           <div className="question-actions">

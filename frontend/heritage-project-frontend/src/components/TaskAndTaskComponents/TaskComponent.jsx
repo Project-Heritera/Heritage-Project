@@ -1,41 +1,30 @@
 import PropTypes from "prop-types";
-import { json, safeParse } from "zod";
-import TextTaskComponent from "./TextComponent/TextTaskComponent";
-import ImageTaskComponent from "./imageTaskComponent";
-import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import { useImperativeHandle, forwardRef, useEffect, useState, useRef } from "react";
+import TextTaskComponent from "./TextComponent/TextTaskComponent";
+import ImageTaskComponent from "../TaskComponents/ImageComponent/ImageTaskComponent";
 import QuestionTaskComponentWrapper from "./QuestionTaskComponentWrapper";
-import { Component } from "lucide-react";
+import { taskComponentTypes } from "../../utils/taskComponentTypes";
 
 const TaskComponent = forwardRef(function TaskComponent(
-  {
-    componentType,
-    taskComponentSpecificData = "",
-    isEditing,
-    taskID,
-    questionProgressData,
-  },
+  { componentType, taskComponentSpecificData = "", isEditing, taskID, questionProgressData },
   ref
 ) {
-  const [jsonData, setJsondata] = useState(taskComponentSpecificData);
+  const [jsonData, setJsonData] = useState(taskComponentSpecificData);
   const childRef = useRef(null);
 
+  // Assign default value if newly created
   useEffect(() => {
-    //if newly created, assign a default schema
-    if (jsonData == "") {
-      setJsondata(JSON.stringify(componentType.defaultValue));
+    if (jsonData === "") {
+      setJsonData(JSON.stringify(componentType.defaultValue));
     }
-  }, []);
-  }, []);
+  }, [componentType, jsonData]);
 
+  // Serialization function exposed to parent
   function serializeInternal() {
-    console.log("in serializeinternal in task component");
     if (!childRef.current?.serialize) {
       console.warn("Child component has no serialize method");
       return null;
     }
-
-    // If the child is a QuestionWrapper, its serialize will handle passing json to TaskComponent's internal serialize
     return childRef.current.serialize();
   }
 
@@ -43,42 +32,43 @@ const TaskComponent = forwardRef(function TaskComponent(
     serialize: serializeInternal,
   }));
 
-  {
-    const Component = taskComponentTypes[componentType].component;
-    if (Component != null) {
-      if (taskComponentTypes[componentType].category === "Question") {
-        return (
-          <QuestionTaskComponentWrapper
-            QuestionTaskComponent={Component}
-            isEditing={isEditing}
-            jsonData={jsonData}
-            taskID={taskID}
-            questionProgressData={questionProgressData}
-            ref={childRef}
-          />
-        );
-      } else {
-        return (
-          <Component
-            jsonData={taskComponentSpecificData}
-            isEditing={isEditing}
-            ref={childRef}
-          />
-        );
-      }
-    } else {
-      return (
-        <>
-          <p>Error did not provide component type</p>;
-        </>
-      );
-    }
+  // Render the correct component based on type
+  const Component = taskComponentTypes[componentType]?.component;
+
+  if (!Component) {
+    return (
+      <>
+        <p>Error: invalid or missing component type</p>
+      </>
+    );
+  }
+
+  if (taskComponentTypes[componentType].category === "Question") {
+    return (
+      <QuestionTaskComponentWrapper
+        ref={childRef}
+        Component={Component}
+        isEditing={isEditing}
+        jsonData={jsonData}
+      />
+    );
+  } else {
+    return (
+      <Component
+        ref={childRef}
+        isEditing={isEditing}
+        jsonData={jsonData}
+      />
+    );
   }
 });
+
 TaskComponent.propTypes = {
-  componentType: taskComponentTypes,
+  componentType: PropTypes.string.isRequired,
   taskComponentSpecificData: PropTypes.string,
   isEditing: PropTypes.bool,
+  taskID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  questionProgressData: PropTypes.object,
 };
-export default TaskComponent;
 
+export default TaskComponent;

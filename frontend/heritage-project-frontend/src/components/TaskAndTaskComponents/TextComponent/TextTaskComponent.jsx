@@ -12,7 +12,6 @@ const TextTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
 
   useImperativeHandle(ref, () => ({
     serialize: () => {
-        console.log("in serialize in text task component")
       return { type: "Text", content: text };   
      },
   }));

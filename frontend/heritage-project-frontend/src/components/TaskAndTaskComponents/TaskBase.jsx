@@ -9,7 +9,6 @@ const TaskBase = forwardRef(({ components, isEditing, contextValues={}, taskID, 
 
   useImperativeHandle(ref, () => ({
    serialize: () => {
-    console.log("in serialize in task base")
   return componentRefs.current
     .map((ref) => ref?.serialize?.())
     .filter(Boolean);

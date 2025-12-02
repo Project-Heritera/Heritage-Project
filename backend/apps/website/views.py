@@ -16,6 +16,8 @@ from .serializers import (
     BadgeSerializer,
     ProgressOfTaskSerializer,
     UserBadgeSerializer,
+    Tag,
+    TaskComponent,
     RoomSerializer,
     CourseSerializer,
     SectionSerializer,
@@ -1063,14 +1065,11 @@ def _save_room_logic(request, room_id):
         404: OpenApiResponse(description="Could not get room."),
     },
 )
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
     # Fetch the room instance
     room = get_object_or_404(Room, id=room_id)
-
-    if errors:
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     if not user_has_access(room, request.user, edit=True):
         raise PermissionDenied("You do not have permission to edit this room.")
