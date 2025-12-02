@@ -1,5 +1,6 @@
 import * as z from "zod";
 import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
+import VideoTaskComponent from "@/components/TaskComponents/VideoComponent/VideoTaskComponent";
 import FillInBlankTaskComponent from "@/components/TaskComponents/FillInBlankComponent/FillInBlankTaskComponent";
 import ImageTaskComponent from "../components/TaskComponents/ImageComponent/ImageTaskComponent";
 import MultipleChoiceComponent from "../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent";
@@ -15,6 +16,13 @@ const taskComponentTypes = Object.freeze({
     category: "Static",
     schema: z.object({ text: z.string() }),
     defaultValue: { text: "" },
+  },
+ VIDEO: {
+    label: "Video",
+    category: "Static",
+    component: VideoTaskComponent,
+    schema: z.object({ url: z.string()}),
+    defaultValue: { url: ""},
   },
   IMAGE: {
     label: "Image",

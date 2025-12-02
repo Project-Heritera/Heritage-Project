@@ -43,7 +43,7 @@ function handleSelectAnswerChoice(selectedID) {
 
 useImperativeHandle(ref, () => ({
   serialize: () => {
-    return { type: "OPTION", choiceArray };   
+    return { type: "OPTION", content: {choiceArray: choiceArray} };   
   },
   checkIfCorrect: () => {
     const correct = choiceArray.filter(c => c.correct).map(c => c.id);

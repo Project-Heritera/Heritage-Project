@@ -209,13 +209,13 @@ const RoomViewer = () => {
 
       <div className="room-editor-body">
    <div className="task-editor flex flex-col gap-6 items-center">
-  {roomTasks.map((task) => (
+  {roomTasks.map((task, index) => (
     <Card
       key={task.task_id}
       className="w-full max-w-6xl shadow-lg border-gray-200 hover:shadow-xl transition-shadow duration-300"
 >
       <CardHeader>
-        <CardTitle>Task #{task.task_id}</CardTitle>
+        <CardTitle>Task #{index+1}</CardTitle>
         {task.title && <CardDescription>{task.title}</CardDescription>}
       </CardHeader>
       <CardContent>

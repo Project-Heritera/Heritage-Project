@@ -6,7 +6,7 @@ import QuestionTaskComponentWrapper from "./QuestionTaskComponentWrapper";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 
 const TaskComponent = forwardRef(function TaskComponent(
-  { componentType, taskComponentSpecificData = "", isEditing, taskID, questionProgressData },
+  { componentType, taskComponentSpecificData = "", isEditing, taskID, questionProgressData, task_component_id },
   ref
 ) {
   const [jsonData, setJsonData] = useState(taskComponentSpecificData);
@@ -21,11 +21,20 @@ const TaskComponent = forwardRef(function TaskComponent(
 
   // Serialization function exposed to parent
   function serializeInternal() {
+    console.log("inside of tas kcomponent serialize")
     if (!childRef.current?.serialize) {
       console.warn("Child component has no serialize method");
       return null;
     }
-    return childRef.current.serialize();
+    const childData = childRef.current.serialize();
+    console.log("serialize in task component", {
+      ...childData, task_component_id
+    }
+)
+    return {
+      ...childData, task_component_id
+    }
+
   }
 
   useImperativeHandle(ref, () => ({
@@ -47,7 +56,7 @@ const TaskComponent = forwardRef(function TaskComponent(
     return (
       <QuestionTaskComponentWrapper
         ref={childRef}
-        Component={Component}
+        QuestionTaskComponent={Component}
         isEditing={isEditing}
         jsonData={jsonData}
       />

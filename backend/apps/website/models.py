@@ -380,6 +380,7 @@ class Task(OrderedModel):
 class TaskComponentType(models.TextChoices):
     OPTION = "OPTION", _("MULTIPLE CHOICE OPTION")
     IMAGE = "IMAGE", _("IMAGE")
+    VIDEO = "VIDEO", _("VIDEO")
     TEXT = "TEXT", _("TEXT")
     FILL = "FILL", _("FILL IN THE BLANK QUESTION")
     # will add more or change labels as needed
