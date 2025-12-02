@@ -4,39 +4,39 @@ import CourseCard from "../components/CourseViewer/CourseCard";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import SearchBar from "@/components/Common/Search/SearchBar";
-import api from "../services/api"
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import PublicationForm from "@/components/PublicationForm";
+import CreationForm from "@/components/CreationForm";
 import { useParams } from "react-router-dom";
 import Modal from "@/components/Modal";
 // Helper to generate a random progress value (0–1)
 const rand = () => Math.random().toFixed(2);
 
 const CourseView = () => {
-  const [loading, setLoading] = useState(false)
-  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(false);
+  const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
   const [courseCreationForm, setCourseCreationForm] = useState(false);
   useEffect(() => {
-    setLoading(true)
-    console.log("Retrieving coruses")
+    setLoading(true);
+    console.log("Retrieving coruses");
     const getCourses = async () => {
       try {
-        const response = await api.get(`/website/courses/`)
+        const response = await api.get(`/website/courses/`);
         const courseList = response.data;
 
-        console.log("Loaded course list is:", courseList)
-        setCourses(courseList || [])
+        console.log("Loaded course list is:", courseList);
+        setCourses(courseList || []);
       } catch (error) {
-        console.error("Error retrieving courses:", error)
+        console.error("Error retrieving courses:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    getCourses()
-  }, [])
+    getCourses();
+  }, []);
 
   return (
     <>
@@ -45,37 +45,51 @@ const CourseView = () => {
           <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
             Course List
           </h2>
-          <SearchBar includeCourses={true} courseAction={(course) => {
-            console.log("Navigating to course");
-            navigate(`/c/${course.course_id || "#"}`);
-          }}
-            searchFiller={"Search courses"} />
+          <SearchBar
+            includeCourses={true}
+            courseAction={(course) => {
+              console.log("Navigating to course");
+              navigate(`/c/${course.course_id || "#"}`);
+            }}
+            searchFiller={"Search courses"}
+          />
         </div>
-<div className="create-course">
-  <Button onClick={() => setCourseCreationForm(true)}>
-    Create Section
-  </Button>
+        <div className="create-course">
+          <Button onClick={() => setCourseCreationForm(true)}>
+            Create Course
+          </Button>
 
-  <Modal
-    isOpen={courseCreationForm}
-    onClose={() => setCourseCreationForm(false)}
-  >
-    {/*
+          <Modal
+            isOpen={courseCreationForm}
+            onClose={() => setCourseCreationForm(false)}
+          >
+            {/*
     <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Course"} />
     */}
-    <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Section"} course_id={1} />
-  </Modal>
-</div>
+            <CreationForm
+              onClose={() => {
+                setCourseCreationForm(false);
+              }}
+              FormType={"Course"}
+            />
+          </Modal>
+        </div>
 
         <div className="course-view-body-body grid grid-cols-3 gap-4">
-
-          {!loading && (
+          {!loading &&
             courses.map((course) => (
-              <CourseCard key={course.title} link="" title={course.title} description={course.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`} courseId={course.course_id} progress={course.progress_percent} />
-            ))
-          )}
-
-
+              <CourseCard
+                key={course.title}
+                link=""
+                title={course.title}
+                description={course.description}
+                imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                  course.image
+                }`}
+                courseId={course.course_id}
+                progress={course.progress_percent}
+              />
+            ))}
         </div>
       </div>
     </>

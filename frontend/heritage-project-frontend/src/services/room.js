@@ -15,7 +15,7 @@ import { ca } from "zod/v4/locales";
  *  * HTTP 201 with room data if creation is successful.
  *  * HTTP 400 with validation errors if fields are invalid or missing.
  */
-export async function create_room(create_room_data) {
+export async function create_room(course_id, section_id, create_room_data) {
 	try {
 		const response = await api.post(`website/courses/${course_id}/sections/${section_id}/create_room/`, create_room_data);
 		Debug.log('room create successful', response.data);
