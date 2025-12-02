@@ -38,4 +38,5 @@ urlpatterns = [
 
     # contribution apis
     path("add_as_editor/user/<slug:user_username>/room/<int:room_id>/", views.add_as_editor),
+    path("add_multiple_editor/room/<int:room_id>/", views.add_mult_editors),
 ]
