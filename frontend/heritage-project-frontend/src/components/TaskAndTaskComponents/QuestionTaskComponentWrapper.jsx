@@ -1,17 +1,19 @@
 import { useState, useContext,ref, forwardRef, useImperativeHandle, useRef } from "react";
 import statusTypes from "../../utils/statusTypes";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../ui/card";
+import { Input } from "@/components/ui/input";
 import { TaskGlobalContext } from "./TaskBase";
 import { Button } from "@/components/ui/button";
 
 
-const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWrapper(
+const QuestionTaskComponentWrapper = forwardRef((
 {
   jsonData,
   QuestionTaskComponent,
   isEditing,
   initialAttemptsLeft,
   initialIsCorrect,
-},ref) {
+},ref) =>{
   // Parse jsonData if it's a string, otherwise use as-is
   let parsedJsonData;
   try {
@@ -57,72 +59,85 @@ const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWr
   };
   const handleSerialize = () => {
   if (!questionComponentRef.current?.serialize) {
-      console.warn("Child component has no serialize method");
-      return null;
+    console.warn("Child component has no serialize method");
+    return null;
+  }
+  const childData = questionComponentRef.current.serialize();
+  // Merge hint and number_of_chances into child's content
+  const finalJson = {
+    ...childData,
+    content: {
+      ...childData.content,        // keep existing child content (e.g., choiceArray)
+      hint,                        
+      number_of_chances: numberOfAttempts 
     }
-  parsedJsonData = questionComponentRef.current.serialize();
-  const customJson = { ...parsedJsonData, number_of_chances: numberOfAttempts, hint };
-  return customJson;
-}
+  };
+  return finalJson;
+};
 
 useImperativeHandle(ref, () => ({
   serialize: handleSerialize,
 }));
 
   return (
-    <>
-      {isEditing ? (
-        <div className="question-meta-editor flex gap-2 items-center">
-          <label className="meta-field">
-            <span>Number of attempts:</span>
-            <input
-              type="number"
-              min={1}
-              value={numberOfAttempts}
-              onChange={(e) => setNumberOfAttempts(Number(e.target.value))}
-              className="meta-input number-of-attempts"
-            />
-          </label>
-          <label className="meta-field">
-            <span>Hint:</span>
-            <input
-              type="text"
-              value={hint}
-              onChange={(e) => setHint(e.target.value)}
-              placeholder="Enter hint"
-              className="meta-input hint-input"
-            />
-          </label>
-        </div>
-      ) : (
-        <div className="question-meta-display">
-          <div>Number of attempts: {numberOfAttempts}</div>
-        </div>
-      )}
-      <div className="question-wrapper">
+    <Card className="w-full">
+      {/* Card Header: Meta Editor or Display */}
+      <CardHeader className="space-y-2">
+        {isEditing ? (
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col w-full md:w-1/2">
+              <label className="text-sm font-medium mb-1">Number of attempts</label>
+              <Input
+                type="number"
+                min={1}
+                value={numberOfAttempts}
+                onChange={(e) => setNumberOfAttempts(Number(e.target.value))}
+              />
+            </div>
+            <div className="flex flex-col w-full md:w-1/2">
+              <label className="text-sm font-medium mb-1">Hint</label>
+              <Input
+                type="text"
+                value={hint}
+                placeholder="Enter hint"
+                onChange={(e) => setHint(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            Number of attempts: {numberOfAttempts}
+          </div>
+        )}
+      </CardHeader>
+
+      {/* Card Content: Question Component */}
+      <CardContent>
         <QuestionTaskComponent
           jsonData={parsedJsonData}
           isEditing={isEditing}
           ref={questionComponentRef}
         />
-        {!isEditing && (
-          <div className="question-actions">
-            <Button
-              onClick={handleSubmit}
-              className="submit-question-button bg-blue-500"
-              disabled={taskStatus === statusTypes.COMPLE}
-            >
-              Submit
-            </Button>
-          </div>
-        )}
-        {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
-          <p className="hint">{parsedJsonData.hint}</p>
-        )}
-        {showHint && <p className="hint">{parsedJsonData.hint}</p>}
-      </div>
-    </>
-  )
-}
-);
+      </CardContent>
+
+      {/* Card Footer: Actions and Hints */}
+      {!isEditing && (
+        <CardFooter className="flex flex-col md:flex-row justify-between items-center gap-2">
+          <Button
+            variant="default"
+            onClick={handleSubmit}
+            disabled={taskStatus === statusTypes.COMPLE}
+          >
+            Submit
+          </Button>
+
+          {(!isCorrect && attemptsLeft === 0 && parsedJsonData.hint) && (
+            <p className="text-sm text-muted-foreground mt-2 md:mt-0">{parsedJsonData.hint}</p>
+          )}
+        </CardFooter>
+      )}
+    </Card>
+  );
+});
+
 export default QuestionTaskComponentWrapper;

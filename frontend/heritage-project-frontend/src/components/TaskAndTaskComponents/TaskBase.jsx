@@ -21,7 +21,8 @@ const TaskBase = forwardRef(({ components, isEditing, contextValues={}, taskID, 
       <div className="task-body space-y-6">
         {components.map((tc, index) => (
           <TaskComponent
-            key={tc.task_component_id}
+            key={index}
+            task_component_id={tc.task_component_id}
             componentType={tc.type}
             taskComponentSpecificData={tc.content}
             isEditing={isEditing}

@@ -52,8 +52,7 @@ serialize: () => {
     const addNewTaskComponent = (type) => {
       const jsonData = taskComponentTypes[type].defaultValue;
       const newComponent = {
-        task_component_id: Date.now(),
-        type,
+        type: type,
         content: jsonData,
       };
       setTaskComponents((prev) => [...prev, newComponent]);

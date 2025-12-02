@@ -11,7 +11,7 @@ import RoomCard from "./RoomCard";
 import { useEffect, useState } from "react";
 import api from "@/services/api";
 
-const SectionDropdown = ({ title, description, sectionId }) => {
+const SectionDropdown = ({ title, description, sectionId, courseId }) => {
     const [loading, setLoading] = useState(true)
 
     const [rooms, setRooms] = useState([])
@@ -39,7 +39,7 @@ const SectionDropdown = ({ title, description, sectionId }) => {
     return (
         <Accordion type="single" collapsible className="w-full border rounded-lg shadow-sm">
             <AccordionItem value="item-1">
-                <AccordionTrigger className="px-4 hover:no-underline hover:bg-gray-50 rounded-t-lg">
+                <AccordionTrigger className="px-4 hover:no-underline  rounded-t-lg">
                     <span>{title}</span>
                 </AccordionTrigger>
 
@@ -51,7 +51,7 @@ const SectionDropdown = ({ title, description, sectionId }) => {
                     {/* Display all rooms of section */}
                     <div className="flex flex-col gap-4 px-4 py-4">
                         {rooms && rooms.map((room) => (
-                            <RoomCard key={room.title} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent}/>
+                            <RoomCard key={room.title} navigateLink={`/r/${courseId}/${sectionId}/${room.room_id}`} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent}/>
                         ))}
                     </div>
                 </AccordionContent>

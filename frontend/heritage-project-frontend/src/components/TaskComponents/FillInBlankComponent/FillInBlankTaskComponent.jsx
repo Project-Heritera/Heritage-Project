@@ -19,9 +19,11 @@ const FillInBlankTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
   useImperativeHandle(ref, () => ({
     serialize: () => {
       return {
-        type: taskComponentTypes.INPUT,
-        text,
-        answer,
+        type: "FILL",
+        content: {
+          text,
+          answer,
+        }
       };
     },
 

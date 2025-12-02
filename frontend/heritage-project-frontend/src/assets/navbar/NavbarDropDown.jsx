@@ -16,6 +16,7 @@ import SearchBar from "@/components/Common/Search/SearchBar";
 import { useEffect, useState } from "react";
 import api from "@/services/api";
 import {useLogout} from "../../services/logout"
+import { ModeToggle } from "@/components/mode-toggle";
 
 function NavbarDropDown() {
     const user = localStorage.getItem(USER_NAME)
@@ -106,9 +107,11 @@ function NavbarDropDown() {
                         </div>
                         {/* Account Actions */}
                         <div className="flex flex-col gap-2 ">
+                            <ModeToggle/>
                             <Link to="/settings" className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
                                 <Settings className="h-4 w-4" /> Settings
                             </Link>
+                        
                             <Link to={`/u/${user}`} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-sm">
                                 <User className="h-4 w-4" /> Profile
                             </Link>

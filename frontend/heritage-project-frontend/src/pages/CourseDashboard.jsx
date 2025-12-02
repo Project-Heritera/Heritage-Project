@@ -49,7 +49,7 @@ function CourseDashboard() {
 
   return (
 
-    <div className="flex flex-col items-center w-full min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col items-center w-full min-h-screen p-6 ">
       <div className="w-full max-w-[95%]">
         <h2 className="text-2xl font-bold tracking-tight mb-6">
           Track your progress and continue your learning path

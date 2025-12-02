@@ -8,8 +8,7 @@ const RoomCard = ({ title, description, imageLink, navigateLink, progress }) => 
             <div className="
                 flex items-start gap-4  rounded-lg
                 border border-transparent
-                bg-gray-50/50 
-                hover:bg-white hover:border-gray-200 hover:shadow-sm 
+             
                 transition-all duration-200 
                 cursor-pointer 
                 active:scale-[0.99]
