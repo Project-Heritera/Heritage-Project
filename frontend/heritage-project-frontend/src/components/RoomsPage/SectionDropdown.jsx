@@ -39,7 +39,7 @@ const SectionDropdown = ({ title, description, sectionId, courseId }) => {
     return (
         <Accordion type="single" collapsible className="w-full border rounded-lg shadow-sm">
             <AccordionItem value="item-1">
-                <AccordionTrigger className="px-4 hover:no-underline hover:bg-gray-50 rounded-t-lg">
+                <AccordionTrigger className="px-4 hover:no-underline  rounded-t-lg">
                     <span>{title}</span>
                 </AccordionTrigger>
 

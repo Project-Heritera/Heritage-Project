@@ -33,11 +33,11 @@ export default function Navbar() {
 <div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
 
         <Link to="/" className="flex items-center gap-2">
-                    <LuScrollText className = "text-2xl" />
+                    {/* <LuScrollText className = "text-2xl" /> */}
 
-          <h1 className="text-3xl font-bold tracking-tight text-primary ">
+          <h1 className="text-3xl font-bold tracking-tight text-primary " style={{ fontFamily: "'Lobster Two', cursive" }}>
 
-            VIVAN
+            vivan
           </h1>
         </Link>
 
@@ -48,6 +48,7 @@ export default function Navbar() {
                 <Button
                   asChild
                   variant="ghost" 
+                  style={{ fontFamily: "'Zalando Sans Expanded'" }}
                   className={`text-base font-medium h-auto px-4 py-2 ${ 
                     isActive(link.path)
                       ? "text-primary hover:text-primary-foreground" 
