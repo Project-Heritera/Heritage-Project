@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useEffect, useState } from "react";
 
-function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, searchFiller }) {
+function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, searchFiller, setResults }) {
     const [open, setOpen] = useState(false)
     const [searchedUsers, setSearchedUsers] = useState([])
     const [searchedCourses, setSearchedCourses] = useState([])

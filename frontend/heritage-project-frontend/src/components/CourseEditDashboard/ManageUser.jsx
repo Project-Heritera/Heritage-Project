@@ -16,24 +16,28 @@ import api from "../../services/api"
 import SearchBar from "../Common/Search/SearchBar";
 import ContributorCard from "./ContributorCard"
 
-function ManageUser({ submitAction}) {
+function ManageUser({ submitAction }) {
     //Store data for whats being edited
     const [open, setOpen] = useState(false)
     const [users, setUsers] = useState([])
     const saveChanges = async () => {
+        if (users.length === 0) return;
         console.log("Saving changes");
         //Add the selected users to the backend and fill them in the parent
+        const payload = {
+            usernames: users.map((user) => user.username)
+        };
+
         try {
+           // await api.post(`/website/add_multiple_editor/room/${roomId}/`, payload);
+            submitAction(users)
 
-        } catch (error) {
-
-        } finally {
-            //Clean up list for next open
             setUsers([])
+            setOpen(false);
+            console.log("Finished adding contributors")
+        } catch (error) {
+            console.error("Failed to add editors:", error);
         }
-        //Close menu and set properities for users display
-        submitAction(users)
-        setOpen(false);
     }
 
     const removeUser = async (userToRemove) => {
@@ -41,6 +45,7 @@ function ManageUser({ submitAction}) {
         setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userToRemove.id));
         //Make backend call
     }
+
 
 
     return (
@@ -81,7 +86,7 @@ function ManageUser({ submitAction}) {
                     {/* Div holding selected users*/}
                     <div>
                         {users.map((user) => (
-                            <ContributorCard key={user.username} username={user.username} description={"Invite to collaborate"} onTrash={removeUser}/>
+                            <ContributorCard key={user.username} username={user.username} description={"Invite to collaborate"} onTrash={removeUser} />
                         ))}
                     </div>
 

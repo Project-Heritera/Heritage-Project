@@ -11,11 +11,13 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import SearchBar from "@/components/Common/Search/SearchBar";
 import ContributorCard from "../components/CourseEditDashboard/ContributorCard"
 import ManageUser from "@/components/CourseEditDashboard/ManageUser";
+import ContributorSearchBar from "../components/CourseEditDashboard/ContributorSearchBar"
 //Displays a list of cours given a room
 function CourseDashboard() {
     const { courseId } = useParams();
     const [loading, setLoading] = useState(true)
     const [users, setUsers] = useState([])
+    const [filterQuery, setFilterQuery] = useState("")
 
     const [sections, setSections] = useState([])
     const [courseInfo, setCourseInfo] = useState(null)
@@ -52,6 +54,10 @@ function CourseDashboard() {
     if (loading) {
         return (<div>Loading...</div>)
     }
+
+    const filteredUsers = users.filter((user) =>
+        user.username.toLowerCase().includes(filterQuery.toLowerCase())
+    );
 
     return (
 
@@ -107,12 +113,14 @@ function CourseDashboard() {
                         <CardContent className="p-0">
                             <div className="p-4 border-b flex items-center relative z-50">
                                 <div className="w-full">
-                                    <SearchBar />
+                                    <ContributorSearchBar
+                                        placeholder="Filter collaborators..."
+                                        onSearchChange={setFilterQuery} />
                                 </div>
                             </div>
 
                             <div className="divide-y">
-                                {users.map((user) => (
+                                {filteredUsers.map((user) => (
                                     <ContributorCard key={user.username} username={user.username} description={"Collaborator"} onTrash={removeUser} />
                                 ))}
                                 <ContributorCard username={"Chad Noris"} description={"Collaborator"} />
