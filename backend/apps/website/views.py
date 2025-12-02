@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from rest_framework import serializers
+import json
 
 from .permissions import user_has_access
 from .serializers import (
@@ -1062,11 +1063,11 @@ def _save_room_logic(request, room_id):
         404: OpenApiResponse(description="Could not get room."),
     },
 )
-@api_view(["PUT"])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
-    # room is a room instance, not the serializer
-    room, errors = _save_room_logic(request, room_id)
+    # Fetch the room instance
+    room = get_object_or_404(Room, id=room_id)
 
     if errors:
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1074,7 +1075,72 @@ def save_room(request, room_id):
     if not user_has_access(room, request.user, edit=True):
         raise PermissionDenied("You do not have permission to edit this room.")
 
-    return Response(status=status.HTTP_200_OK)
+    with transaction.atomic():
+
+        for field, value in request.data.items():
+
+            if field == "tasks":
+                # Parse tasks JSON
+                try:
+                    tasks_list = json.loads(value) if isinstance(value, str) else value
+                except json.JSONDecodeError:
+                    return Response({"error": "Invalid tasks JSON"}, status=400)
+
+                # Loop through each incoming task
+                for task_data in tasks_list:
+                    task_id = task_data.get("task_id")
+                    tags = task_data.get("tags", [])
+                    components = task_data.get("components", [])
+
+                    if not task_id:
+                        continue
+
+                    # Fetch or create task
+                    task_obj, created = Task.objects.get_or_create(id=task_id)
+
+                    # Ensure task belongs to this room
+                    task_obj.room = room
+
+                    # Handle tags (JSONField or ManyToMany)
+                    if isinstance(task_obj.tags, list):   # JSONField
+                        task_obj.tags = tags
+
+                    else:  # ManyToManyField
+                        tag_objs = []
+                        for tag_name in tags:
+                            tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
+                            tag_objs.append(tag_obj)
+
+                        task_obj.tags.set(tag_objs)
+
+                    task_obj.save()
+
+                    # Clear and recreate components
+                    task_obj.components.all().delete()
+
+                    for comp in components:
+                        comp_id = comp.get("id")  # or "task_component_id" from frontend
+                        if comp_id:
+                            # Update existing component
+                            TaskComponent.objects.filter(id=comp_id, task=task_obj).update(
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+                        else:
+                            # Create new component if no ID
+                            TaskComponent.objects.create(
+                                task=task_obj,
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+            else:
+                # Save normal room fields
+                setattr(room, field, value)
+
+        # Save room after loop
+        room.save()
+
+    return Response({"detail": "Room updated successfully"}, status=200)
 
 
 @extend_schema(
