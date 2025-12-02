@@ -97,11 +97,7 @@ function CourseDashboard() {
                 <nav className="w-50 flex flex-col gap-2 text-sm text-muted-foreground">
                     <h3 className="font-semibold text-foreground mb-2 px-2">Access</h3>
                     <Button variant="" className="justify-start">Collaborators</Button>
-                    <Button variant="ghost" className="justify-start">Moderation</Button>
-
-                    <h3 className="font-semibold text-foreground mt-4 mb-2 px-2">Code</h3>
-                    <Button variant="ghost" className="justify-start">Branches</Button>
-                    <Button variant="ghost" className="justify-start">Tags</Button>
+                    <Button variant="ghost" className="justify-start">Access</Button>
                 </nav>
 
                 {/* 2. MAIN CONTENT: Flex-1 (Takes remaining space) */}
