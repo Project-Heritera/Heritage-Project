@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import SearchBar from "@/components/Common/Search/SearchBar";
 import api from "../services/api"
+import { useNavigate } from "react-router-dom";
 
 // Helper to generate a random progress value (0–1)
 const rand = () => Math.random().toFixed(2);
@@ -12,6 +13,7 @@ const rand = () => Math.random().toFixed(2);
 const CourseView = () => {
   const [loading, setLoading] = useState(false)
   const [courses, setCourses] = useState([])
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true)
@@ -41,7 +43,8 @@ const CourseView = () => {
             Course List
           </h2>
           <SearchBar includeCourses={true} courseAction={() => {
-            console.log("Navigating to course")
+            console.log("Navigating to course");
+            navigate(`/c/${course.course_id || "#"}`);
           }}
             searchFiller={"Search courses"} />
         </div>
