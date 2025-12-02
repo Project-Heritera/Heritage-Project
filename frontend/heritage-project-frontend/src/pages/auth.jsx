@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { test_api } from "../services/testAPIs";
 import { useNavigate } from "react-router-dom";
 //Define AuthLogin component
 const AuthLogin = () => {
@@ -88,11 +87,7 @@ const AuthLogin = () => {
               <Button onClick={handleLogin}>Sign In</Button>
               <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
             </div>
-
-            <div className="pt-2">
-              <Button variant="ghost" size="sm" onClick={() => test_api()}>Test APIs</Button>
-            </div>
-          </div>
+         </div>
         </CardContent>
       </Card>
     </div>

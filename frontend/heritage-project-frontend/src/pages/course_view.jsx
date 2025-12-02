@@ -61,14 +61,11 @@ const CourseView = () => {
 
           <Modal
             isOpen={courseCreationForm}
-            onClose={() => setCourseCreationForm(false)}
+            onClose={() => window.location.reload() }
           >
-            {/*
-    <PublicationForm onClose={(()=>{setCourseCreationForm(false)})} FormType={"Course"} />
-    */}
             <CreationForm
               onClose={() => {
-                setCourseCreationForm(false);
+                window.location.reload()
               }}
               FormType={"Course"}
             />

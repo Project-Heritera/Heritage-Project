@@ -12,7 +12,7 @@ from rest_framework import serializers
 import json
 
 from .permissions import user_has_access
-from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer, UserRoomAccessLevel, TaskComponent
 from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 User = get_user_model()
@@ -1019,17 +1019,6 @@ def get_room(request, room_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# -------------------------------
-# Helper for save/publish logic
-# -------------------------------
-def _save_room_logic(request, room_id):
-    room = get_object_or_404(Room, id=room_id)
-    serializer = RoomSerializer(room, data=request.data, context={"request": request})
-    if serializer.is_valid():
-        with transaction.atomic():
-            return serializer.save(), None
-    return None, serializer.errors
-
 
 @extend_schema(
     tags=["Rooms"],
@@ -1139,23 +1128,18 @@ def save_room(request, room_id):
         ),
     },
 )
-@api_view(["PUT"])
+@api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def publish_room(request, room_id):
-    room, errors = _save_room_logic(request, room_id)
-    if errors:
-        return Response(
-            {"errors": errors, "published": False},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
+    room = get_object_or_404(Room, id=room_id)
     if not room.tasks.exists():
         return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # publish, update visibility and is_published
     room.visibility = VisibilityLevel.PUBLIC
     room.is_published = True
-    room.save(update_fields=["visibility", "is_published"])
+    room.can_edit = False
+    room.save(update_fields=["visibility", "can_edit","is_published"])
 
     return Response(status=status.HTTP_200_OK)
 

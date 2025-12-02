@@ -10,10 +10,12 @@ import {
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
 import { v4 as uuidv4 } from "uuid";
 import { objectToFormData } from "../utils/objectToFormData";
+import PublishRoomForm from "@/components/RoomsPage/PublishRoomForm";
+import Modal from "@/components/Modal";
 import {
   Card,
   CardHeader,
@@ -30,12 +32,12 @@ import { Separator } from "@/components/ui/separator";
 import { get_random_image_from_list } from "@/utils/default_images";
 
 const RoomEditor = () => {
-  //get ids from url
-  const { course_id, section_id, room_id } = useParams();
+  const { course_id, section_id, room_id } = useParams(); //get ids from url
+  const navigate = useNavigate();
   const [backgroundImage, setBackgroundImage] = useState(
     get_random_image_from_list()
   );
-
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Untitled Room");
   const [roomDesc, setRoomDesc] = useState("No Description");
@@ -118,6 +120,7 @@ const RoomEditor = () => {
     };
     loadRoom();
   }, []);
+
 
   const addNewTask = () => {
     const newTask = {
@@ -232,8 +235,16 @@ const RoomEditor = () => {
                   <Save className="w-4 h-4" />
                   Save Room
                 </Button>
+                 <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => setPublishModalOpen(true)}
+                >
+                  Publish Room
+                </Button>
               </div>
             </CardHeader>
+          
             <Separator />
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 gap-4">
@@ -249,7 +260,15 @@ const RoomEditor = () => {
               </div>
             </CardContent>
           </Card>
-
+   <Modal
+          isOpen={publishModalOpen}
+          onClose={() => {navigate(-1)}}
+        >
+          <PublishRoomForm
+            room_id={room_id}
+            onClose={() => {navigate(-1)}}
+            />
+        </Modal>
           {/* Tasks Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
