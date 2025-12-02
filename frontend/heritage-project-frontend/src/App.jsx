@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Layout from './layout'
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 import AuthLogin from './pages/auth'
 import Home from './pages/home'
 import CourseView from './pages/course_view'
@@ -13,31 +13,31 @@ import ProfilePage from './pages/profile.jsx'
 import CourseDashboard from './pages/CourseDashboard'
 
 function App() {
- return (
-  <div>
+  return (
     <div>
-      
-    <BrowserRouter>
-      <Routes>
-        {/*Public Routes*/}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<AuthLogin />} />
-        <Route path='/login' element={<AuthLogin />} />
-        {/*Protected Routes*/}
-        <Route element={<ProtectedRoute />}>
-          <Route path='/home/:username' element={<Home />} />
-          <Route path='/courses' element={<CourseView />} />
-          <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/edit' element={<RoomEditor />} />
-          <Route path='/courses/:course_id/sections/:section_id/rooms/:room_id/view' element={<RoomViewer />} />
-          <Route path='/u/:username' element={<ProfilePage/>}></Route>
-          <Route path ='/c/:courseId' element={<CourseDashboard/>}></Route>
-        </Route>
-      </Route>
-      </Routes>
-    </BrowserRouter>
+      <div>
+
+        <BrowserRouter>
+          <Routes>
+            {/*Public Routes*/}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<AuthLogin />} />
+              <Route path='/login' element={<AuthLogin />} />
+              {/*Protected Routes*/}
+              <Route element={<ProtectedRoute />}>
+                <Route path='/home/:username' element={<Home />} />
+                <Route path='/courses' element={<CourseView />} />
+                <Route path='/u/:username' element={<ProfilePage />}></Route>
+                <Route path='/c/:courseId' element={<CourseDashboard />}></Route>
+                <Route path='/r/:course_id/:section_id/:room_id' element={<RoomViewer />}></Route>
+                <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </div>
+      <ErrorPopup />
     </div>
-    <ErrorPopup/>
-  </div>
   );
 }
 
