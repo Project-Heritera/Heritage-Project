@@ -42,7 +42,7 @@ const CourseView = () => {
           <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
             Course List
           </h2>
-          <SearchBar includeCourses={true} courseAction={() => {
+          <SearchBar includeCourses={true} courseAction={(course) => {
             console.log("Navigating to course");
             navigate(`/c/${course.course_id || "#"}`);
           }}
