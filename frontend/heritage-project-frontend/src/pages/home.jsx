@@ -22,7 +22,6 @@ export default function Home() {
 
       <div className="grid grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
-          <Card className="p-4">
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
               Highlighted Courses{" "}
             </h2>
@@ -62,7 +61,6 @@ export default function Home() {
                 imageLink="./src/assets/course_image_placeholder_4.png"
               />
             </div>
-          </Card>
         </div>
 
         <div className="col-span-1 space-y-4">
