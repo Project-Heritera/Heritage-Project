@@ -35,6 +35,7 @@ def all_users(request):
     data = [{"id": u.id, "username": u.username} for u in users]
     return Response(data, status=status.HTTP_200_OK)
 
+
 @extend_schema(
     tags=["Users"],
     summary="Search users",
@@ -112,6 +113,7 @@ def delete_account(request):
         return Response({"message": f"User '{username}' has been deleted"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": f"Unable to remove user"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(
     tags=["Users"],
