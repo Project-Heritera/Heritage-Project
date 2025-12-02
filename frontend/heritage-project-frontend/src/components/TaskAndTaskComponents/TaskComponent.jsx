@@ -26,6 +26,7 @@ const TaskComponent = forwardRef(function TaskComponent(
       setJsondata(JSON.stringify(componentType.defaultValue));
     }
   }, []);
+  }, []);
 
   function serializeInternal() {
     console.log("in serializeinternal in task component");
@@ -80,3 +81,4 @@ TaskComponent.propTypes = {
   isEditing: PropTypes.bool,
 };
 export default TaskComponent;
+

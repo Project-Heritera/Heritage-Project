@@ -85,8 +85,8 @@ function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, se
                             <CommandGroup heading="Friends">
                                 {/* Load Friends here */}
                                 {searchedUsers.map((user) => (
-                                    <CommandItem key={user.username} value={user.username}>
-                                        <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onUserSelect(user)}>
+                                    <CommandItem key={user.username} value={user.username} onSelect={() => onUserSelect(user)}>
+                                        <div className="w-full flex items-center gap-2 cursor-pointer">
                                             <Avatar>
                                                 <AvatarImage src={user.profile_pic} />
                                                 <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
@@ -102,8 +102,8 @@ function SearchBar({ includeUsers, includeCourses, usersAction, courseAction, se
                             <CommandGroup heading="Courses">
                                 {/* Load Courses here */}
                                 {searchedCourses.map((course) => (
-                                    <CommandItem key={course.title} value={course.title}>
-                                        <div className="w-full flex items-center gap-2 cursor-pointer" onClick={() => onCourseSelect(course)}>
+                                    <CommandItem key={course.title} value={course.title} onSelect={() => onCourseSelect(course)}>
+                                        <div className="w-full flex items-center gap-2 cursor-pointer">
                                             <Avatar>
                                                 <AvatarImage src={course.image} />
                                                 <AvatarFallback>{course.title.charAt(0).toUpperCase()}</AvatarFallback>

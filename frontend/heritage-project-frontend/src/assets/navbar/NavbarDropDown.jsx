@@ -64,8 +64,9 @@ function NavbarDropDown() {
                             navigate(`/u/${selectedUser.username}`)
                         }}
                         includeCourses={true}
-                        courseAction={() => {
+                        courseAction={(course) => {
                             console.log("Navigating to course")//Add functionality here!
+                            navigate(`/c/${course.course_id || "#"}`);
                         }}
                         searchFiller={"Search courses or users"}
                     />
