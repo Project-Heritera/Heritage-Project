@@ -346,9 +346,6 @@ def get_course_progress(request, course_id):
     # Annotate progress for this specific course
     course_qs = qs.filter(id=course_id).user_progress_percent(user)
 
-    # Only get courses that have at least some progress
-    course_qs = course_qs.filter(progress_percent__gt=0)
-
     # If the user doesn't have access → 204
     course = course_qs.first()
     if not course:
@@ -402,6 +399,9 @@ def get_courses(request):
 
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+
+    # Only get courses that have at least some progress
+    course_qs = course_qs.filter(progress_percent__gt=0)
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
