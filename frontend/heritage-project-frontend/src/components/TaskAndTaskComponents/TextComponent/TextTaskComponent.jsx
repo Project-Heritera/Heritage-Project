@@ -12,7 +12,7 @@ const TextTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
 
   useImperativeHandle(ref, () => ({
     serialize: () => {
-      return { type: "Text", content: text };   
+      return { type: "TEXT", content: {"text": text} };   
      },
   }));
     const [areaApi, setAreaApi] = useState(null);//Used to provide fucntions to parent of MarkdownArea

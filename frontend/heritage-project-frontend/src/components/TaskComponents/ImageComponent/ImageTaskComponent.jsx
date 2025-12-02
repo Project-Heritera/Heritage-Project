@@ -26,34 +26,35 @@ const ImageTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
   const [alt, setAlt] = useState("");
   const [image_type, set_image_type] = useState("image/png"); // default type
 
-
   useImperativeHandle(ref, () => ({
     serialize: () => {
-      return JSON.stringify({
-        src: typeof image === "string" ? image : image?.src || "",
-        alt,
-        image_type: image_type
-      });
+      return {
+        type: "IMAGE",
+        content: {
+          src: typeof image === "string" ? image : image?.src || "",
+          alt,
+          image_type: image_type,
+        },
+      };
     },
   }));
 
   useEffect(() => {
-  if (jsonData) {
-    try {
-      const parsed = JSON.parse(JSON.stringify(jsonData));
-      const { src, alt, image_type } = parsed;
-      setAlt(alt || "");
-      set_image_type(image_type)
+    if (jsonData) {
+      try {
+        const parsed = JSON.parse(JSON.stringify(jsonData));
+        const { src, alt, image_type } = parsed;
+        setAlt(alt || "");
+        set_image_type(image_type);
 
-      if (src) {
-    setImage(src);
-  }
-    } catch (error) {
-      console.error("Failed to parse initial image value:", error);
+        if (src) {
+          setImage(src);
+        }
+      } catch (error) {
+        console.error("Failed to parse initial image value:", error);
+      }
     }
-  }
-}, [jsonData]);
-
+  }, [jsonData]);
 
   // Handle file input change
   const handleFileChange = async (e) => {
@@ -85,11 +86,7 @@ const ImageTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
       ) : (
         <div className="flex flex-col items-center">
           {image && (
-            <img
-              src={imageSrc}
-              alt={alt}
-              className="max-w-full rounded-md"
-            />
+            <img src={imageSrc} alt={alt} className="max-w-full rounded-md" />
           )}
         </div>
       )}

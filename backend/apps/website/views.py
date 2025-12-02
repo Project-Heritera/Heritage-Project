@@ -1047,7 +1047,6 @@ def save_room(request, room_id):
         raise PermissionDenied("You do not have permission to edit this room.")
 
     with transaction.atomic():
-
         for field, value in request.data.items():
 
             if field == "tasks":
@@ -1063,47 +1062,48 @@ def save_room(request, room_id):
                     tags = task_data.get("tags", [])
                     components = task_data.get("components", [])
 
-                    if not task_id:
-                        continue
-
-                    # Fetch or create task
-                    task_obj, created = Task.objects.get_or_create(id=task_id)
+                    # Fetch existing task or create a new one
+                    if task_id:
+                        task_obj, created = Task.objects.get_or_create(
+                            id=task_id,
+                            defaults={"room": room}
+                        )
+                    else:
+                        task_obj = Task.objects.create(room=room)
+                        created = True
 
                     # Ensure task belongs to this room
                     task_obj.room = room
 
-                    # Handle tags (JSONField or ManyToMany)
-                    if isinstance(task_obj.tags, list):   # JSONField
+                    # Handle tags
+                    if isinstance(task_obj.tags, list):  # JSONField
                         task_obj.tags = tags
-
                     else:  # ManyToManyField
                         tag_objs = []
                         for tag_name in tags:
                             tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
                             tag_objs.append(tag_obj)
-
                         task_obj.tags.set(tag_objs)
 
                     task_obj.save()
 
-                    # Clear and recreate components
-                    task_obj.components.all().delete()
-
+                    # Process components individually (update existing, create new)
                     for comp in components:
-                        comp_id = comp.get("id")  # or "task_component_id" from frontend
+                        comp_id = comp.get("task_component_id")
+                        defaults = {
+                            "type": comp.get("type"),
+                            "content": comp.get("content") or ""
+                        }
+
                         if comp_id:
-                            # Update existing component
-                            TaskComponent.objects.filter(id=comp_id, task=task_obj).update(
-                                type=comp.get("type"),
-                                content=comp.get("content")
-                            )
+                            # Try to update existing component
+                            updated_count = TaskComponent.objects.filter(id=comp_id, task=task_obj).update(**defaults)
+                            if updated_count == 0:
+                                # Component ID not found, create new
+                                TaskComponent.objects.create(task=task_obj, **defaults)
                         else:
                             # Create new component if no ID
-                            TaskComponent.objects.create(
-                                task=task_obj,
-                                type=comp.get("type"),
-                                content=comp.get("content")
-                            )
+                            TaskComponent.objects.create(task=task_obj, **defaults)
             else:
                 # Save normal room fields
                 setattr(room, field, value)

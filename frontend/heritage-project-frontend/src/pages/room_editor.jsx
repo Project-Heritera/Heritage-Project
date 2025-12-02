@@ -12,7 +12,6 @@ import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
 import { useErrorStore } from "../stores/ErrorStore";
 import { useParams, useNavigate } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
-import { v4 as uuidv4 } from "uuid";
 import { objectToFormData } from "../utils/objectToFormData";
 import PublishRoomForm from "@/components/RoomsPage/PublishRoomForm";
 import Modal from "@/components/Modal";
@@ -124,7 +123,6 @@ const RoomEditor = () => {
 
   const addNewTask = () => {
     const newTask = {
-      task_id: uuidv4(),
       tags: [],
       task_components: [],
     };
