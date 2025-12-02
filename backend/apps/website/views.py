@@ -401,7 +401,7 @@ def get_courses(request):
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
 
     # Only get courses that have at least some progress
-    course_qs = course_qs.filter(progress_percent__gt=0)
+    qs = qs.filter(progress_percent__gt=0)
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
