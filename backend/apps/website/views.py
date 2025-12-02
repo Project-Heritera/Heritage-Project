@@ -1272,3 +1272,96 @@ def add_as_editor(request, room_id, user_username):
         UserRoomAccessLevelSerializer(user_room_access).data,
         status=status.HTTP_201_CREATED,
     )
+
+
+@extend_schema(
+    tags=["Contribution"],
+    summary="Add multiple users as editors",
+    description="Creates multiple User(Room/Section/Course)AccessLevel objects with AccessLevel=EDITOR.",
+    request=inline_serializer(
+        name="AddUsersRequest",
+        fields={
+            "usernames": serializers.ListField(
+                child=serializers.CharField(),
+                help_text="A list of usernames to add."
+            )
+        }
+    ),
+    responses={
+        201: OpenApiResponse(description="Added users successfully."),
+        207: OpenApiResponse(description="Some users were found and access levels created successfully, some were not."),
+        404: OpenApiResponse(description="One or more users not found, or room not found."),
+        409: OpenApiResponse(description="Cannot create access level for public room."),
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_mult_editors(request, room_id):
+    # Validate request
+    usernames = request.data.get("usernames", [])
+    if not isinstance(usernames, list) or not usernames:
+        return Response({"detail": "usernames must be a non-empty list."}, status=400)
+
+    # Validate room
+    room = get_object_or_404(Room, id=room_id)
+
+    if room.visibility == "PUB":
+        return Response(
+            {"message": "Cannot create access level for public room."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    section = room.section
+    course = room.course
+
+    created_access_records = []
+    missing_users = []
+
+    for username in usernames:
+        user = User.objects.filter(username=username).first()
+
+        if not user:
+            missing_users.append(username)
+            continue
+
+        # COURSE LEVEL
+        UserCourseAccessLevel.objects.filter(user=user, course=course).delete()
+        user_course_access = UserCourseAccessLevel.objects.create(
+            user=user,
+            course=course,
+            access_level="EDITOR"
+        )
+
+        # SECTION LEVEL
+        UserSectionAccessLevel.objects.filter(user=user, section=section).delete()
+        user_section_access = UserSectionAccessLevel.objects.create(
+            user=user,
+            section=section,
+            access_level="EDITOR"
+        )
+
+        # ROOM LEVEL
+        UserRoomAccessLevel.objects.filter(user=user, room=room).delete()
+        user_room_access = UserRoomAccessLevel.objects.create(
+            user=user,
+            room=room,
+            access_level="EDITOR"
+        )
+
+        created_access_records.append(
+            UserRoomAccessLevelSerializer(user_room_access).data
+        )
+
+    # If some usernames weren't found → return partial success + list of missing
+    if missing_users:
+        return Response(
+            {
+                "created": created_access_records,
+                "missing_users": missing_users,
+                "message": "Some users were created successfully, some were not."
+            },
+            status=status.HTTP_207_MULTI_STATUS,  # Partial success
+        )
+
+    # All users created successfully
+    return Response(created_access_records, status=status.HTTP_201_CREATED)
