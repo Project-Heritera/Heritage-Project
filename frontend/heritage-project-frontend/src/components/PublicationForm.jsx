@@ -18,7 +18,7 @@ PublicationForm.propTypes = {
   room_id: PropTypes.number, //required if form type is course
 };
 
-function PublicationForm({ onClose, FormType, course_id, room_id, user_id }) {
+function PublicationForm({ onClose, FormType, course_id, room_id}) {
   const {
     register,
     handleSubmit,
