@@ -10,23 +10,24 @@ import "../../../styles/Components/TaskComponents/TextComponent.css"
 //setAreaApi us a state used in parent to have the api functions passed up to it.
 const MarkdownArea = ({ initText, isRenderd, setAreaApi, setText }) => {
     //Save state of markdown when changes occur for toggle
+const [content, setContent] = useState(initText);
 
     const editor = useEditor({
-        extensions: [
-            StarterKit,
-            //Auto convert to and from markdown to make copy and pasting more intuitive.
-            Markdown.configure({
-                html: true,
-                transformCopiedText: true,
-                transformPastedText: true,
-            }),
-        ],//Include extensios
-        content: initText,//Initial text
-        //Listen for updates to editor
-        onUpdate: ({ editor }) => {
-            setText(editor.storage.markdown.getMarkdown());
-        }
-    });
+    extensions: [
+        StarterKit,
+        Markdown.configure({
+            html: true,
+            transformCopiedText: true,
+            transformPastedText: true,
+        }),
+    ],
+    content, // <-- initial content from state
+    onUpdate: ({ editor }) => {
+        const markdown = editor.storage.markdown.getMarkdown();
+        setContent(markdown);       // update local state
+        setText?.(markdown);        // optional: notify parent
+    },
+});
 
     //Set up API functions for toolbar
     const textAreaRef = useRef(null);
@@ -218,18 +219,24 @@ const MarkdownArea = ({ initText, isRenderd, setAreaApi, setText }) => {
         }
     }, [editor, setAreaApi, isRenderd])
 
-    return (
-        <>
-            {/* If render is toggled used render editor, else use normal markdown text */}
-            {isRenderd ? (
-                //Render if true
-                <EditorContent className="ProseMirror border border-gray-800" editor={editor} />
-            ) : (
-                //render is false
-                <textarea className="text-area border border-gray-800" value={initText} onChange={textAreaChange} ref={textAreaRef} />
-            )}
-        </>
-    )
+   return (
+    <>
+        {isRenderd ? (
+            <EditorContent editor={editor} className="ProseMirror border border-gray-800" />
+        ) : (
+            <textarea
+                className="text-area border border-gray-800"
+                value={content}
+                onChange={(e) => {
+                    setContent(e.target.value);
+                    editor?.commands.setContent(e.target.value); // sync TipTap
+                    setText?.(e.target.value);
+                }}
+                ref={textAreaRef}
+            />
+        )}
+    </>
+);
 }
 
 export default MarkdownArea

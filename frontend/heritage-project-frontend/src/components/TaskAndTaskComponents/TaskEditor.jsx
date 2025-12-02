@@ -9,32 +9,44 @@ import { TaskComponentMenu } from "./TaskComponentMenu";
 import { TagSelectionMenu } from "./TagSelectionMenu";
 
 const TaskEditor = forwardRef(
-  ({ initialTags = [], initialComponents = [], taskID }, ref) => {
+  ({ initialTags, initialComponents = [], taskID }, ref) => {
     const [taskComponents, setTaskComponents] = useState(initialComponents);
     const [taskComponentMenu, setTaskComponentMenu] = useState(false);
     //for tags
-    const [tags, setTags] = useState(initialTags);
+    const [tags, setTags] = useState(initialTags?? []);
     const [availableTags, setAvailableTags] = useState([
       "Easy",
       "Medium",
       "Hard",
     ]); //todo: load all from database onto global zustland state on user login
     const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
-    const taskBaseRef = useRef([]);
-
-const handleSerialize = () => {
-  console.log("inside of handle serialze intask editor")
-        return taskBaseRef.current
-          .map((ref) => ref?.serialize?.())
-          .filter(Boolean);
-    }
+    const taskBaseRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-   serialize: () => {
-   if (!taskBaseRef.current?.serialize) return [];
-  console.log("inside of handle serialize in TaskEditor");
-  return taskBaseRef.current.serialize(); 
-    }}));
+serialize: () => {
+    if (!taskBaseRef.current?.serialize) {
+      console.warn("TaskBase ref not ready or serialize not defined");
+      return {
+        task_id: taskID,
+        tags,
+        components: []
+      };
+    }
+
+    // Call TaskBase's serialize() which returns an array of components
+    const components = taskBaseRef.current.serialize();
+
+    const t = {
+      task_id: taskID,
+      tags: Array.isArray(tags) ? tags : [],
+      components: Array.isArray(components) ? components : []
+    };
+
+    console.log("inside TaskEditor.serialize()", t);
+
+    return t;
+  }
+  }));
 
       
     const addNewTaskComponent = (type) => {

@@ -59,6 +59,30 @@ class TaskSerializer(serializers.ModelSerializer):
 
         return task
 
+    def update(self, instance, validated_data):
+        components_data = validated_data.pop("components", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if components_data is None:
+            return instance
+
+        existing = {c.id: c for c in instance.components.all()}
+
+        for comp in components_data:
+            comp_id = comp.get("task_component_id")
+
+            if comp_id in existing:
+                TaskComponentSerializer(existing[comp_id],
+                                        data=comp,
+                                        partial=True,
+                                        context=self.context).save()
+            else:
+                TaskComponentSerializer(context=self.context).create({**comp, "task": instance})
+
+        return instance
 
 # -------------------------------
 # Badge Serializer
@@ -199,12 +223,27 @@ class RoomSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        instance.tasks.all().delete()  # del everything
-        for task_data in tasks_data:  # replace everything
-            TaskSerializer(context=self.context).create({**task_data, "room": instance})
+        # if PATCH did not include tasks → keep existing tasks
+        if tasks_data is None:
+            return instance
+
+        # Otherwise: update tasks one by one
+        existing_tasks = {task.id: task for task in instance.tasks.all()}
+
+        for task in tasks_data:
+            task_id = task.get("task_id")
+
+            if task_id and task_id in existing_tasks:
+                # update existing task
+                TaskSerializer(existing_tasks[task_id],
+                            data=task,
+                            partial=True,
+                            context=self.context).save()
+            else:
+                # create a new task
+                TaskSerializer(context=self.context).create({**task, "room": instance})
 
         return instance
-
 
 # -------------------------------
 # Section Serializer
