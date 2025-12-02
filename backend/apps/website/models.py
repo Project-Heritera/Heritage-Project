@@ -306,7 +306,6 @@ class Section(models.Model):
         blank=True,
         help_text="Users who can access the section when visibility is set to PRIVATE",
     )
-    number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -344,7 +343,6 @@ class Room(models.Model):
         blank=True,
         help_text="Users who can access the room when visibility is set to PRIVATE",
     )
-    number_of_problems = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
