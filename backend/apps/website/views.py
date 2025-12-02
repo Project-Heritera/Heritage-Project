@@ -7,8 +7,9 @@ from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from rest_framework import serializers
+import json
 
 from .permissions import user_has_access
 from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
@@ -16,13 +17,6 @@ from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, 
 
 User = get_user_model()
 
-
-# # user info apis
-#     path("user_info/", views.get_user_info),
-#     path("other_user_info/", views.get_another_user_info),
-
-#     # user badges apis
-#     path("another_badges/", views.get_another_badges),
 
 # -------------------------------
 # Task-related API calls
@@ -34,11 +28,11 @@ User = get_user_model()
     request=None,
     responses={
         200: ProgressOfTaskSerializer,
-        400: OpenApiResponse(description='Serializer Failed.'),
-        404: OpenApiResponse(description='Could not get task.'),
-    }
+        400: OpenApiResponse(description="Serializer Failed."),
+        404: OpenApiResponse(description="Could not get task."),
+    },
 )
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_task_progress(request, task_id):
     user = request.user
@@ -48,9 +42,7 @@ def update_task_progress(request, task_id):
     # If already created, this will not replace missing fields
     # i.e. if you only give status, attempts/metadata will stay the same
     progress, created = ProgressOfTask.objects.get_or_create(
-        user=user,
-        task=task,
-        defaults={"status": Status.NOSTAR, "attempts": 0}
+        user=user, task=task, defaults={"status": Status.NOSTAR, "attempts": 0}
     )
 
     # Feed existing instance + incoming update data into serializer
@@ -70,13 +62,13 @@ def update_task_progress(request, task_id):
     tags=["Tasks"],
     summary="Get the progress of a room",
     description="Retrieves task progress for all tasks in a room.",
-    
-    
     responses={
         200: ProgressOfTaskSerializer,
-        403: OpenApiResponse(description='User does not have permission to view this room.'),
-        404: OpenApiResponse(description='Could not get room.'),
-    }
+        403: OpenApiResponse(
+            description="User does not have permission to view this room."
+        ),
+        404: OpenApiResponse(description="Could not get room."),
+    },
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -98,19 +90,18 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
     """
     # Check if room exists and user has access
     room = get_object_or_404(Room, id=room_id)
-    
+
     if not user_has_access(room, request.user, edit=False):
         raise PermissionDenied("You do not have permission to view this room.")
-    
+
     # Get list of task IDs for all tasks in room
-    task_ids = list(room.tasks.values_list('id', flat=True))
-    
+    task_ids = list(room.tasks.values_list("id", flat=True))
+
     # Get ProgressOfTask entries for user where task is in the task_ids list
     progress_entries = ProgressOfTask.objects.filter(
-        user=request.user,
-        task_id__in=task_ids
+        user=request.user, task_id__in=task_ids
     )
-    
+
     # Serialize and return the data
     serializer = ProgressOfTaskSerializer(progress_entries, many=True)
 
@@ -124,15 +115,13 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
     tags=["Badges"],
     summary="Get the badges of another user.",
     description="Retrieves task progress for all tasks in a room.",
-    
-    
     responses={
         200: UserBadgeSerializer,
-        204: OpenApiResponse(description='User has no badges.'),
-        404: OpenApiResponse(description='Could not get user.'),
-    }
+        204: OpenApiResponse(description="User has no badges."),
+        404: OpenApiResponse(description="Could not get user."),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_another_badges(request, user_username):
     # Get the user (404 if not found)
@@ -157,22 +146,21 @@ def get_another_badges(request, user_username):
     request=None,
     responses={
         201: UserBadgeSerializer,
-        409: OpenApiResponse(description='Badge was already awarded. Cannot be awarded again'),
-        400: OpenApiResponse(description='Serializer Failed.'),
-        404: OpenApiResponse(description='Could not get badge.'),
-    }
+        409: OpenApiResponse(
+            description="Badge was already awarded. Cannot be awarded again"
+        ),
+        400: OpenApiResponse(description="Serializer Failed."),
+        404: OpenApiResponse(description="Could not get badge."),
+    },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def award_badge(request, badge_id):
     user = request.user
     badge = get_object_or_404(Badge, id=badge_id)
 
     # Check if user already has this badge
-    user_badge, created = UserBadge.objects.get_or_create(
-        user=user,
-        badge=badge
-    )
+    user_badge, created = UserBadge.objects.get_or_create(user=user, badge=badge)
 
     # Serialize and return the data
     serializer = UserBadgeSerializer(user_badge)
@@ -193,10 +181,10 @@ def award_badge(request, badge_id):
     description="Gets all of the badges that the user has (meaning that a UserBadge relation exists).",
     responses={
         200: UserBadgeSerializer,
-        204: OpenApiResponse(description='User has no badges.'),
-    }
+        204: OpenApiResponse(description="User has no badges."),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_badges(request):
     user = request.user
@@ -206,7 +194,7 @@ def get_badges(request):
     # If the user has no badges → return 204 No Content
     if not user_badges.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
     # Serialize and return the data
     serializer = UserBadgeSerializer(user_badges, many=True)
 
@@ -261,29 +249,39 @@ def delete_course(request, course_id):
 
 @extend_schema(
     tags=["Courses"],
-    summary="Get courses",
-    description="Retrieves all courses the user can view, annotated with progress.",
+    summary="Search courses",
+    description="Search for courses by title. Only returns courses the user has access to.",
+    parameters=[
+        OpenApiParameter(
+            name="course_prefix",
+            description="The start of the course title",
+            required=False,
+            type=str,
+        ),
+    ],
     responses={
-        200: CourseSerializer(),
-        403: OpenApiResponse(description='You do not have permission to view any courses.'),
-    }
+        200: CourseSerializer(many=True),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_courses(request):
+def search_courses(request):
     user = request.user
+    searchQuery = request.query_params.get("course_prefix", "")
 
-    viewable_courses_qs = (
-        Course.objects
-              .filter_by_user_access(user)
-              .user_progress_percent(user)
-    )
+    viewable_courses_qs = Course.objects.filter_by_user_access(
+        user
+    ).user_progress_percent(user)
 
     if not viewable_courses_qs.exists():
         # permissiondenied also gives HTTP 403
         raise PermissionDenied("You do not have permission to view any courses.")
 
-    serializer = CourseSerializer(viewable_courses_qs, many=True, context={"request": request})
+    viewable_courses_qs = viewable_courses_qs.filter(title__istartswith=searchQuery)
+
+    serializer = CourseSerializer(
+        viewable_courses_qs, many=True, context={"request": request}
+    )
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -297,14 +295,14 @@ def get_courses(request):
         fields={
             "title": serializers.CharField(),
             "description": serializers.CharField(),
-        }
-    ), 
+        },
+    ),
     responses={
         201: CourseSerializer(),
-        400: OpenApiResponse(description='Serializer Failed.'),
-    }
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
@@ -321,8 +319,6 @@ def create_course(request):
     tags=["Courses"],
     summary="Get course progress",
     description="Get the total progress of the course as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetCourseProgressResponse",
@@ -332,19 +328,21 @@ def create_course(request):
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
                 "total_tasks": serializers.IntegerField(),
-            }
+            },
         ),
-        204: OpenApiResponse(description='No courses found. Maybe check user permissions.'),
-    }
+        204: OpenApiResponse(
+            description="No courses found. Maybe check user permissions."
+        ),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_course_progress(request, course_id):
     user = request.user
 
     # Use your custom QuerySet filter
     qs = Course.objects.filter_by_user_access(user)
-    
+
     # Annotate progress for this specific course
     course_qs = qs.filter(id=course_id).user_progress_percent(user)
 
@@ -365,6 +363,118 @@ def get_course_progress(request, course_id):
     return Response(data, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    tags=["Courses"],
+    summary="Get all courses",
+    description="Returns course and progress information for all courses the user can access.",
+    responses={
+        200: inline_serializer(
+            name="GetAllCourseProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            },
+        ),
+        204: OpenApiResponse(
+            description="No courses found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_courses(request):
+    user = request.user
+
+    # Only courses the user can access
+    qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+
+    if not qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(qs, many=True)
+
+    results = []
+    for serialized, course in zip(serializer.data, qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(course.progress_percent or 0, 2),
+                "completed_tasks": course.completed_tasks,
+                "total_tasks": course.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Get a specific course",
+    description="Retrieves details and progress for a specific course ID. Returns a single object.",
+    responses={
+        200: inline_serializer(
+            name="GetSingleCourseResponse",
+            # many=False is the default, so we return one object {}
+            fields={
+                "id": serializers.IntegerField(),
+                "title": serializers.CharField(),
+                "description": serializers.CharField(),
+                "metadata": serializers.JSONField(),
+                "visibility": serializers.CharField(),
+                "is_published": serializers.BooleanField(),
+                "creator": serializers.StringRelatedField(),
+                "created_on": serializers.DateTimeField(),
+                "image": serializers.ImageField(),
+                "badge": BadgeSerializer(),
+                # These are the custom fields you manually added
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            }
+        ),
+        404: OpenApiResponse(description='Course not found or access denied.'),
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_course(request, course_id):
+    user = request.user
+
+    # Only courses the user can access
+    qs = (
+        Course.objects.filter_by_user_access(user)
+        .user_progress_percent(user)
+        .filter(id=course_id)
+    )
+
+    course = qs.first()
+
+    if not course:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    serializer = CourseSerializer(course, context={"request": request})
+
+    result = {
+        **serializer.data,
+        "progress_percent": round(course.progress_percent or 0, 2),
+        "completed_tasks": course.completed_tasks,
+        "total_tasks": course.total_tasks,
+    }
+
+    return Response(result, status=status.HTTP_200_OK)
+
+
 # -------------------------------
 # Section-related API calls
 # -------------------------------
@@ -372,15 +482,15 @@ def get_course_progress(request, course_id):
     tags=["Sections"],
     summary="Delete a section",
     description="Deletes a section and everything that that section contains: rooms/etc..",
-    
-    
     responses={
-        204: OpenApiResponse(description='Section deleted successfully.'),
-        403: OpenApiResponse(description='You do not have permission to delete this section.'),
-        404: OpenApiResponse(description='Could not get section.'),
-    }
+        204: OpenApiResponse(description="Section deleted successfully."),
+        403: OpenApiResponse(
+            description="You do not have permission to delete this section."
+        ),
+        404: OpenApiResponse(description="Could not get section."),
+    },
 )
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_section(request, section_id):
     user = request.user
@@ -397,69 +507,148 @@ def delete_section(request, section_id):
 
 @extend_schema(
     tags=["Sections"],
-    summary="Get sections",
-    description="Retrieves all sections the user can view, annotated with progress.",
-    
-    
+    summary="Get all sections",
+    description="Returns sections and progress information for all sections the user can access.",
+    request=None,
     responses={
-        200: SectionSerializer(),
-        403: OpenApiResponse(description='You do not have permission to view any sections.'),
-        404: OpenApiResponse(description='Could not get course that the section is in.'),
-    }
+        200: inline_serializer(
+            name="GetAllSectionProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            },
+        ),
+        204: OpenApiResponse(
+            description="No sections found. Maybe check user permissions."
+        ),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_sections(request, course_id):
-    """
-    get_sections: Retrieves all sections for a given course that the user can view.
-
-    @param request: HTTP request object.
-    @param course_id: ID of the parent course.
-    @return:
-        * HTTP 200: List of sections the user can access.
-        * HTTP 403: If no accessible sections exist.
-        * HTTP 404: If the course does not exist.
-    @note:
-        Filters sections by user access and annotates with progress percentage.
-    """
     user = request.user
     get_object_or_404(Course, id=course_id)
 
     viewable_sections_qs = (
-        Section.objects
-               .filter(course_id=course_id)
-               .filter_by_user_access(user)
-               .user_progress_percent(user)
+        Section.objects.filter(course_id=course_id)
+        .filter_by_user_access(user)
+        .user_progress_percent(user)
     )
 
     if not viewable_sections_qs.exists():
-        raise PermissionDenied("You do not have permission to view any sections in this course.")
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    serializer = SectionSerializer(viewable_sections_qs, many=True, context={"request": request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer = SectionSerializer(viewable_sections_qs, many=True)
+
+    results = []
+    for serialized, section in zip(serializer.data, viewable_sections_qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(section.progress_percent or 0, 2),
+                "completed_tasks": section.completed_tasks,
+                "total_tasks": section.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Sections"],
+    summary="Get all sections",
+    description="Returns sections and progress information for all sections the user can access.",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="GetAllSectionProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            },
+        ),
+        204: OpenApiResponse(
+            description="No sections found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_sections_by_title(request, course_title):
+    user = request.user
+    course = get_object_or_404(Course, title=course_title)
+
+    viewable_sections_qs = (
+        Section.objects.filter(course_id=course.id)
+        .filter_by_user_access(user)
+        .user_progress_percent(user)
+    )
+
+    if not viewable_sections_qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = SectionSerializer(viewable_sections_qs, many=True)
+
+    results = []
+    for serialized, section in zip(serializer.data, viewable_sections_qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(section.progress_percent or 0, 2),
+                "completed_tasks": section.completed_tasks,
+                "total_tasks": section.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
 
 
 @extend_schema(
     tags=["Sections"],
     summary="Create a new section",
     description="Creates a section and assigns the current user as creator. The authenticated user is automatically set as the section creator.",
-    
     request=inline_serializer(
         name="CreateSectionRequest",
         fields={
             "title": serializers.CharField(),
             "description": serializers.CharField(),
-        }
-    ), 
-    
-    
+        },
+    ),
     responses={
         201: SectionSerializer(),
-        404: OpenApiResponse(description='Could not get course that the section is in.'),
-        400: OpenApiResponse(description='Serializer Failed.'),
-    }
+        404: OpenApiResponse(
+            description="Could not get course that the section is in."
+        ),
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_section(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -470,7 +659,7 @@ def create_section(request, course_id):
             creator=request.user,
             metadata={},
         )
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -478,8 +667,6 @@ def create_section(request, course_id):
     tags=["Sections"],
     summary="Get section progress",
     description="Get the total progress of the section as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetSectionProgressResponse",
@@ -489,19 +676,21 @@ def create_section(request, course_id):
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
                 "total_tasks": serializers.IntegerField(),
-            }
+            },
         ),
-        204: OpenApiResponse(description='No section found. Maybe check user permissions.'),
-    }
+        204: OpenApiResponse(
+            description="No section found. Maybe check user permissions."
+        ),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_section_progress(request, section_id):
     user = request.user
 
     # Use your custom QuerySet filter
     qs = Section.objects.filter_by_user_access(user)
-    
+
     # Annotate progress for this specific section
     section_qs = qs.filter(id=section_id).user_progress_percent(user)
 
@@ -529,15 +718,15 @@ def get_section_progress(request, section_id):
     tags=["Rooms"],
     summary="Delete a room",
     description="Deletes a room and everything that that room contains: tasks/etc..",
-    
-    
     responses={
-        204: OpenApiResponse(description='Room deleted successfully.'),
-        403: OpenApiResponse(description='You do not have permission to delete this room.'),
-        404: OpenApiResponse(description='Could not get room.'),
-    }
+        204: OpenApiResponse(description="Room deleted successfully."),
+        403: OpenApiResponse(
+            description="You do not have permission to delete this room."
+        ),
+        404: OpenApiResponse(description="Could not get room."),
+    },
 )
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_room(request, room_id):
     user = request.user
@@ -556,55 +745,183 @@ def delete_room(request, room_id):
     tags=["Rooms"],
     summary="Get rooms",
     description="Retrieves all rooms the user can view, annotated with progress.",
-    
-    
     responses={
         200: RoomSerializer(),
-        403: OpenApiResponse(description='You do not have permission to view any rooms.'),
-        404: OpenApiResponse(description='Could not get course or section that the room is in.'),
-    }
+        403: OpenApiResponse(
+            description="You do not have permission to view any rooms."
+        ),
+        404: OpenApiResponse(
+            description="Could not get course or section that the room is in."
+        ),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_rooms(request, section_id):
     user = request.user
     get_object_or_404(Section, id=section_id)
 
     viewable_rooms_qs = (
-        Room.objects
-            .filter(section_id=section_id)
-            .filter_by_user_access(user)
-            .user_progress_percent(user)
+        Room.objects.filter(section_id=section_id)
+        .filter_by_user_access(user)
+        .user_progress_percent(user)
     )
 
     if not viewable_rooms_qs.exists():
         raise PermissionDenied("You do not have permission to view any rooms.")
 
-    serializer = RoomSerializer(viewable_rooms_qs, many=True, context={"request": request})
+    serializer = RoomSerializer(
+        viewable_rooms_qs, many=True, context={"request": request}
+    )
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Rooms"],
+    summary="Get all rooms",
+    description="Returns rooms and progress information for all rooms the user can access.",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="GetAllRoomProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "room_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField,
+                "completed_tasks": serializers.IntegerField,
+                "total_tasks": serializers.IntegerField,
+            },
+        ),
+        204: OpenApiResponse(
+            description="No rooms found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_rooms(request, section_id):
+    user = request.user
+    get_object_or_404(Section, id=section_id)
+
+    viewable_rooms_qs = (
+        Room.objects.filter(section_id=section_id)
+        .filter_by_user_access(user)
+        .user_progress_percent(user)
+    )
+
+    if not viewable_rooms_qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = RoomSerializer(viewable_rooms_qs, many=True)
+
+    results = []
+    for serialized, room in zip(serializer.data, viewable_rooms_qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(room.progress_percent or 0, 2),
+                "completed_tasks": room.completed_tasks,
+                "total_tasks": room.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Rooms"],
+    summary="Get all rooms",
+    description="Returns rooms and progress information for all rooms the user can access.",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="GetAllRoomProgressResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "section_id": serializers.IntegerField,
+                "room_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField,
+                "completed_tasks": serializers.IntegerField,
+                "total_tasks": serializers.IntegerField,
+            },
+        ),
+        204: OpenApiResponse(
+            description="No rooms found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_rooms_by_title(request, section_title):
+    user = request.user
+    section = get_object_or_404(Section, title=section_title)
+
+    viewable_rooms_qs = (
+        Room.objects.filter(section_id=section.id)
+        .filter_by_user_access(user)
+        .user_progress_percent(user)
+    )
+
+    if not viewable_rooms_qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = RoomSerializer(viewable_rooms_qs, many=True)
+
+    results = []
+    for serialized, room in zip(serializer.data, viewable_rooms_qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(room.progress_percent or 0, 2),
+                "completed_tasks": room.completed_tasks,
+                "total_tasks": room.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
 
 
 @extend_schema(
     tags=["Rooms"],
     summary="Create a new room",
     description="Creates a room and assigns the current user as creator. The authenticated user is automatically set as the room creator.",
-    
     request=inline_serializer(
         name="CreateRoomRequest",
         fields={
             "title": serializers.CharField(),
             "description": serializers.CharField(),
-        }
-    ), 
-    
-    
+        },
+    ),
     responses={
         201: RoomSerializer(),
-        404: OpenApiResponse(description='Could not get course or section that the room is in.'),
-        400: OpenApiResponse(description='Serializer Failed.'),
-    }
+        404: OpenApiResponse(
+            description="Could not get course or section that the room is in."
+        ),
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_room(request, course_id, section_id):
     course = get_object_or_404(Course, id=course_id)
@@ -623,7 +940,7 @@ def create_room(request, course_id, section_id):
             creator=request.user,
             metadata={},
         )
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -631,8 +948,6 @@ def create_room(request, course_id, section_id):
     tags=["Rooms"],
     summary="Get room progress",
     description="Get the total progress of the room as a percentage.",
-    
-    
     responses={
         200: inline_serializer(
             name="GetRoomProgressResponse",
@@ -642,19 +957,21 @@ def create_room(request, course_id, section_id):
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
                 "total_tasks": serializers.IntegerField(),
-            }
+            },
         ),
-        204: OpenApiResponse(description='No room found. Maybe check user permissions.'),
-    }
+        204: OpenApiResponse(
+            description="No room found. Maybe check user permissions."
+        ),
+    },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_room_progress(request, room_id):
     user = request.user
 
     # Use your custom QuerySet filter
     qs = Room.objects.filter_by_user_access(user)
-    
+
     # Annotate progress for this specific room
     room_qs = qs.filter(id=room_id).user_progress_percent(user)
 
@@ -663,7 +980,7 @@ def get_room_progress(request, room_id):
     if not room:
         return Response(
             {"detail": "Room not found or access denied."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
 
     # Build response
@@ -682,13 +999,13 @@ def get_room_progress(request, room_id):
     tags=["Rooms"],
     summary="Get a room",
     description="Retrieves a room the user can view",
-    
-    
     responses={
         200: RoomSerializer(),
-        403: OpenApiResponse(description='You do not have permission to view this room.'),
-        404: OpenApiResponse(description='Could not get room.'),
-    }
+        403: OpenApiResponse(
+            description="You do not have permission to view this room."
+        ),
+        404: OpenApiResponse(description="Could not get room."),
+    },
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -720,25 +1037,89 @@ def _save_room_logic(request, room_id):
     description="Overwrites an existing room (and its nested components) with new data. Validation and save are atomic. Removed components are cascade-deleted.",
     request=None,
     responses={
-        200: OpenApiResponse(description='Room saved successfully.'),
-        400: OpenApiResponse(description='Serializer Failed.'),
-        403: OpenApiResponse(description='You do not have permission to edit this room.'),
-        404: OpenApiResponse(description='Could not get room.'),
-    }
+        200: OpenApiResponse(description="Room saved successfully."),
+        400: OpenApiResponse(description="Serializer Failed."),
+        403: OpenApiResponse(
+            description="You do not have permission to edit this room."
+        ),
+        404: OpenApiResponse(description="Could not get room."),
+    },
 )
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
-    # room is a room instance, not the serializer
-    room, errors = _save_room_logic(request, room_id)
+    # Fetch the room instance
+    room = get_object_or_404(Room, id=room_id)
 
-    if errors:
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-    
     if not user_has_access(room, request.user, edit=True):
         raise PermissionDenied("You do not have permission to edit this room.")
 
-    return Response(status=status.HTTP_200_OK)
+    with transaction.atomic():
+
+        for field, value in request.data.items():
+
+            if field == "tasks":
+                # Parse tasks JSON
+                try:
+                    tasks_list = json.loads(value) if isinstance(value, str) else value
+                except json.JSONDecodeError:
+                    return Response({"error": "Invalid tasks JSON"}, status=400)
+
+                # Loop through each incoming task
+                for task_data in tasks_list:
+                    task_id = task_data.get("task_id")
+                    tags = task_data.get("tags", [])
+                    components = task_data.get("components", [])
+
+                    if not task_id:
+                        continue
+
+                    # Fetch or create task
+                    task_obj, created = Task.objects.get_or_create(id=task_id)
+
+                    # Ensure task belongs to this room
+                    task_obj.room = room
+
+                    # Handle tags (JSONField or ManyToMany)
+                    if isinstance(task_obj.tags, list):   # JSONField
+                        task_obj.tags = tags
+
+                    else:  # ManyToManyField
+                        tag_objs = []
+                        for tag_name in tags:
+                            tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
+                            tag_objs.append(tag_obj)
+
+                        task_obj.tags.set(tag_objs)
+
+                    task_obj.save()
+
+                    # Clear and recreate components
+                    task_obj.components.all().delete()
+
+                    for comp in components:
+                        comp_id = comp.get("id")  # or "task_component_id" from frontend
+                        if comp_id:
+                            # Update existing component
+                            TaskComponent.objects.filter(id=comp_id, task=task_obj).update(
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+                        else:
+                            # Create new component if no ID
+                            TaskComponent.objects.create(
+                                task=task_obj,
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+            else:
+                # Save normal room fields
+                setattr(room, field, value)
+
+        # Save room after loop
+        room.save()
+
+    return Response({"detail": "Room updated successfully"}, status=200)
 
 
 @extend_schema(
@@ -747,27 +1128,20 @@ def save_room(request, room_id):
     description="Validates and publishes a room, making it publicly visible. A room must contain at least one task before publishing. Visibility is set to PUBLIC.",
     request=None,
     responses={
-        200: OpenApiResponse(description='Room published successfully.'),
-        400: OpenApiResponse(description='Serializer Failed.'),
-        403: OpenApiResponse(description='You do not have permission to edit this room.'),
-        404: OpenApiResponse(description='Could not get room.'),
-        406: OpenApiResponse(description='You must have at least one task before publishing.'),
-    }
+        200: OpenApiResponse(description="Room published successfully."),
+        400: OpenApiResponse(description="Serializer Failed."),
+        403: OpenApiResponse(
+            description="You do not have permission to edit this room."
+        ),
+        404: OpenApiResponse(description="Could not get room."),
+        406: OpenApiResponse(
+            description="You must have at least one task before publishing."
+        ),
+    },
 )
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def publish_room(request, room_id):
-    """
-    publish_room: Validates and publishes a room, making it publicly visible.
-
-    @param request: HTTP request containing room data for validation and publishing.
-    @param room_id: ID of the room being published.
-    @return:
-        * HTTP 200: If published successfully.
-        * HTTP 400: If validation fails or room has no tasks.
-    @note:
-        A room must contain at least one task before publishing. Visibility is set to PUBLIC.
-    """
     room, errors = _save_room_logic(request, room_id)
     if errors:
         return Response(
@@ -784,3 +1158,97 @@ def publish_room(request, room_id):
     room.save(update_fields=["visibility", "is_published"])
 
     return Response(status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Contribution-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["Contribution"],
+    summary="Add user as an editor",
+    description="Creates User(Room/Section/Course)AccessLevel objects that has AccessLevel set to EDITOR",
+    request=None,
+    responses={
+        201: OpenApiResponse(description="Added user successfully."),
+        404: OpenApiResponse(
+            description="Could not get user, room, section, or course."
+        ),
+        409: OpenApiResponse(description="Cannot create access level for public room."),
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_as_editor(request, room_id, user_username):
+    user = get_object_or_404(User, username=user_username)
+    room = get_object_or_404(Room, id=room_id)
+
+    if room:
+        if room.visibility == "PUB":
+            return Response(
+                {"message": "Cannot create access level for public room."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+    section = room.section
+    course = room.course
+
+    ### Course ACCESS
+    # Look for ANY existing access, regardless of level
+    old_access = UserCourseAccessLevel.objects.filter(user=user, course=course).first()
+
+    if old_access:
+        # Delete old non-EDITOR (or even EDITOR, so we always recreate cleanly)
+        old_access.delete()
+
+    # Create a fresh EDITOR access (not saved yet)
+    user_course_access = UserCourseAccessLevel(
+        user=user,
+        course=course,
+        access_level="EDITOR",
+    )
+
+    # Save AFTER validation
+    user_course_access.save()
+
+    ### Section ACCESS
+    # Look for ANY existing access, regardless of level
+    old_section_access = UserSectionAccessLevel.objects.filter(
+        user=user, section=section
+    ).first()
+
+    if old_section_access:
+        # Remove old level (VIEWER, READER, whatever)
+        old_section_access.delete()
+
+    # Create fresh EDITOR access
+    user_section_access = UserSectionAccessLevel(
+        user=user,
+        section=section,
+        access_level="EDITOR",
+    )
+
+    # Save after validation
+    user_section_access.save()
+
+    ### Room ACCESS
+    # Look for ANY existing access, regardless of level
+    old_room_access = UserRoomAccessLevel.objects.filter(user=user, room=room).first()
+
+    if old_room_access:
+        # Delete previous access (any level)
+        old_room_access.delete()
+
+    # Create new EDITOR access
+    user_room_access = UserRoomAccessLevel(
+        user=user,
+        room=room,
+        access_level="EDITOR",
+    )
+
+    # Save after validation
+    user_room_access.save()
+
+    return Response(
+        UserRoomAccessLevelSerializer(user_room_access).data,
+        status=status.HTTP_201_CREATED,
+    )

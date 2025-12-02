@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { CirclePlus } from "lucide-react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
@@ -9,18 +9,46 @@ import { TaskComponentMenu } from "./TaskComponentMenu";
 import { TagSelectionMenu } from "./TagSelectionMenu";
 
 const TaskEditor = forwardRef(
-  ({ initialTags = [], initialComponents = [], taskID }, ref) => {
+  ({ initialTags, initialComponents = [], taskID }, ref) => {
     const [taskComponents, setTaskComponents] = useState(initialComponents);
     const [taskComponentMenu, setTaskComponentMenu] = useState(false);
     //for tags
-    const [tags, setTags] = useState(initialTags);
+    const [tags, setTags] = useState(initialTags?? []);
     const [availableTags, setAvailableTags] = useState([
       "Easy",
       "Medium",
       "Hard",
     ]); //todo: load all from database onto global zustland state on user login
     const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
+    const taskBaseRef = useRef(null);
 
+  useImperativeHandle(ref, () => ({
+serialize: () => {
+    if (!taskBaseRef.current?.serialize) {
+      console.warn("TaskBase ref not ready or serialize not defined");
+      return {
+        task_id: taskID,
+        tags,
+        components: []
+      };
+    }
+
+    // Call TaskBase's serialize() which returns an array of components
+    const components = taskBaseRef.current.serialize();
+
+    const t = {
+      task_id: taskID,
+      tags: Array.isArray(tags) ? tags : [],
+      components: Array.isArray(components) ? components : []
+    };
+
+    console.log("inside TaskEditor.serialize()", t);
+
+    return t;
+  }
+  }));
+
+      
     const addNewTaskComponent = (type) => {
       const jsonData = taskComponentTypes[type].defaultValue;
       const newComponent = {
@@ -30,10 +58,6 @@ const TaskEditor = forwardRef(
       };
       setTaskComponents((prev) => [...prev, newComponent]);
     };
-
-    useImperativeHandle(ref, () => ({
-      serialize: () => taskComponents,
-    }));
 
     return (
       <Card className="task-editor bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
@@ -95,7 +119,7 @@ const TaskEditor = forwardRef(
           <h3 className="text-lg font-bold">Task Components</h3>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <TaskBase components={taskComponents} isEditing={true} />
+          <TaskBase components={taskComponents} isEditing={true} ref={(el) => (taskBaseRef.current = el)} />
 
           {/* Add Task Component Button */}
           <Button
@@ -111,7 +135,10 @@ const TaskEditor = forwardRef(
             isOpen={taskComponentMenu}
             onClose={() => setTaskComponentMenu(false)}
           >
-            <TaskComponentMenu onSelect={addNewTaskComponent} />
+            <TaskComponentMenu
+              onSelect={addNewTaskComponent}
+              onClose={() => setTaskComponentMenu(false)}
+            />
           </Modal>
         </CardContent>
       </Card>

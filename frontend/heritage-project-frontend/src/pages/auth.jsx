@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { test_api } from "../services/testAPIs";
+import { useNavigate } from "react-router-dom";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const showError = useErrorStore((state) => state.showError);
+  const navigate = useNavigate();
 
   // Function to handle sign in
   async function handleLogin() {
@@ -22,6 +24,8 @@ const AuthLogin = () => {
         Debug.log("Login success:", data);
         setUsername("");
         setPassword("");
+        
+        navigate('/home/'+username);
       } catch (error) {
         //If somthing in try failed, default to here
         if (error.status == 404){

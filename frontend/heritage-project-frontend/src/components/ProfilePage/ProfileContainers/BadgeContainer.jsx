@@ -21,7 +21,10 @@ function BadgeContainer({username}) {
   }, []);
 
   if (!badges) {
-      return <div>Loading...</div>;
+      return (
+        <ProfileContainer title={"Badges"} itemsPerRow={3}>
+        </ProfileContainer>
+      )
   }
 
   return (

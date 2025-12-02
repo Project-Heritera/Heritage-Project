@@ -161,61 +161,33 @@ const RoomEditor = () => {
   // Function to serialize everything to ever exist
   const serializeAllTasks = async () => {
     try {
-      let updatedRoomData = roomData;
-      //add changes to room data object
-      updatedRoomData.title = roomTitle;
-      updatedRoomData.can_edit = true;
-      updatedRoomData.description = roomDesc;
-      updatedRoomData.metadata = {};
-      updatedRoomData.visibility = roomVisibility;
-      updatedRoomData.creator = roomCreator;
-      updatedRoomData.created_on = roomCreationDate;
-      updatedRoomData.last_updated = new Date().toISOString();
-      /*
-      const serializedRoom = {
-        can_edit: true,
-        title: roomTitle,
-        description: roomDesc,
-        metadata: {},
-        visibility: roomVisibility,
-        is_published: false,
-        tasks: [],
-        creator: roomCreator,
-        created_on: roomCreationDate,
-        last_updated: new Date().toISOString(),
-      };
-      */
-      //get the updated task and task components
-      let updatedRoomTasks = [];
-      for (const taskId in taskRefs.current) {
-        const taskRef = taskRefs.current[taskId];
-        if (taskRef?.serialize) {
-          const serializedTask = taskRef.serialize();
-          updatedRoomTasks.push(serializedTask);
-        }
+    const updatedRoomData = {
+      title: roomTitle,
+      can_edit: true,       
+      description: roomDesc,
+      metadata: {},          
+      visibility: roomVisibility,
+      tasks: [],             
+    };
+
+    // Serialize tasks and components
+    for (const taskId in taskRefs.current) {
+      const taskRef = taskRefs.current[taskId];
+      if (taskRef?.serialize) {
+        const serializedTask = taskRef.serialize();
+        updatedRoomData.tasks.push(serializedTask);
       }
-      updatedRoomData.tasks = updatedRoomTasks;
-      Debug.log("Serialized Room Data:", updatedRoomData);
-      //convert object to formData object
-      const formData = await objectToFormData(updatedRoomData);
+    }
 
-      Debug.log("Form data is :", formData);
+    console.log("updated room", updatedRoomData);
 
-      //now make request to overwrite room
-      const room_status = await save_room(
-        course_id,
-        section_id,
-        room_id,
-        formData
-      );
-      /*
-      const room_status = await save_room(
-        course_id,
-        section_id,
-        room_id,
-        serializedRoom
-      );
-      */
+    // Make request to overwrite room
+    const room_status = await save_room(
+      course_id,
+      section_id,
+      room_id,
+      updatedRoomData
+    );
       return room_status;
     } catch (err) {
       showError(
@@ -336,8 +308,9 @@ const RoomEditor = () => {
                     <TaskEditor
                       key={task.task_id}
                       ref={(el) => (taskRefs.current[task.task_id] = el)}
-                      tags={task.tags}
+                      initialTags={task.tags}
                       initialComponents={task.components}
+                      taskID={task.task_id}
                     />
                   </CardContent>
                 </Card>

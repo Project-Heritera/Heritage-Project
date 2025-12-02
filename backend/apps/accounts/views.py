@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
+from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer, OpenApiParameter
 
 from apps.website.models import Course
 from friendship.models import Block, Friend, FriendshipRequest
@@ -34,6 +34,32 @@ def all_users(request):
     users = User.objects.all()
     data = [{"id": u.id, "username": u.username} for u in users]
     return Response(data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Users"],
+    summary="Search users",
+    description="Returns a list of users matching the query.",
+    parameters=[
+        OpenApiParameter(name="user_prefix", description="The search term", required=False, type=str),
+    ],
+    responses={
+        200: UserSerializer(many=True), # Document that it returns the standard User object
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_users(request):
+    query = request.query_params.get('user_prefix', '')
+
+    if query:
+        users = User.objects.filter(username__istartswith=query)
+    else:
+        users = User.objects.none()
+    
+    serializer = UserSerializer(users, many=True, context={"request": request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -87,6 +113,7 @@ def delete_account(request):
         return Response({"message": f"User '{username}' has been deleted"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": f"Unable to remove user"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(
     tags=["Users"],
@@ -148,15 +175,16 @@ def get_user_info(request):
     user = request.user
 
     courses_created_int = Course.objects.filter(creator=user).count()
-    courses_completed_int = Course.objects.filter(
-        userprogress__user=user,
-        userprogress__percent=100
-    ).count()
+    courses_completed_int = Course.objects \
+        .filter_by_user_access(user) \
+        .user_progress_percent(user) \
+        .filter(progress_percent=100) \
+        .count()
 
-    user_serializer = UserSerializer(user)
+    serializer = UserSerializer(user)
 
     return Response({
-        **user_serializer.data,
+        **serializer.data,
         "courses_created": courses_created_int,
         "courses_completed": courses_completed_int
     }, status=status.HTTP_200_OK)
@@ -309,6 +337,15 @@ def view_friends(request, username):
 @permission_classes([IsAuthenticated])
 def friendship_add_friend(request, to_username):
     to_user = get_object_or_404(User, username=to_username)
+
+    existing_rejected = FriendshipRequest.objects.filter(
+        from_user=request.user,
+        to_user=to_user,
+        rejected__isnull=False
+    )
+    if existing_rejected.exists():
+        existing_rejected.delete()
+        
     try:
         Friend.objects.add_friend(request.user, to_user)
     except AlreadyExistsError as e:
@@ -332,7 +369,10 @@ def friendship_add_friend(request, to_username):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def friendship_request_list(request):
-    requests = Friend.objects.requests(request.user)
+    requests = FriendshipRequest.objects.filter(
+        to_user=request.user, 
+        rejected__isnull=True
+    )
     if not requests:
         return Response(status=204)
     return Response({
@@ -615,3 +655,66 @@ def block_remove(request, blocked_username):
     blocked = get_object_or_404(User, username=blocked_username)
     Block.objects.remove_block(request.user, blocked)
     return Response({"message": "User unblocked"}, status=204)
+
+@extend_schema(
+    tags=["Friends"],
+    summary="List sent requests",
+    description="Get a list of friend requests SENT by the logged-in user (outgoing pending requests).",
+    request=None,
+    responses={
+        200: inline_serializer(
+            name="PendingRequestsResponse",
+            fields={
+                "pending_users": serializers.ListField(
+                    child=inline_serializer(
+                        name="PendingRequestItem",
+                        fields={
+                            "User": UserSerializer(),
+                            # If you decide to add 'request_id' later, add: 
+                            # "request_id": serializers.IntegerField() 
+                        }
+                    )
+                )
+            }
+        ),
+        401: OpenApiResponse(description="Not authenticated")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def pending_friend_requests(request):
+    requests = FriendshipRequest.objects.filter(
+        from_user=request.user,
+        rejected__isnull=True
+    )
+
+    if not requests:
+        return Response({"pending_users": []}, status=200)
+    
+    return Response({
+        "pending_users": [{
+            "User": UserSerializer(r.to_user).data,
+            "friendship_request_id": r.id,
+        } for r in requests]
+    }, status=200)
+
+@extend_schema(
+    tags=["Friends"],
+    summary="Remove friend",
+    description="Removes an existing friendship between the logged-in user and the specified user.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description='Friend removed successfully.'),
+        400: OpenApiResponse(description='Users were not friends.'),
+        404: OpenApiResponse(description="Could not find user.")
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def remove_friend(request, username):
+    other_user = get_object_or_404(User, username=username)
+
+    if Friend.objects.remove_friend(request.user, other_user):
+        return Response({"message": "Friend removed successfully"}, status=200)
+    else:
+        return Response({"message": "You are not friends with this user"}, status=400)

@@ -1,16 +1,17 @@
-import { useState, useContext, useRef } from "react";
+import { useState, useContext,ref, forwardRef, useImperativeHandle, useRef } from "react";
 import statusTypes from "../../utils/statusTypes";
 import { TaskGlobalContext } from "./TaskBase";
 import { Button } from "@/components/ui/button";
 
-function QuestionTaskComponentWrapper({
+
+const QuestionTaskComponentWrapper = forwardRef(function QuestionTaskComponentWrapper(
+{
   jsonData,
   QuestionTaskComponent,
   isEditing,
-  serialize,
   initialAttemptsLeft,
   initialIsCorrect,
-}) {
+},ref) {
   // Parse jsonData if it's a string, otherwise use as-is
   let parsedJsonData;
   try {
@@ -42,7 +43,6 @@ function QuestionTaskComponentWrapper({
       console.error("Question component does not expose checkIfCorrect method");
       return;
     }
-
     const result = questionComponentRef.current.checkIfCorrect();
     setTaskStatus(result);
 
@@ -55,6 +55,19 @@ function QuestionTaskComponentWrapper({
       }
     }
   };
+  const handleSerialize = () => {
+  if (!questionComponentRef.current?.serialize) {
+      console.warn("Child component has no serialize method");
+      return null;
+    }
+  parsedJsonData = questionComponentRef.current.serialize();
+  const customJson = { ...parsedJsonData, number_of_chances: numberOfAttempts, hint };
+  return customJson;
+}
+
+useImperativeHandle(ref, () => ({
+  serialize: handleSerialize,
+}));
 
   return (
     <>
@@ -66,7 +79,7 @@ function QuestionTaskComponentWrapper({
               type="number"
               min={1}
               value={numberOfAttempts}
-              onChange={(e) => setNumberOfAttempts(Number(e.target.value) || 1)}
+              onChange={(e) => setNumberOfAttempts(Number(e.target.value))}
               className="meta-input number-of-attempts"
             />
           </label>
@@ -88,22 +101,20 @@ function QuestionTaskComponentWrapper({
       )}
       <div className="question-wrapper">
         <QuestionTaskComponent
-          ref={questionComponentRef}
           jsonData={parsedJsonData}
           isEditing={isEditing}
-          serialize={serialize}
+          ref={questionComponentRef}
         />
         {!isEditing && (
           <div className="question-actions">
             <Button
-                          onClick={handleSubmit}
+              onClick={handleSubmit}
               className="submit-question-button bg-blue-500"
               disabled={taskStatus === statusTypes.COMPLE}
-            > 
-Submit
-
+            >
+              Submit
             </Button>
-         </div>
+          </div>
         )}
         {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
           <p className="hint">{parsedJsonData.hint}</p>
@@ -111,7 +122,7 @@ Submit
         {showHint && <p className="hint">{parsedJsonData.hint}</p>}
       </div>
     </>
-  );
+  )
 }
-
+);
 export default QuestionTaskComponentWrapper;

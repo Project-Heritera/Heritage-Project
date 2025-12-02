@@ -1,34 +1,48 @@
-import PropTypes from "prop-types";
-import "./CourseCard.css";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom"
+function getProgressColor(progress) {
+  if (progress < 30) return "bg-red-300";
+  if (progress < 60) return "bg-yellow-300";
+  return "bg-green-300";
+}
 
-const CourseCard = ({ link, title, progress, imageLink }) => {
-//Basically 
-  const progressValue = Math.max(0, Math.min(1, progress || 0));
-  const progressPercentage = Math.round(progressValue * 100);
-
+export default function CourseCard({ title, description, href, progress, imageLink, courseId }) {
+  const color = getProgressColor(progress);
+  console.log("Course id is:", courseId)
   return (
-    <a href={link} className="course-card-link">
-      <div 
-        className="course-container"
-        style={{ backgroundImage: `url(${imageLink})` }}
-      >
-        <div className="course-progress-badge">
-          In Progress - {progressPercentage}%
-        </div>
-        <div className="course-title-badge">
-          {title}
-        </div>
-      </div>
-    </a>
+    <Link to={`/c/${courseId || "#"}`}>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+          {imageLink && (
+            <div className="w-full h-48 mt-3 overflow-hidden rounded-md bg-gray-100">
+              <img
+                src={imageLink}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <ScrollArea className="h-18">
+            {description && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {description}
+              </p>
+            )}
+          </ScrollArea>
+        </CardHeader>
+
+        <CardContent>
+          <div className="space-y-2 ">
+            <Progress value={progress} indicatorColor={color} />
+            <p className="text-sm text-muted-foreground">{Math.ceil(progress)}% complete</p>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+
+
   );
-};
-
-CourseCard.propTypes = {
-  link: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  progress: PropTypes.number.isRequired,
-  imageLink: PropTypes.string.isRequired,
-};
-
-export default CourseCard;
-
+}
