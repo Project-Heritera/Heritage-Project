@@ -32,10 +32,12 @@ urlpatterns = [
     
     # user badges api
     path("badges/", views.get_badges),
+    path("create_badge/", views.create_badge),
     path("another_badges/<str:user_username>", views.get_another_badges),
     path("badges/<int:badge_id>/award_badge/", views.award_badge),
     path("courses/search/", views.search_courses),
 
     # contribution apis
     path("add_as_editor/user/<slug:user_username>/room/<int:room_id>/", views.add_as_editor),
+    path("add_multiple_editor/room/<int:room_id>/", views.add_mult_editors),
 ]

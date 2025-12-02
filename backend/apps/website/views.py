@@ -9,33 +9,11 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from rest_framework import serializers
+import json
 
 from .permissions import user_has_access
-from .serializers import (
-    BadgeSerializer,
-    ProgressOfTaskSerializer,
-    UserBadgeSerializer,
-    RoomSerializer,
-    CourseSerializer,
-    SectionSerializer,
-    UserRoomAccessLevelSerializer,
-    UserCourseAccessLevelSerializer,
-    UserSectionAccessLevelSerializer,
-)
-from .models import (
-    Badge,
-    Course,
-    ProgressOfTask,
-    Section,
-    Room,
-    Status,
-    Task,
-    UserBadge,
-    UserCourseAccessLevel,
-    UserRoomAccessLevel,
-    UserSectionAccessLevel,
-    VisibilityLevel,
-)
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 User = get_user_model()
 
@@ -231,14 +209,30 @@ def get_badges(request):
     summary="Delete a course",
     description="Deletes a course and everything that that course contains: sections/rooms/etc..",
     responses={
-        204: OpenApiResponse(description="Course deleted successfully."),
-        403: OpenApiResponse(
-            description="You do not have permission to delete this course."
-        ),
-        404: OpenApiResponse(description="Could not get course."),
-    },
+        204: OpenApiResponse(description='Course deleted successfully.'),
+        403: OpenApiResponse(description='You do not have permission to delete this course.'),
+        404: OpenApiResponse(description='Could not get course.'),
+    }
 )
-@api_view(["DELETE"])
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_badge(request):
+    data = {
+        "title": request.data.get("title", ""),
+        "image": request.data.get("icon", ""),
+        "description": request.data.get("description", ""),
+    }
+
+    serializer = BadgeSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):
     user = request.user
@@ -311,12 +305,7 @@ def search_courses(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_course(request):
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = CourseSerializer(data=data)
+    serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             creator=request.user,
@@ -663,13 +652,7 @@ def get_sections_by_title(request, course_title):
 @permission_classes([IsAuthenticated])
 def create_section(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = SectionSerializer(data=data)
+    serializer = SectionSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             course=course,
@@ -1062,19 +1045,81 @@ def _save_room_logic(request, room_id):
         404: OpenApiResponse(description="Could not get room."),
     },
 )
-@api_view(["PUT"])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
-    # room is a room instance, not the serializer
-    room, errors = _save_room_logic(request, room_id)
-
-    if errors:
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    # Fetch the room instance
+    room = get_object_or_404(Room, id=room_id)
 
     if not user_has_access(room, request.user, edit=True):
         raise PermissionDenied("You do not have permission to edit this room.")
 
-    return Response(status=status.HTTP_200_OK)
+    with transaction.atomic():
+
+        for field, value in request.data.items():
+
+            if field == "tasks":
+                # Parse tasks JSON
+                try:
+                    tasks_list = json.loads(value) if isinstance(value, str) else value
+                except json.JSONDecodeError:
+                    return Response({"error": "Invalid tasks JSON"}, status=400)
+
+                # Loop through each incoming task
+                for task_data in tasks_list:
+                    task_id = task_data.get("task_id")
+                    tags = task_data.get("tags", [])
+                    components = task_data.get("components", [])
+
+                    if not task_id:
+                        continue
+
+                    # Fetch or create task
+                    task_obj, created = Task.objects.get_or_create(id=task_id)
+
+                    # Ensure task belongs to this room
+                    task_obj.room = room
+
+                    # Handle tags (JSONField or ManyToMany)
+                    if isinstance(task_obj.tags, list):   # JSONField
+                        task_obj.tags = tags
+
+                    else:  # ManyToManyField
+                        tag_objs = []
+                        for tag_name in tags:
+                            tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
+                            tag_objs.append(tag_obj)
+
+                        task_obj.tags.set(tag_objs)
+
+                    task_obj.save()
+
+                    # Clear and recreate components
+                    task_obj.components.all().delete()
+
+                    for comp in components:
+                        comp_id = comp.get("id")  # or "task_component_id" from frontend
+                        if comp_id:
+                            # Update existing component
+                            TaskComponent.objects.filter(id=comp_id, task=task_obj).update(
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+                        else:
+                            # Create new component if no ID
+                            TaskComponent.objects.create(
+                                task=task_obj,
+                                type=comp.get("type"),
+                                content=comp.get("content")
+                            )
+            else:
+                # Save normal room fields
+                setattr(room, field, value)
+
+        # Save room after loop
+        room.save()
+
+    return Response({"detail": "Room updated successfully"}, status=200)
 
 
 @extend_schema(
@@ -1207,3 +1252,96 @@ def add_as_editor(request, room_id, user_username):
         UserRoomAccessLevelSerializer(user_room_access).data,
         status=status.HTTP_201_CREATED,
     )
+
+
+@extend_schema(
+    tags=["Contribution"],
+    summary="Add multiple users as editors",
+    description="Creates multiple User(Room/Section/Course)AccessLevel objects with AccessLevel=EDITOR.",
+    request=inline_serializer(
+        name="AddUsersRequest",
+        fields={
+            "usernames": serializers.ListField(
+                child=serializers.CharField(),
+                help_text="A list of usernames to add."
+            )
+        }
+    ),
+    responses={
+        201: OpenApiResponse(description="Added users successfully."),
+        207: OpenApiResponse(description="Some users were found and access levels created successfully, some were not."),
+        404: OpenApiResponse(description="One or more users not found, or room not found."),
+        409: OpenApiResponse(description="Cannot create access level for public room."),
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_mult_editors(request, room_id):
+    # Validate request
+    usernames = request.data.get("usernames", [])
+    if not isinstance(usernames, list) or not usernames:
+        return Response({"detail": "usernames must be a non-empty list."}, status=400)
+
+    # Validate room
+    room = get_object_or_404(Room, id=room_id)
+
+    if room.visibility == "PUB":
+        return Response(
+            {"message": "Cannot create access level for public room."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    section = room.section
+    course = room.course
+
+    created_access_records = []
+    missing_users = []
+
+    for username in usernames:
+        user = User.objects.filter(username=username).first()
+
+        if not user:
+            missing_users.append(username)
+            continue
+
+        # COURSE LEVEL
+        UserCourseAccessLevel.objects.filter(user=user, course=course).delete()
+        user_course_access = UserCourseAccessLevel.objects.create(
+            user=user,
+            course=course,
+            access_level="EDITOR"
+        )
+
+        # SECTION LEVEL
+        UserSectionAccessLevel.objects.filter(user=user, section=section).delete()
+        user_section_access = UserSectionAccessLevel.objects.create(
+            user=user,
+            section=section,
+            access_level="EDITOR"
+        )
+
+        # ROOM LEVEL
+        UserRoomAccessLevel.objects.filter(user=user, room=room).delete()
+        user_room_access = UserRoomAccessLevel.objects.create(
+            user=user,
+            room=room,
+            access_level="EDITOR"
+        )
+
+        created_access_records.append(
+            UserRoomAccessLevelSerializer(user_room_access).data
+        )
+
+    # If some usernames weren't found → return partial success + list of missing
+    if missing_users:
+        return Response(
+            {
+                "created": created_access_records,
+                "missing_users": missing_users,
+                "message": "Some users were created successfully, some were not."
+            },
+            status=status.HTTP_207_MULTI_STATUS,  # Partial success
+        )
+
+    # All users created successfully
+    return Response(created_access_records, status=status.HTTP_201_CREATED)

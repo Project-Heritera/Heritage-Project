@@ -3,16 +3,18 @@
     height: 53px;
     background-color: #F8E0AC;
     border-radius: 13px;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); /* Add this line */
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 
-    /* handle children */
-    display: inline-flex; /* make all children line up in a row */
-    align-items: center; /* Center the children buttons and overwrite felx from changing shape*/
-    padding: 0 80px; /* add padding between buttons and the toolbar*/
-    gap: 8px; /* padding between buttons*/
-    justify-content: center; /* put buttons in center horizontally*/
+    display: flex;                 /* stays in parent width */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 16px;               /* responsive instead of huge 80px */
+    max-width: 100%;               /* prevent overflow */
+    overflow-x: auto;              /* scroll if absolutely needed */
+    box-sizing: border-box;        /* include padding in width calc */
 }
-
 .button {
     width: 37px;
     height: 35px;
