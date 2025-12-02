@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import SearchBar from "@/components/Common/Search/SearchBar";
 import ContributorCard from "../components/CourseEditDashboard/ContributorCard"
+import ManageUser from "@/components/CourseEditDashboard/ManageUser";
 //Displays a list of cours given a room
 function CourseDashboard() {
     const { courseId } = useParams();
     const [loading, setLoading] = useState(true)
+    const [users, setUsers] = useState([])
 
     const [sections, setSections] = useState([])
     const [courseInfo, setCourseInfo] = useState(null)
@@ -40,6 +42,12 @@ function CourseDashboard() {
         }
         getData();
     }, [])
+
+    const removeUser = async (userToRemove) => {
+        //Remove the user when trash is clicked on
+        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userToRemove.id));
+        //Make backend call
+    }
 
     if (loading) {
         return (<div>Loading...</div>)
@@ -82,7 +90,17 @@ function CourseDashboard() {
                                         Manage who has access to this course.
                                     </CardDescription>
                                 </div>
-                                <Button>Add people</Button>
+                                <ManageUser submitAction={(newUsers) => {
+                                    setUsers((prevUsers) => {
+                                        // 1. Filter out users that are ALREADY in the parent list to avoid duplicates
+                                        const uniqueNewUsers = newUsers.filter(
+                                            (newUser) => !prevUsers.some((existingUser) => existingUser.id === newUser.id)
+                                        );
+
+                                        // 2. Return the combined list
+                                        return [...prevUsers, ...uniqueNewUsers];
+                                    });
+                                }} />
                             </div>
                         </CardHeader>
 
@@ -94,6 +112,9 @@ function CourseDashboard() {
                             </div>
 
                             <div className="divide-y">
+                                {users.map((user) => (
+                                    <ContributorCard key={user.username} username={user.username} description={"Collaborator"} onTrash={removeUser} />
+                                ))}
                                 <ContributorCard username={"Chad Noris"} description={"Collaborator"} />
                                 <ContributorCard username={"Bob Iger"} description={"Collaborator"} />
                             </div>
