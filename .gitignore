@@ -21,3 +21,4 @@ pnpm-debug.log*
 # Editor directories
 .vscode
 .idea
+backend/db.sqlite3
