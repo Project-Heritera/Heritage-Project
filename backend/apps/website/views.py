@@ -12,8 +12,32 @@ from rest_framework import serializers
 import json
 
 from .permissions import user_has_access
-from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer, UserCourseAccessLevelSerializer, UserRoomAccessLevelSerializer
-from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Tag, Task, TaskComponent, UserBadge, UserCourseAccessLevel, UserRoomAccessLevel, UserSectionAccessLevel, VisibilityLevel
+from .serializers import (
+    ProgressOfTaskSerializer,
+    RoomSerializer,
+    CourseSerializer,
+    SectionSerializer,
+    UserBadgeSerializer,
+    BadgeSerializer,
+    UserCourseAccessLevelSerializer,
+    UserRoomAccessLevelSerializer,
+)
+from .models import (
+    Badge,
+    Course,
+    ProgressOfTask,
+    Section,
+    Room,
+    Status,
+    Tag,
+    Task,
+    TaskComponent,
+    UserBadge,
+    UserCourseAccessLevel,
+    UserRoomAccessLevel,
+    UserSectionAccessLevel,
+    VisibilityLevel,
+)
 
 User = get_user_model()
 
@@ -209,14 +233,14 @@ def get_badges(request):
     summary="Delete a course",
     description="Deletes a course and everything that that course contains: sections/rooms/etc..",
     responses={
-        204: OpenApiResponse(description='Course deleted successfully.'),
-        403: OpenApiResponse(description='You do not have permission to delete this course.'),
-        404: OpenApiResponse(description='Could not get course.'),
-    }
+        204: OpenApiResponse(description="Course deleted successfully."),
+        403: OpenApiResponse(
+            description="You do not have permission to delete this course."
+        ),
+        404: OpenApiResponse(description="Could not get course."),
+    },
 )
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_badge(request):
     data = {
@@ -232,7 +256,7 @@ def create_badge(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):
     user = request.user
@@ -421,6 +445,7 @@ def get_courses(request):
 
     return Response(results, status=status.HTTP_200_OK)
 
+
 @extend_schema(
     tags=["Courses"],
     summary="Get a specific course",
@@ -444,10 +469,10 @@ def get_courses(request):
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
                 "total_tasks": serializers.IntegerField(),
-            }
+            },
         ),
-        404: OpenApiResponse(description='Course not found or access denied.'),
-    }
+        404: OpenApiResponse(description="Course not found or access denied."),
+    },
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -1022,7 +1047,6 @@ def get_room(request, room_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 @extend_schema(
     tags=["Rooms"],
     summary="Save a room",
@@ -1037,7 +1061,7 @@ def get_room(request, room_id):
         404: OpenApiResponse(description="Could not get room."),
     },
 )
-@api_view(['PATCH'])
+@api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def save_room(request, room_id):
     # Fetch the room instance
@@ -1065,8 +1089,7 @@ def save_room(request, room_id):
                     # Fetch existing task or create a new one
                     if task_id:
                         task_obj, created = Task.objects.get_or_create(
-                            id=task_id,
-                            defaults={"room": room}
+                            id=task_id, defaults={"room": room}
                         )
                     else:
                         task_obj = Task.objects.create(room=room)
@@ -1092,12 +1115,14 @@ def save_room(request, room_id):
                         comp_id = comp.get("task_component_id")
                         defaults = {
                             "type": comp.get("type"),
-                            "content": comp.get("content") or ""
+                            "content": comp.get("content") or "",
                         }
 
                         if comp_id:
                             # Try to update existing component
-                            updated_count = TaskComponent.objects.filter(id=comp_id, task=task_obj).update(**defaults)
+                            updated_count = TaskComponent.objects.filter(
+                                id=comp_id, task=task_obj
+                            ).update(**defaults)
                             if updated_count == 0:
                                 # Component ID not found, create new
                                 TaskComponent.objects.create(task=task_obj, **defaults)
@@ -1142,7 +1167,7 @@ def publish_room(request, room_id):
     room.visibility = VisibilityLevel.PUBLIC
     room.is_published = True
     room.can_edit = False
-    room.save(update_fields=["visibility", "can_edit","is_published"])
+    room.save(update_fields=["visibility", "can_edit", "is_published"])
 
     return Response(status=status.HTTP_200_OK)
 
@@ -1158,17 +1183,22 @@ def publish_room(request, room_id):
         name="AddCourseAdminRequest",
         fields={
             "usernames": serializers.ListField(
-                child=serializers.CharField(),
-                help_text="A list of usernames to add."
+                child=serializers.CharField(), help_text="A list of usernames to add."
             )
-        }
+        },
     ),
     responses={
         201: OpenApiResponse(description="Added users successfully."),
-        207: OpenApiResponse(description="Some users were found and access levels created successfully, some were not."),
-        404: OpenApiResponse(description="One or more users not found, or course not found."),
-        409: OpenApiResponse(description="Cannot create access level for public course."),
-        400: OpenApiResponse(description="Usernames must be a non-empty list.")
+        207: OpenApiResponse(
+            description="Some users were found and access levels created successfully, some were not."
+        ),
+        404: OpenApiResponse(
+            description="One or more users not found, or course not found."
+        ),
+        409: OpenApiResponse(
+            description="Cannot create access level for public course."
+        ),
+        400: OpenApiResponse(description="Usernames must be a non-empty list."),
     },
 )
 @api_view(["POST"])
@@ -1177,13 +1207,16 @@ def add_course_editors(request, course_id):
     # Validate request data
     usernames = request.data.get("usernames", [])
     if not isinstance(usernames, list) or not usernames:
-        return Response({"detail": "usernames must be a non-empty list."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "usernames must be a non-empty list."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     # 1. Validate Course (Corrected: fetch Course instead of Room)
     course = get_object_or_404(Course, id=course_id)
 
     # Use the model's VisibilityLevel constants
-    if course.visibility == "PUB": # Assuming 'PUB' is VisibilityLevel.PUBLIC
+    if course.visibility == "PUB":  # Assuming 'PUB' is VisibilityLevel.PUBLIC
         return Response(
             {"message": "Cannot manually assign access level for public course."},
             status=status.HTTP_409_CONFLICT,
@@ -1205,7 +1238,7 @@ def add_course_editors(request, course_id):
         user_course_access, created = UserCourseAccessLevel.objects.update_or_create(
             user=user,
             course=course,
-            defaults={'access_level': 'EDITOR'} # Set access_level to EDITOR
+            defaults={"access_level": "EDITOR"},  # Set access_level to EDITOR
         )
 
         # 3. Use the correct serializer
@@ -1219,10 +1252,136 @@ def add_course_editors(request, course_id):
             {
                 "created": created_access_records,
                 "missing_users": missing_users,
-                "message": "Access levels for some users were updated/created successfully, while others were not found."
+                "message": "Access levels for some users were updated/created successfully, while others were not found.",
             },
             status=status.HTTP_207_MULTI_STATUS,
         )
 
     # All users processed successfully
     return Response(created_access_records, status=status.HTTP_201_CREATED)
+
+
+@extend_schema(
+    tags=["Contribution"],
+    summary="Get course editors",
+    description="Retrieves a list of all users who have 'EDITOR' access to this course.",
+    responses={
+        200: UserCourseAccessLevelSerializer(many=True),
+        403: OpenApiResponse(
+            description="You do not have permission to view editors for this course."
+        ),
+        404: OpenApiResponse(description="Course not found."),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_course_editors(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    # Security Check: Only people who can edit the course (creators/editors)
+    # should be able to see the list of other editors.
+    if not user_has_access(course, request.user, edit=True):
+        raise PermissionDenied(
+            "You do not have permission to view editors for this course."
+        )
+
+    # Query for all access levels for this course that are 'EDITOR'
+    # select_related('user') is used to optimize the database query
+    editors_access = UserCourseAccessLevel.objects.filter(
+        course=course, access_level="EDITOR"
+    ).select_related("user")
+
+    serializer = UserCourseAccessLevelSerializer(editors_access, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Contribution"],
+    summary="Remove course editor(s)",
+    description="Removes 'EDITOR' access for a list of users. Accepts a JSON body with a list of usernames.",
+    request=inline_serializer(
+        name="RemoveCourseEditorRequest",
+        fields={
+            "usernames": serializers.ListField(
+                child=serializers.CharField(),
+                help_text="A list of usernames to remove.",
+            )
+        },
+    ),
+    responses={
+        200: OpenApiResponse(
+            description="All requested users were removed successfully."
+        ),
+        207: OpenApiResponse(
+            description="Some users were removed, others were not found or were not editors."
+        ),
+        400: OpenApiResponse(description="Invalid input (e.g. empty list)."),
+        403: OpenApiResponse(description="Permission denied."),
+        404: OpenApiResponse(description="Course not found."),
+    },
+)
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def remove_course_editors(request, course_id):
+    # 1. Validate Input
+    usernames = request.data.get("usernames", [])
+    if not isinstance(usernames, list) or not usernames:
+        return Response(
+            {"detail": "usernames must be a non-empty list."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # 2. Get Course & Check Permissions
+    course = get_object_or_404(Course, id=course_id)
+
+    # Only existing editors/creators can remove others
+    if not user_has_access(course, request.user, edit=True):
+        raise PermissionDenied("You do not have permission to manage editors.")
+
+    # 3. Process Removals
+    removed_users = []
+    missing_users = []
+    not_editors = []
+    cannot_remove = []  # For the creator
+
+    for username in usernames:
+        user = User.objects.filter(username=username).first()
+
+        # Case A: User doesn't exist
+        if not user:
+            missing_users.append(username)
+            continue
+
+        # Case B: User is the Course Creator (Protected)
+        if user == course.creator:
+            cannot_remove.append(username)
+            continue
+
+        # Case C: Try to delete
+        # We filter by user, course, AND access_level='EDITOR'
+        # to ensure we don't accidentally remove a different permission type
+        deleted_count, _ = UserCourseAccessLevel.objects.filter(
+            course=course, user=user, access_level="EDITOR"
+        ).delete()
+
+        if deleted_count > 0:
+            removed_users.append(username)
+        else:
+            # Case D: User existed, but wasn't an editor
+            not_editors.append(username)
+
+    # 4. Construct Response
+    response_data = {
+        "removed": removed_users,
+        "missing_users": missing_users,
+        "not_editors": not_editors,
+        "cannot_remove": cannot_remove,
+    }
+
+    # If there were any "failures" (missing, not editors, or creators), return 207 Multi-Status
+    if missing_users or not_editors or cannot_remove:
+        return Response(response_data, status=status.HTTP_207_MULTI_STATUS)
+
+    # Otherwise, clean 200 OK
+    return Response(response_data, status=status.HTTP_200_OK)

@@ -36,6 +36,11 @@ function CourseDashboard() {
                 const sectionsData = sectionsResponse.data
                 console.log("Retrieved course sections:", sectionsData)
                 setSections(sectionsData)
+                //Get contributors
+                const usersResponse = await api.get(`/website/get_course_editors/${courseId}/`)
+                const usersData = usersResponse.data
+                console.log("Retrieved users:", usersData)
+                setUsers(usersData)
             } catch (error) {
                 console.error("Error retrieving course sections: ", error)
             } finally {
@@ -45,9 +50,20 @@ function CourseDashboard() {
         getData();
     }, [])
 
-    const removeUser = async (userToRemove) => {
+    const removeUser = async (usernameToRemove) => {
         //Remove the user when trash is clicked on
-        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userToRemove.id));
+
+        try {
+            await api.delete(`/website/course/${courseId}/editors/remove/`, {
+                data: {
+                    usernames: [usernameToRemove] // Send as a list, even for one person
+                }
+            })
+            setUsers((prevUsers) => prevUsers.filter((u) => (u.user || u.username) !== usernameToRemove));
+            console.log("Username to remove is:", usernameToRemove)
+        } catch (error) {
+            console.error("Error removing editor: ", error)
+        }
         //Make backend call
     }
 
@@ -55,9 +71,12 @@ function CourseDashboard() {
         return (<div>Loading...</div>)
     }
 
-    const filteredUsers = users.filter((user) =>
-        user.username.toLowerCase().includes(filterQuery.toLowerCase())
-    );
+    const filteredUsers = users.filter((user) => {
+        // safely get the string, checking both possible keys
+        const usernameString = user.user || user.username || "";
+
+        return usernameString.toLowerCase().includes(filterQuery.toLowerCase());
+    });
 
     return (
 
@@ -96,17 +115,23 @@ function CourseDashboard() {
                                         Manage who has access to this course.
                                     </CardDescription>
                                 </div>
-                                <ManageUser submitAction={(newUsers) => {
-                                    setUsers((prevUsers) => {
-                                        // 1. Filter out users that are ALREADY in the parent list to avoid duplicates
-                                        const uniqueNewUsers = newUsers.filter(
-                                            (newUser) => !prevUsers.some((existingUser) => existingUser.id === newUser.id)
-                                        );
+                                <ManageUser courseId={courseId}
+                                    submitAction={(newUsers) => {
+                                        setUsers((prevUsers) => {
+                                            const uniqueNewUsers = newUsers.filter(
+                                                (newUser) => !prevUsers.some((existingUser) => {
+                                                    const existingName = existingUser.user || existingUser.username;
+                                                    const newName = newUser.user || newUser.username;
+                                                    console.log("New name is:", newName)
+                                                    console.log("Old name is:", existingName)
+                                                    return existingName === newName;
+                                                })
+                                            );
 
-                                        // 2. Return the combined list
-                                        return [...prevUsers, ...uniqueNewUsers];
-                                    });
-                                }} />
+                                            // Return the combined list
+                                            return [...prevUsers, ...uniqueNewUsers];
+                                        });
+                                    }} />
                             </div>
                         </CardHeader>
 
@@ -115,13 +140,14 @@ function CourseDashboard() {
                                 <div className="w-full">
                                     <ContributorSearchBar
                                         placeholder="Filter collaborators..."
-                                        onSearchChange={setFilterQuery} />
+                                        onSearchChange={setFilterQuery}
+                                    />
                                 </div>
                             </div>
 
                             <div className="divide-y">
                                 {filteredUsers.map((user) => (
-                                    <ContributorCard key={user.username} username={user.username} description={"Collaborator"} onTrash={removeUser} />
+                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username)} />
                                 ))}
                             </div>
                         </CardContent>

@@ -39,4 +39,6 @@ urlpatterns = [
 
     # contribution apis
     path("add_course_editors/<int:course_id>/", views.add_course_editors),
+    path("get_course_editors/<int:course_id>/", views.get_course_editors),
+    path('course/<int:course_id>/editors/remove/', views.remove_course_editors),
 ]

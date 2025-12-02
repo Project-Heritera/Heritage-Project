@@ -16,7 +16,7 @@ import api from "../../services/api"
 import SearchBar from "../Common/Search/SearchBar";
 import ContributorCard from "./ContributorCard"
 
-function ManageUser({ submitAction }) {
+function ManageUser({ submitAction, courseId }) {
     //Store data for whats being edited
     const [open, setOpen] = useState(false)
     const [users, setUsers] = useState([])
@@ -29,7 +29,7 @@ function ManageUser({ submitAction }) {
         };
 
         try {
-           // await api.post(`/website/add_multiple_editor/room/${roomId}/`, payload);
+            await api.post(`/website/add_course_editors/${courseId}/`, payload);
             submitAction(users)
 
             setUsers([])
