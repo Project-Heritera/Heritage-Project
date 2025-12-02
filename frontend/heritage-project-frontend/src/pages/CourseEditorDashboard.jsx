@@ -113,8 +113,8 @@ function CourseDashboard() {
                         <CardContent className="p-0">
                             <div className="p-4 border-b flex items-center relative z-50">
                                 <div className="w-full">
-                                    <ContributorSearchBar
-                                        placeholder="Filter collaborators..."
+                                    <ContributorSearchBar 
+                                    placeholder="Filter collaborators..."
                                         onSearchChange={setFilterQuery} />
                                 </div>
                             </div>

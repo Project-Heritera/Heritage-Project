@@ -42,7 +42,7 @@ function ManageUser({ submitAction }) {
 
     const removeUser = async (userToRemove) => {
         //Remove the user when trash is clicked on
-        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userToRemove.id));
+        setUsers((prevUsers) => prevUsers.filter((u) => u.username !== userToRemove.username));
         //Make backend call
     }
 
@@ -72,8 +72,8 @@ function ManageUser({ submitAction }) {
                             includeUsers={true}
                             usersAction={(user) => {
                                 //Add to section with users
-                                const isDuplicate = users.some((u) => u.id === user.id);
-
+                                const isDuplicate = users.some((u) => u.username === user.username);
+                                console.log("Adding user")
                                 if (!isDuplicate) {
                                     //Add the new user to the existing array
                                     setUsers((prevUsers) => [...prevUsers, user]);
@@ -86,7 +86,7 @@ function ManageUser({ submitAction }) {
                     {/* Div holding selected users*/}
                     <div>
                         {users.map((user) => (
-                            <ContributorCard key={user.username} username={user.username} description={"Invite to collaborate"} onTrash={removeUser} />
+                            <ContributorCard key={user.username} username={user.username} description={"Invite to collaborate"} onTrash={() => removeUser(user)} />
                         ))}
                     </div>
 
