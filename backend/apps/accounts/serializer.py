@@ -28,7 +28,7 @@ class FriendshipRequestSerializer(serializers.ModelSerializer):
     from_user = serializers.CharField(source="from_user.username")
     created = serializers.SerializerMethodField()
 
-    def get_created(self, obj):
+    def get_created(self, obj) -> str:
         return obj.created.isoformat() if obj.created else None
 
     class Meta:

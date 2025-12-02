@@ -14,7 +14,47 @@ from .models import (
     UserBadge,
     VisibilityLevel,
     ProgressOfTask,
+    UserRoomAccessLevel,
+    UserCourseAccessLevel,
+    UserSectionAccessLevel
 )
+
+# -------------------------------
+# UserXAccessLevel Serializers
+# -------------------------------
+class UserCourseAccessLevelSerializer(serializers.ModelSerializer):
+    access_level_id = serializers.IntegerField(source="id", read_only=True)
+    access_level = serializers.CharField()
+    user = serializers.CharField(source="user.username")
+    course = serializers.CharField(source="course.title")
+
+    class Meta:
+        model = UserCourseAccessLevel
+        fields = ["access_level_id", "access_level", "user", "course"]  # what is sent back
+        read_only_fields = ["access_level_id"]
+
+class UserSectionAccessLevelSerializer(serializers.ModelSerializer):
+    access_level_id = serializers.IntegerField(source="id", read_only=True)
+    access_level = serializers.CharField()
+    user = serializers.CharField(source="user.username")
+    section = serializers.CharField(source="section.title")
+
+    class Meta:
+        model = UserSectionAccessLevel
+        fields = ["access_level_id", "access_level", "user", "section"]  # what is sent back
+        read_only_fields = ["access_level_id"]
+
+class UserRoomAccessLevelSerializer(serializers.ModelSerializer):
+    access_level_id = serializers.IntegerField(source="id", read_only=True)
+    access_level = serializers.CharField()
+    user = serializers.CharField(source="user.username")
+    room = serializers.CharField(source="room.title")
+
+    class Meta:
+        model = UserRoomAccessLevel
+        fields = ["access_level_id", "access_level", "user", "room"]  # what is sent back
+        read_only_fields = ["access_level_id"]
+
 
 # -------------------------------
 # TaskComponent Serializer

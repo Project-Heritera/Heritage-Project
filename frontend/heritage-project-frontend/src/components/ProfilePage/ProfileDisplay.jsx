@@ -9,13 +9,13 @@ import ProfileTitle from "./ProfileTitle"
 import ProfileEdit from "./ProfileEdit";
 import { useState, useEffect } from "react";
 
-function ProfileDisplay({ profImage, name, description, isOwner }) {
+function ProfileDisplay({ profImage, name, description, isOwner, viewUser }) {
   const editProfile = () => console.log("Editing profile")
   console.log("Description recieved is: ", description)
 
   //Add label and function (action) for dropdown menu buttons
   const dropDownMenu = [
-    { label: "Edit Profile", action: editProfile }
+    { label: "Edit Profile", action: editProfile },
   ]
 
   const [currentBio, setCurrentBio] = useState(description);
@@ -43,7 +43,7 @@ function ProfileDisplay({ profImage, name, description, isOwner }) {
                   <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl} />
                 ) : (
                   //Viewing as outside viewer
-                  <ConnectionButton />
+                  <ConnectionButton viewUser={viewUser} pageUser={name}/>
                 )}
                 <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
               </div>
