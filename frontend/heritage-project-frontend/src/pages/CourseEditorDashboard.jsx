@@ -113,8 +113,8 @@ function CourseDashboard() {
                         <CardContent className="p-0">
                             <div className="p-4 border-b flex items-center relative z-50">
                                 <div className="w-full">
-                                    <ContributorSearchBar 
-                                    placeholder="Filter collaborators..."
+                                    <ContributorSearchBar
+                                        placeholder="Filter collaborators..."
                                         onSearchChange={setFilterQuery} />
                                 </div>
                             </div>
@@ -123,8 +123,6 @@ function CourseDashboard() {
                                 {filteredUsers.map((user) => (
                                     <ContributorCard key={user.username} username={user.username} description={"Collaborator"} onTrash={removeUser} />
                                 ))}
-                                <ContributorCard username={"Chad Noris"} description={"Collaborator"} />
-                                <ContributorCard username={"Bob Iger"} description={"Collaborator"} />
                             </div>
                         </CardContent>
                     </Card>
