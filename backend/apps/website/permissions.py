@@ -16,63 +16,85 @@ CONTAINER_ACCESS_MAP = {
     Room: (UserRoomAccessLevel, "room_id"),
 }
 
+def _get_access_precedence(level):
+    """Returns an integer precedence for AccessLevel for comparison."""
+    if level == AccessLevel.EDITOR:
+        return 2
+    if level == AccessLevel.VISITOR:
+        return 1
+    return 0 # No access
 
-def user_has_access(container, user, *, edit=False, _visited=None):
+def get_effective_access_level(container, user, _visited=None):
     """
-    Determine if a user can view or edit a Course, Section, or Room.
+    Recursively determines the highest effective AccessLevel a user has for a
+    container by checking the container itself and its parent hierarchy.
 
-    Access rules:
-    - PUBLIC: anyone can view; only creator/staff can edit.
-    - PRIVATE: only users listed in access table can view.
-        * VISITOR: view-only
-        * EDITOR: can edit
-    - Access checks cascade down hierarchy:
-        Room → Section → Course
+    Returns:
+        AccessLevel (EDITOR, VISITOR), or None if no access.
+    """
+    # --- Base auth (Highest Access) ---
+    if not user or not user.is_authenticated:
+        return None
+    if user.is_superuser or user.is_staff or user == getattr(container, "creator", None):
+        return AccessLevel.EDITOR
+
+    # --- Recursion guard ---
+    if _visited is None:
+        _visited = set()
+    if id(container) in _visited:
+        return None
+    _visited.add(id(container))
+
+    # --- 1. Determine local access level and visibility ---
+    mapping = CONTAINER_ACCESS_MAP.get(container.__class__)
+    if not mapping:
+        return None
+
+    AccessModel, id_field_name = mapping
+    visibility = getattr(container, "visibility", VisibilityLevel.PRIVATE)
+    container_id = container.id
+    highest_access = None
+
+    # --- PUBLIC ---
+    if visibility == VisibilityLevel.PUBLIC:
+        # Staff/creator already covered in Base Auth. Anyone else gets VIEW access.
+        highest_access = AccessLevel.VISITOR
+    # --- PRIVATE ---
+    else:
+        access_filter = {"user": user, id_field_name: container_id}
+        user_access = AccessModel.objects.filter(**access_filter).first()
+        if user_access:
+            highest_access = user_access.access_level
+
+    # --- 2. Parent hierarchy check (Recursion) ---
+    parent = getattr(container, "section", None) or getattr(container, "course", None)
+    if parent:
+        parent_access = get_effective_access_level(parent, user, _visited=_visited)
+
+        # Compare and take the highest access level from the hierarchy
+        if parent_access:
+            if highest_access is None or _get_access_precedence(parent_access) > _get_access_precedence(highest_access):
+                highest_access = parent_access
+
+    return highest_access
+
+
+def user_has_access(container, user, *, edit=False):
+    """
+    Determine if a user can view or edit a container, factoring in inherited access.
 
     @param container: Course, Section, or Room instance.
     @param user: The user performing the request.
     @param edit: True if edit permissions are required.
     @return: True if access is allowed; otherwise False.
     """
-    # --- Base auth ---
-    if not user or not user.is_authenticated:
+    effective_access = get_effective_access_level(container, user)
+
+    if effective_access is None:
         return False
-    if user.is_superuser or user.is_staff or user == getattr(container, "creator", None):
-        return True
-
-    # --- Recursion guard ---
-    if _visited is None:
-        _visited = set()
-    if id(container) in _visited:
-        return False
-    _visited.add(id(container))
-
-    # --- Parent hierarchy check ---
-    parent = getattr(container, "section", None) or getattr(container, "course", None)
-    if parent and not user_has_access(parent, user, edit=False, _visited=_visited):
-        return False
-
-    # --- Determine access model and visibility ---
-    mapping = CONTAINER_ACCESS_MAP.get(container.__class__)
-    if not mapping:
-        return False
-
-    AccessModel, id_field_name = mapping
-    visibility = getattr(container, "visibility", VisibilityLevel.PRIVATE)
-    container_id = container.id
-
-    # --- PUBLIC ---
-    if visibility == VisibilityLevel.PUBLIC:
-        # Anyone can view; only staff/creator can edit
-        return not edit
-
-    # --- PRIVATE ---
-    access_filter = {"user": user, id_field_name: container_id}
-    user_access = AccessModel.objects.filter(**access_filter).first()
-    access_level = getattr(user_access, "access_level", None)
-
-    if not user_access:
-        return False
-
-    # VISITOR: view-only; EDITOR: can edit
-    return not edit or access_level == AccessLevel.EDITOR
+    
+    # Required access level (view requires VISITOR, edit requires EDITOR)
+    required_precedence = _get_access_precedence(AccessLevel.EDITOR) if edit else _get_access_precedence(AccessLevel.VISITOR)
+    
+    # Check if the user's effective access is high enough
+    return _get_access_precedence(effective_access) >= required_precedence

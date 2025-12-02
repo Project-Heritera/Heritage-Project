@@ -12,8 +12,8 @@ from rest_framework import serializers
 import json
 
 from .permissions import user_has_access
-from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
-from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer, UserCourseAccessLevelSerializer, UserRoomAccessLevelSerializer
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Tag, Task, TaskComponent, UserBadge, UserCourseAccessLevel, UserRoomAccessLevel, UserSectionAccessLevel, VisibilityLevel
 
 User = get_user_model()
 
@@ -399,6 +399,9 @@ def get_courses(request):
 
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+
+    # Only get courses that have at least some progress
+    course_qs = course_qs.filter(progress_percent__gt=0)
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -1165,101 +1168,10 @@ def publish_room(request, room_id):
 # -------------------------------
 @extend_schema(
     tags=["Contribution"],
-    summary="Add user as an editor",
-    description="Creates User(Room/Section/Course)AccessLevel objects that has AccessLevel set to EDITOR",
-    request=None,
-    responses={
-        201: OpenApiResponse(description="Added user successfully."),
-        404: OpenApiResponse(
-            description="Could not get user, room, section, or course."
-        ),
-        409: OpenApiResponse(description="Cannot create access level for public room."),
-    },
-)
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def add_as_editor(request, room_id, user_username):
-    user = get_object_or_404(User, username=user_username)
-    room = get_object_or_404(Room, id=room_id)
-
-    if room:
-        if room.visibility == "PUB":
-            return Response(
-                {"message": "Cannot create access level for public room."},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-    section = room.section
-    course = room.course
-
-    ### Course ACCESS
-    # Look for ANY existing access, regardless of level
-    old_access = UserCourseAccessLevel.objects.filter(user=user, course=course).first()
-
-    if old_access:
-        # Delete old non-EDITOR (or even EDITOR, so we always recreate cleanly)
-        old_access.delete()
-
-    # Create a fresh EDITOR access (not saved yet)
-    user_course_access = UserCourseAccessLevel(
-        user=user,
-        course=course,
-        access_level="EDITOR",
-    )
-
-    # Save AFTER validation
-    user_course_access.save()
-
-    ### Section ACCESS
-    # Look for ANY existing access, regardless of level
-    old_section_access = UserSectionAccessLevel.objects.filter(
-        user=user, section=section
-    ).first()
-
-    if old_section_access:
-        # Remove old level (VIEWER, READER, whatever)
-        old_section_access.delete()
-
-    # Create fresh EDITOR access
-    user_section_access = UserSectionAccessLevel(
-        user=user,
-        section=section,
-        access_level="EDITOR",
-    )
-
-    # Save after validation
-    user_section_access.save()
-
-    ### Room ACCESS
-    # Look for ANY existing access, regardless of level
-    old_room_access = UserRoomAccessLevel.objects.filter(user=user, room=room).first()
-
-    if old_room_access:
-        # Delete previous access (any level)
-        old_room_access.delete()
-
-    # Create new EDITOR access
-    user_room_access = UserRoomAccessLevel(
-        user=user,
-        room=room,
-        access_level="EDITOR",
-    )
-
-    # Save after validation
-    user_room_access.save()
-
-    return Response(
-        UserRoomAccessLevelSerializer(user_room_access).data,
-        status=status.HTTP_201_CREATED,
-    )
-
-
-@extend_schema(
-    tags=["Contribution"],
-    summary="Add multiple users as editors",
-    description="Creates multiple User(Room/Section/Course)AccessLevel objects with AccessLevel=EDITOR.",
+    summary="Add user(s) as course admin",
+    description="Creates multiple UserCourseAccessLevel objects with AccessLevel=EDITOR.",
     request=inline_serializer(
-        name="AddUsersRequest",
+        name="AddCourseAdminRequest",
         fields={
             "usernames": serializers.ListField(
                 child=serializers.CharField(),
@@ -1270,29 +1182,28 @@ def add_as_editor(request, room_id, user_username):
     responses={
         201: OpenApiResponse(description="Added users successfully."),
         207: OpenApiResponse(description="Some users were found and access levels created successfully, some were not."),
-        404: OpenApiResponse(description="One or more users not found, or room not found."),
-        409: OpenApiResponse(description="Cannot create access level for public room."),
+        404: OpenApiResponse(description="One or more users not found, or course not found."),
+        409: OpenApiResponse(description="Cannot create access level for public course."),
+        400: OpenApiResponse(description="Usernames must be a non-empty list.")
     },
 )
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def add_mult_editors(request, room_id):
-    # Validate request
+def add_course_editors(request, course_id):
+    # Validate request data
     usernames = request.data.get("usernames", [])
     if not isinstance(usernames, list) or not usernames:
-        return Response({"detail": "usernames must be a non-empty list."}, status=400)
+        return Response({"detail": "usernames must be a non-empty list."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Validate room
-    room = get_object_or_404(Room, id=room_id)
+    # 1. Validate Course (Corrected: fetch Course instead of Room)
+    course = get_object_or_404(Course, id=course_id)
 
-    if room.visibility == "PUB":
+    # Use the model's VisibilityLevel constants
+    if course.visibility == "PUB": # Assuming 'PUB' is VisibilityLevel.PUBLIC
         return Response(
-            {"message": "Cannot create access level for public room."},
+            {"message": "Cannot manually assign access level for public course."},
             status=status.HTTP_409_CONFLICT,
         )
-
-    section = room.section
-    course = room.course
 
     created_access_records = []
     missing_users = []
@@ -1304,44 +1215,30 @@ def add_mult_editors(request, room_id):
             missing_users.append(username)
             continue
 
-        # COURSE LEVEL
-        UserCourseAccessLevel.objects.filter(user=user, course=course).delete()
-        user_course_access = UserCourseAccessLevel.objects.create(
+        # 2. COURSE LEVEL: Simplified logic using update_or_create (single DB operation)
+        # This creates a new record if one doesn't exist, or updates the existing one.
+        # This replaces the UserCourseAccessLevel.objects.filter(...).delete() + .create()
+        user_course_access, created = UserCourseAccessLevel.objects.update_or_create(
             user=user,
             course=course,
-            access_level="EDITOR"
+            defaults={'access_level': 'EDITOR'} # Set access_level to EDITOR
         )
 
-        # SECTION LEVEL
-        UserSectionAccessLevel.objects.filter(user=user, section=section).delete()
-        user_section_access = UserSectionAccessLevel.objects.create(
-            user=user,
-            section=section,
-            access_level="EDITOR"
-        )
-
-        # ROOM LEVEL
-        UserRoomAccessLevel.objects.filter(user=user, room=room).delete()
-        user_room_access = UserRoomAccessLevel.objects.create(
-            user=user,
-            room=room,
-            access_level="EDITOR"
-        )
-
+        # 3. Use the correct serializer
         created_access_records.append(
-            UserRoomAccessLevelSerializer(user_room_access).data
+            UserCourseAccessLevelSerializer(user_course_access).data
         )
 
-    # If some usernames weren't found → return partial success + list of missing
+    # --- Response Handling ---
     if missing_users:
         return Response(
             {
                 "created": created_access_records,
                 "missing_users": missing_users,
-                "message": "Some users were created successfully, some were not."
+                "message": "Access levels for some users were updated/created successfully, while others were not found."
             },
-            status=status.HTTP_207_MULTI_STATUS,  # Partial success
+            status=status.HTTP_207_MULTI_STATUS,
         )
 
-    # All users created successfully
+    # All users processed successfully
     return Response(created_access_records, status=status.HTTP_201_CREATED)

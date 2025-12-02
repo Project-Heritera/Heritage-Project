@@ -38,6 +38,5 @@ urlpatterns = [
     path("courses/search/", views.search_courses),
 
     # contribution apis
-    path("add_as_editor/user/<slug:user_username>/room/<int:room_id>/", views.add_as_editor),
-    path("add_multiple_editor/room/<int:room_id>/", views.add_mult_editors),
+    path("add_course_editors/<int:course_id>/", views.add_course_editors),
 ]
