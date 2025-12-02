@@ -389,11 +389,11 @@ def get_course_progress(request, course_id):
 
 @extend_schema(
     tags=["Courses"],
-    summary="Get all courses",
-    description="Returns course and progress information for all courses the user can access.",
+    summary="Get all public courses",
+    description="Returns course and progress information for all courses regardless of access or visibility.",
     responses={
         200: inline_serializer(
-            name="GetAllCourseProgressResponse",
+            name="GetAllCoursesPublicResponse",
             many=True,
             fields={
                 "course_id": serializers.IntegerField,
@@ -422,10 +422,126 @@ def get_courses(request):
     user = request.user
 
     # Only courses the user can access
-    qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+    qs = (
+        Course.objects
+        .user_progress_percent(user)
+        .filter(visibility=VisibilityLevel.PUBLIC)
+    )
+
+    if not qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(qs, many=True)
+
+    results = []
+    for serialized, course in zip(serializer.data, qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(course.progress_percent or 0, 2),
+                "completed_tasks": course.completed_tasks,
+                "total_tasks": course.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Get all progressed courses",
+    description="Returns course and progress information for all courses the user has progress in.",
+    responses={
+        200: inline_serializer(
+            name="GetAllCourseProgressedResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            },
+        ),
+        204: OpenApiResponse(
+            description="No courses found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_courses_progressed(request):
+    user = request.user
+
+    # Only courses the user can access
+    qs = Course.objects.user_progress_percent(user)
 
     # Only get courses that have at least some progress
     qs = qs.filter(progress_percent__gt=0)
+
+    if not qs.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CourseSerializer(qs, many=True)
+
+    results = []
+    for serialized, course in zip(serializer.data, qs):
+        results.append(
+            {
+                **serialized,
+                "progress_percent": round(course.progress_percent or 0, 2),
+                "completed_tasks": course.completed_tasks,
+                "total_tasks": course.total_tasks,
+            }
+        )
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Get all accessable courses",
+    description="Returns course and progress information for all courses the user can access.",
+    responses={
+        200: inline_serializer(
+            name="GetAllCourseContributedResponse",
+            many=True,
+            fields={
+                "course_id": serializers.IntegerField,
+                "title": serializers.CharField,
+                "description": serializers.CharField,
+                "metadata": serializers.JSONField,
+                "visibility": serializers.CharField,
+                "is_published": serializers.BooleanField,
+                "creator": serializers.StringRelatedField,
+                "created_on": serializers.DateTimeField,
+                "image": serializers.ImageField,
+                "badge": BadgeSerializer,
+                "progress_percent": serializers.FloatField(),
+                "completed_tasks": serializers.IntegerField(),
+                "total_tasks": serializers.IntegerField(),
+            },
+        ),
+        204: OpenApiResponse(
+            description="No courses found. Maybe check user permissions."
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_courses_contributed(request):
+    user = request.user
+
+    # Only courses the user can access
+    qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
