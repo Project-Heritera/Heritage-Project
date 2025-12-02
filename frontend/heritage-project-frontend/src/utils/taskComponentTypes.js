@@ -1,6 +1,7 @@
 import * as z from "zod";
 import TextTaskComponent from "../components/TaskAndTaskComponents/TextComponent/TextTaskComponent";
-import ImageTaskComponent from "../components/TaskAndTaskComponents/imageTaskComponent";
+import FillInBlankTaskComponent from "@/components/TaskComponents/FillInBlankComponent/FillInBlankTaskComponent";
+import ImageTaskComponent from "../components/TaskComponents/ImageComponent/ImageTaskComponent";
 import MultipleChoiceComponent from "../components/TaskComponents/MultipleChoiceComponent/MultipleChoiceComponent";
 // Universal enum for task components
 //Label is just its name
@@ -19,8 +20,8 @@ const taskComponentTypes = Object.freeze({
     label: "Image",
     category: "Static",
     component: ImageTaskComponent,
-    schema: z.object({ url: z.string(), alt: z.string() }),
-    defaultValue: { url: "", alt: "" },
+    schema: z.object({ src: z.string(), alt: z.string(), image_type: z.string() }),
+    defaultValue: { src: "", alt: "", image_type:"" },
   },
   OPTION: {
     label: "Multiple Choice Question",
@@ -46,7 +47,15 @@ const taskComponentTypes = Object.freeze({
       hint: ""
     },
   },
+  FILL: {
+    label: "Fill In Blank",
+    component: FillInBlankTaskComponent,
+    category: "Question",
+    schema: z.object({ text: z.string(), answer: z.string()}),
+    defaultValue: { text: "the ___th letter of the alphabet is e", answer: "5",number_of_chances: 1, hint: ""},
+    },
+  }
   // Add more components as needed
-});
+);
 
 export { taskComponentTypes };
