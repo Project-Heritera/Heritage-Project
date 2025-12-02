@@ -383,6 +383,7 @@ class TaskComponentType(models.TextChoices):
     VIDEO = "VIDEO", _("VIDEO")
     TEXT = "TEXT", _("TEXT")
     FILL = "FILL", _("FILL IN THE BLANK QUESTION")
+    MATCH = "MATCH", _("MATCH TERM TO DEFINITION")
     # will add more or change labels as needed
 
 

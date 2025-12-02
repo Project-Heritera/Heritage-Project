@@ -72,7 +72,6 @@ const QuestionTaskComponentWrapper = forwardRef((
       number_of_chances: numberOfAttempts 
     }
   };
-
   return finalJson;
 };
 
