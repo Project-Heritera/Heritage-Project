@@ -19,6 +19,7 @@ from .models import (
     UserSectionAccessLevel
 )
 
+
 # -------------------------------
 # UserXAccessLevel Serializers
 # -------------------------------
@@ -295,8 +296,13 @@ class SectionSerializer(serializers.ModelSerializer):
     )  # Changed from PK field for clarity
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
-    badge = BadgeSerializer(many=False, required=False)
+    image = serializers.ImageField()
+    is_published = serializers.BooleanField(default=True)
+    # Accept either a nested badge dict or a badge PK
+    badge = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), required=False, allow_null=True
+    )
+
 
     class Meta:
         model = Section
@@ -340,13 +346,10 @@ class SectionSerializer(serializers.ModelSerializer):
         """Creates a new Section instance."""
         # NOTE: The parent 'course' field is usually passed in the view (as seen in create_section)
         # However, if 'badge' data is sent, we need to handle it.
-        badge_data = validated_data.pop("badge", None)
+        badge = validated_data.pop("badge", None) 
         section = Section.objects.create(**validated_data)
-        # Create the nested Badge if provided
-        if badge_data:
-            badge_serializer = BadgeSerializer(data=badge_data)
-            badge_serializer.is_valid(raise_exception=True)
-            badge = badge_serializer.save()
+
+        if badge:
             section.badge = badge
             section.save(update_fields=["badge"])
 
@@ -363,19 +366,16 @@ class SectionSerializer(serializers.ModelSerializer):
 
         # Handle nested Badge update or creation
         if badge_data:
-            if instance.badge:
-                # Update existing badge
-                badge_serializer = BadgeSerializer(instance.badge, data=badge_data)
-            else:
-                # Create a new badge and link it
-                badge_serializer = BadgeSerializer(data=badge_data)
+            badge = validated_data.pop("badge", None)
 
-            badge_serializer.is_valid(raise_exception=True)
-            instance.badge = badge_serializer.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if badge:
+            instance.badge = badge
 
         instance.save()
         return instance
-
 
 # -------------------------------
 # Course Serializer
@@ -386,8 +386,12 @@ class CourseSerializer(serializers.ModelSerializer):
     )  # Changed from PK field for clarity
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
-    badge = BadgeSerializer(many=False, required=False)
+    image = serializers.ImageField()
+    is_published = serializers.BooleanField(default=True)  # default to True
+    badge = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), required=False, allow_null=True
+    )
+
 
     class Meta:
         model = Course
@@ -411,40 +415,20 @@ class CourseSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
         return attrs
 
-    def create(self, validated_data):
-        """Creates a new Course instance."""
-        # Handle the one-to-one 'badge' relationship
-        badge_data = validated_data.pop("badge", None)
-        course = Course.objects.create(**validated_data)
-        # Create the nested Badge if provided
-        if badge_data:
-            badge_serializer = BadgeSerializer(data=badge_data)
-            badge_serializer.is_valid(raise_exception=True)
-            badge = badge_serializer.save()
-            course.badge = badge
-            course.save(update_fields=["badge"])
+def create(self, validated_data):
+    badge = validated_data.pop("badge", None)  # this will be a Badge instance from PK
+    course = Course.objects.create(**validated_data)
+    if badge:
+        course.badge = badge
+        course.save(update_fields=["badge"])
+    return course
 
-        return course
 
-    def update(self, instance, validated_data):
-        """Updates an existing Course instance."""
-        # Pop nested data for manual update
-        badge_data = validated_data.pop("badge", None)
-        # Update main fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        # Handle nested Badge update or creation
-        if badge_data:
-            if instance.badge:
-                # Update existing badge
-                badge_serializer = BadgeSerializer(instance.badge, data=badge_data)
-            else:
-                # Create a new badge and link it
-                badge_serializer = BadgeSerializer(data=badge_data)
-
-            badge_serializer.is_valid(raise_exception=True)
-            instance.badge = badge_serializer.save()
-
-        instance.save()
-        return instance
+def update(self, instance, validated_data):
+    badge = validated_data.pop("badge", None)
+    for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+    if badge:
+        instance.badge = badge
+    instance.save()
+    return instance

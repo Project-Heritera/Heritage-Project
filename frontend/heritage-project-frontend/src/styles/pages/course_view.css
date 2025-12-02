@@ -53,7 +53,6 @@
 }
 
 .courses-view button {
-  background-color: var(--green-mid);
   color: white;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;

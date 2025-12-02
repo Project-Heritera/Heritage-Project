@@ -12,33 +12,8 @@ from rest_framework import serializers
 import json
 
 from .permissions import user_has_access
-from .serializers import (
-    BadgeSerializer,
-    ProgressOfTaskSerializer,
-    UserBadgeSerializer,
-    Tag,
-    TaskComponent,
-    RoomSerializer,
-    CourseSerializer,
-    SectionSerializer,
-    UserRoomAccessLevelSerializer,
-    UserCourseAccessLevelSerializer,
-    UserSectionAccessLevelSerializer,
-)
-from .models import (
-    Badge,
-    Course,
-    ProgressOfTask,
-    Section,
-    Room,
-    Status,
-    Task,
-    UserBadge,
-    UserCourseAccessLevel,
-    UserRoomAccessLevel,
-    UserSectionAccessLevel,
-    VisibilityLevel,
-)
+from .serializers import ProgressOfTaskSerializer, RoomSerializer, CourseSerializer, SectionSerializer, UserBadgeSerializer, BadgeSerializer
+from .models import Badge, Course, ProgressOfTask, Section, Room, Status, Task, UserBadge, VisibilityLevel
 
 User = get_user_model()
 
@@ -234,14 +209,30 @@ def get_badges(request):
     summary="Delete a course",
     description="Deletes a course and everything that that course contains: sections/rooms/etc..",
     responses={
-        204: OpenApiResponse(description="Course deleted successfully."),
-        403: OpenApiResponse(
-            description="You do not have permission to delete this course."
-        ),
-        404: OpenApiResponse(description="Could not get course."),
-    },
+        204: OpenApiResponse(description='Course deleted successfully.'),
+        403: OpenApiResponse(description='You do not have permission to delete this course.'),
+        404: OpenApiResponse(description='Could not get course.'),
+    }
 )
-@api_view(["DELETE"])
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_badge(request):
+    data = {
+        "title": request.data.get("title", ""),
+        "image": request.data.get("icon", ""),
+        "description": request.data.get("description", ""),
+    }
+
+    serializer = BadgeSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):
     user = request.user
@@ -314,12 +305,7 @@ def search_courses(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_course(request):
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = CourseSerializer(data=data)
+    serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             creator=request.user,
@@ -666,13 +652,7 @@ def get_sections_by_title(request, course_title):
 @permission_classes([IsAuthenticated])
 def create_section(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = SectionSerializer(data=data)
+    serializer = SectionSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             course=course,
