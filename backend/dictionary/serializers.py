@@ -21,7 +21,7 @@ class VariantSerializer(serializers.ModelSerializer):
         model = Variant
         fields = ["text", "sources"]
 
-    def get_sources(self, obj):
+    def get_sources(self, obj) -> list:
         return [s.text for s in obj.sources.all() if s.text]
 
 
@@ -66,7 +66,7 @@ class EntrySerializer(serializers.ModelSerializer):
             "sources",
         ]
 
-    def get_sources(self, obj):
+    def get_sources(self, obj) -> list:
         # Only sources tied directly to the entry (variant_id must be null)
         return [
             s.text for s in obj.sources.all()
