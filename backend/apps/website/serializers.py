@@ -387,7 +387,11 @@ class CourseSerializer(serializers.ModelSerializer):
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
     image = serializers.ImageField()
-    is_published = serializers.BooleanField(default=True)  # default to True
+    is_published = serializers.BooleanField(default=False)  # default to True
+    visibility = serializers.ChoiceField(
+        choices=VisibilityLevel.choices,
+        default=VisibilityLevel.PRIVATE
+    )
     badge = serializers.PrimaryKeyRelatedField(
         queryset=Badge.objects.all(), required=False, allow_null=True
     )
