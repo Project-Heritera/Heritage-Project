@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/accordion"
 import SectionDescription from "../RoomsPage/SectionDescription";
 import RoomCard from "../RoomsPage/RoomCard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import CreationForm from "@/components/CourseView/CreationForm";
 
@@ -16,26 +16,25 @@ const EditorSectionDropdown = ({ title, description, sectionId, courseId }) => {
     const [loading, setLoading] = useState(true)
 
     const [rooms, setRooms] = useState([])
+
+    const getRooms = useCallback(async () => {
+        setLoading(true) // Optional: typically you don't want full loading state on a refresh, but fine for now
+        try {
+            const response = await api.get(`/website/sections/${sectionId}/rooms/`)
+            const roomsData = response.data
+            console.log("Retrieved course rooms:", roomsData)
+            setRooms(roomsData)
+        } catch (error) {
+            console.error("Error retrieving course rooms: ", error)
+        } finally {
+            setLoading(false)
+        }
+    }, [sectionId]);
+
     useEffect(() => {
         setLoading(true)
-        const getRooms = async () => {
-            try {
-                const response = await api.get(`/website/sections/${sectionId}/rooms/`)
-                const roomsData = response.data
-                console.log("Retrieved course rooms:", roomsData)
-                setRooms(roomsData)
-            } catch (error) {
-                console.error("Error retrieving course rooms: ", error)
-            } finally {
-                setLoading(false)
-            }
-        }
         getRooms();
-    }, [])
-
-    if (loading) {
-        return (<div>Loading...</div>)
-    }
+    }, [getRooms])
 
     return (
         <Accordion type="single" collapsible className="w-full border rounded-lg shadow-sm">
@@ -51,13 +50,17 @@ const EditorSectionDropdown = ({ title, description, sectionId, courseId }) => {
                     </div>
                     {/* Display all rooms of section */}
                     <div className="flex flex-col gap-4 px-4 py-4">
-                        {rooms && rooms.map((room) => (
+                        {!loading && rooms && rooms.map((room) => (
                             <RoomCard key={room.title} navigateLink={`/re/${courseId}/${sectionId}/${room.room_id}`} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent} />
                         ))}
                     </div>
 
                     <div className=" px-6 py-4">
-                        <CreationForm FormType={"Room"} section_id={sectionId} course_id={courseId} />
+                        <CreationForm FormType={"Room"} section_id={sectionId} course_id={courseId} submitCall={(newRoom) => {
+                            console.log("New room data is:", newRoom)
+                            newRoom.progress_percent =0
+                            setRooms((prevRooms) => [...prevRooms, newRoom]);
+                        }} />
                     </div>
                 </AccordionContent>
             </AccordionItem>
