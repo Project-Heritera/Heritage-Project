@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import CreationForm from "@/components/CourseView/CreationForm";
 import ManageCard from "@/components/CourseEditor/ManageCard";
 import LocalSearchBar from "@/components/CourseEditDashboard/ContributorSearchBar";
+import CreatePageCard from "@/components/CreatePage/CreatePageCard";
 //Displays a list of cours given a room
 function CreatePage() {
   const [loading, setLoading] = useState(true)
@@ -80,6 +81,7 @@ function CreatePage() {
 
           {/* Side div*/}
           <div className="flex-1 flex flex-col gap-6">
+            <CreatePageCard/>
           </div>
         </div>
       </div>
