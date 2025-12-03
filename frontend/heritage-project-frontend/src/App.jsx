@@ -13,6 +13,7 @@ import ProfilePage from './pages/profile.jsx'
 import CourseDashboard from './pages/CourseDashboard'
 import CourseSettings from './pages/CourseSettings'
 import CreationDashboard from './pages/CourseEditor'
+import CreatePage from './pages/CreatePage'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                 <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
                 <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
                 <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
+                <Route path='/create' element={<CreatePage />} />
         </Route>
             </Route>
           </Routes>
