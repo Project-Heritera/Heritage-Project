@@ -77,10 +77,10 @@ function NavbarDropDown() {
                     <Link to="/" className="text-lg font-medium hover:text-primary">
                         HOME
                     </Link>
-                    <Link to="/" className="text-lg font-medium hover:text-primary">
-                        LEARN
+                    <Link to="/courses" className="text-lg font-medium hover:text-primary">
+                        COURSES
                     </Link>
-                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                    <Link to="/create" className="text-lg font-medium hover:text-primary">
                         CREATE
                     </Link>
                     <Link to="/" className="text-lg font-medium hover:text-primary">
