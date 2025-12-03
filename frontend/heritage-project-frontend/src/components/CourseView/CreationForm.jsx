@@ -7,6 +7,7 @@ import { create_section } from "@/services/section";
 import { create_room } from "../../services/room";
 import { create_badge } from "@/services/badge";
 import { useErrorStore } from "../../stores/ErrorStore";
+import { useNavigate } from "react-router-dom";
 
 // UI Imports
 import {
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 function CreationForm({ FormType, course_id, section_id }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const {
     register,
@@ -81,6 +83,8 @@ function CreationForm({ FormType, course_id, section_id }) {
       }
       const course_status = await create_course(publish_data);
       setIsCreated(true);
+      console.log("Course data is:", course_status)
+      navigate()
       return course_status;
     } catch (err) {
       Debug.error("Error in course creation:", err);
