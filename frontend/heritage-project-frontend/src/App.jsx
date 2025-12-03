@@ -11,7 +11,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ErrorPopup from './components/ErrorPopup'
 import ProfilePage from './pages/profile.jsx'
 import CourseDashboard from './pages/CourseDashboard'
-import CourseEditorDashboard from './pages/CourseSettings'
+import CourseSettings from './pages/CourseSettings'
+import CreationDashboard from './pages/CourseEditor'
 
 function App() {
   return (
@@ -32,7 +33,8 @@ function App() {
                 <Route path='/c/:courseId' element={<CourseDashboard />}></Route>
                 <Route path='/r/:course_id/:section_id/:room_id' element={<RoomViewer />}></Route>
                 <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
-                <Route path ='/s/:courseId' element={<CourseEditorDashboard/>}></Route>
+                <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
+                <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
         </Route>
             </Route>
           </Routes>
