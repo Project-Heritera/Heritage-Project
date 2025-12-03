@@ -225,19 +225,21 @@ def get_badges(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# -------------------------------
-# Course-related API calls
-# -------------------------------
 @extend_schema(
-    tags=["Courses"],
-    summary="Delete a course",
-    description="Deletes a course and everything that that course contains: sections/rooms/etc..",
+    tags=["Badges"],
+    summary="Create a badge",
+    description="Creates a badge object with a title image and desc.",
+    request=inline_serializer(
+        name="CreateBadgeRequest",
+        fields={
+            "title": serializers.CharField,
+            "image": serializers.ImageField,
+            "description": serializers.CharField
+        }
+    ),
     responses={
-        204: OpenApiResponse(description="Course deleted successfully."),
-        403: OpenApiResponse(
-            description="You do not have permission to delete this course."
-        ),
-        404: OpenApiResponse(description="Could not get course."),
+        201: BadgeSerializer,
+        400: OpenApiResponse(description="Serializer Error. Check request details."),
     },
 )
 @api_view(["POST"])
@@ -256,6 +258,21 @@ def create_badge(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# -------------------------------
+# Course-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["Courses"],
+    summary="Delete a course",
+    description="Deletes a course and everything that that course contains: sections/rooms/etc..",
+    responses={
+        204: OpenApiResponse(description="Course deleted successfully."),
+        403: OpenApiResponse(
+            description="You do not have permission to delete this course."
+        ),
+        404: OpenApiResponse(description="Could not get course."),
+    },
+)
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_course(request, course_id):
@@ -718,7 +735,7 @@ def get_sections(request, course_id):
     request=None,
     responses={
         200: inline_serializer(
-            name="GetAllSectionProgressResponse",
+            name="GetAllSectionByTitleResponse",
             many=True,
             fields={
                 "course_id": serializers.IntegerField,
@@ -990,7 +1007,7 @@ def get_rooms(request, section_id):
     request=None,
     responses={
         200: inline_serializer(
-            name="GetAllRoomProgressResponse",
+            name="GetAllRoomByTitleResponse",
             many=True,
             fields={
                 "course_id": serializers.IntegerField,
