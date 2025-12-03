@@ -8,6 +8,7 @@ import api from "@/services/api";
 import { tr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import CreationForm from "@/components/CourseView/CreationForm";
+import ManageCard from "@/components/CourseEditor/ManageCard";
 //Displays a list of cours given a room
 function CreationDashboard() {
   const { courseId } = useParams();
@@ -66,8 +67,9 @@ function CreationDashboard() {
             </div>
           </div>
           {/* Side div*/}
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col gap-6">
             <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
+            <ManageCard courseId={courseId}/>
           </div>
         </div>
       </div>
