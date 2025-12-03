@@ -319,6 +319,8 @@ def search_courses(request):
         fields={
             "title": serializers.CharField(),
             "description": serializers.CharField(),
+            "image": serializers.ImageField(),
+            "badge_image": serializers.ImageField()
         },
     ),
     responses={
