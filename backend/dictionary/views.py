@@ -71,8 +71,12 @@ def whole_word_match(text, search, match_accents):
             location=OpenApiParameter.QUERY,
             description="Filter by part of speech",
             enum=[
-                "BT", "CA", "DT", "DT 77", "LA", "MO", "MO 50", "MO 60",
-                "MO 69", "MO 72", "NE", "PC", "ST", "TN", "gen"
+                "adj.", "adv.", "adv.phr.", "art.def.", "art.indef.", "conj.", "dem.",
+                "det.", "det.poss.", "int.", "interr.phr.", "n.", "n.phr.",
+                "num.card.", "num.ord.", "onom.", "place n.", "prep.",
+                "pron.", "pron.indef.", "pron.refl.", "pron.rel.", "prop.n.",
+                "ptcl.", "v.", "v.aux.", "v.cop.", "v.intr.", "v.mod.",
+                "v.phr.", "v.refl.", "v.tr."
             ],
         ),
         OpenApiParameter(
@@ -80,12 +84,8 @@ def whole_word_match(text, search, match_accents):
             type=str,
             location=OpenApiParameter.QUERY,
             enum=[
-                "adj.", "adv.", "adv.phr.", "art.def.", "art.indef.", "conj.", "dem.",
-                "det.", "det.poss.", "int.", "interr.phr.", "n.", "n.phr.",
-                "num.card.", "num.ord.", "onom.", "place n.", "prep.",
-                "pron.", "pron.indef.", "pron.refl.", "pron.rel.", "prop.n.",
-                "ptcl.", "v.", "v.aux.", "v.cop.", "v.intr.", "v.mod.",
-                "v.phr.", "v.refl.", "v.tr."
+                "BT", "CA", "DT", "DT 77", "LA", "MO", "MO 50", "MO 60",
+                "MO 69", "MO 72", "NE", "PC", "ST", "TN", "gen"
             ],
         )
     ],
@@ -100,19 +100,19 @@ def whole_word_match(text, search, match_accents):
                 'search_examples': serializers.BooleanField(),
                 'selected_pos': serializers.ChoiceField(
                     choices=[
-                        "BT","CA","DT","DT 77","LA","MO","MO 50","MO 60","MO 69",
-                        "MO 72","NE","PC","ST","TN","gen"
-                    ],
-                    allow_blank=True
-                ),
-                'selected_source': serializers.ChoiceField(
-                    choices=[
                         "adj.","adv.","adv.phr.","art.def.","art.indef.","conj.","dem.",
                         "det.","det.poss.","int.","interr.phr.","n.","n.phr.",
                         "num.card.","num.ord.","onom.","place n.","prep.",
                         "pron.","pron.indef.","pron.refl.","pron.rel.","prop.n.",
                         "ptcl.","v.","v.aux.","v.cop.","v.intr.","v.mod.","v.phr.",
                         "v.refl.","v.tr."
+                    ],
+                    allow_blank=True
+                ),
+                'selected_source': serializers.ChoiceField(
+                    choices=[
+                        "BT","CA","DT","DT 77","LA","MO","MO 50","MO 60","MO 69",
+                        "MO 72","NE","PC","ST","TN","gen"
                     ],
                     allow_blank=True
                 ),
@@ -208,6 +208,16 @@ def search_dict(request):
             ).distinct()
 
         results = filtered
+    
+    # empty query
+    elif selected_pos or selected_source:
+        if selected_pos:
+            results = results.filter(parts_of_speech__part_of_speech=selected_pos)
+        if selected_source:
+            results = results.filter(
+                Q(sources__text=selected_source) |
+                Q(variants__sources__text=selected_source)
+            ).distinct()
 
     # --- Prepare sources for display ---
     processed_results = []
