@@ -318,9 +318,7 @@ def search_courses(request):
         name="CreateCourseRequest",
         fields={
             "title": serializers.CharField(),
-            "description": serializers.CharField(),
-            "image": serializers.ImageField(),
-            "badge_image": serializers.ImageField()
+            "description": serializers.CharField()
         },
     ),
     responses={
@@ -1073,12 +1071,7 @@ def create_room(request, course_id, section_id):
     course = get_object_or_404(Course, id=course_id)
     section = get_object_or_404(Section, id=section_id)
 
-    data = {
-        "title": request.data.get("title", ""),
-        "description": request.data.get("description", ""),
-    }
-
-    serializer = RoomSerializer(data=data)
+    serializer = RoomSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(
             course=course,
