@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-function CreationForm({ FormType, course_id, section_id }) {
+function CreationForm({ FormType, course_id, section_id, submitCall }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const {
@@ -41,8 +41,8 @@ function CreationForm({ FormType, course_id, section_id }) {
   const handleOpenChange = (isOpen) => {
     setOpen(isOpen);
     if (!isOpen) {
-        // Optional: Reset logic here if needed
-        setTimeout(() => setIsCreated(false), 300); 
+      // Optional: Reset logic here if needed
+      setTimeout(() => setIsCreated(false), 300);
     }
   };
 
@@ -84,7 +84,9 @@ function CreationForm({ FormType, course_id, section_id }) {
       const course_status = await create_course(publish_data);
       setIsCreated(true);
       console.log("Course data is:", course_status)
-      navigate()
+      if (submitCall) {
+        submitCall(course_status);
+      }
       return course_status;
     } catch (err) {
       Debug.error("Error in course creation:", err);
@@ -121,10 +123,13 @@ function CreationForm({ FormType, course_id, section_id }) {
       }
       const section_status = await create_section(course_id, publish_data);
       setIsCreated(true);
+      if (submitCall) {
+        submitCall(section_status);
+      }
       return section_status;
     } catch (err) {
       Debug.error("Error in section creation:", err);
-      showError("Failed to Create Section"); 
+      showError("Failed to Create Section");
       return null;
     }
   };
@@ -151,17 +156,22 @@ function CreationForm({ FormType, course_id, section_id }) {
       publish_data.append("title", data.title);
       publish_data.append("description", data.description);
       if (data.image && data.image[0]) {
+        console.log("Appending image:", data.image[0])
         publish_data.append("image", data.image[0]);
       }
       if (badge_status && badge_status.badge_id) {
         publish_data.append("badge", badge_status.badge_id);
       }
+      console.log("Calling create room with course id:", course_id)
       const room_status = await create_room(
         course_id,
         section_id,
         publish_data
       );
       setIsCreated(true);
+      if (submitCall) {
+        submitCall(room_status);
+      }
       return room_status;
     } catch (err) {
       Debug.error("Error in room creation:", err);
@@ -284,7 +294,7 @@ function CreationForm({ FormType, course_id, section_id }) {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setOpen(false)} 
+                  onClick={() => setOpen(false)}
                 >
                   Cancel
                 </Button>

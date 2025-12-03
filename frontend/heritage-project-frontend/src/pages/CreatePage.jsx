@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import CourseCard from "@/components/CourseViewer/CourseCard";
 import { progress } from "framer-motion";
 import SectionsHolder from "@/components/RoomsPage/SectionsHolder";
-import { useEffect, useState } from "react";
+import { useEffect, useState, getData } from "react";
 import api from "@/services/api";
 import { tr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -16,29 +16,34 @@ function CreationDashboard() {
 
   const [sections, setSections] = useState([])
   const [courseInfo, setCourseInfo] = useState(null)
+
+  const getData = useCallback(async (isRefresh = false) => {
+    // Only show full loading screen on initial load, not on refresh
+    if (!isRefresh) setLoading(true);
+
+    try {
+      // Get course data
+      const courseResponse = await api.get(`/website/course/${courseId}/`);
+      const courseData = courseResponse.data;
+      console.log("Retrieved course data:", courseData);
+      setCourseInfo(courseData);
+
+      // Get sections
+      const sectionsResponse = await api.get(`/website/courses/${courseId}/sections/`);
+      const sectionsData = sectionsResponse.data;
+      console.log("Retrieved course sections:", sectionsData);
+      setSections(sectionsData);
+    } catch (error) {
+      console.error("Error retrieving course sections: ", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [courseId]);
+
   useEffect(() => {
     setLoading(true)
-
-    const getData = async () => {
-      try {
-        //Get course data
-        const courseResponse = await api.get(`/website/course/${courseId}/`)
-        const courseData = courseResponse.data
-        console.log("Retrieved course data:", courseData)
-        setCourseInfo(courseData)
-        //Get sections
-        const sectionsResponse = await api.get(`/website/courses/${courseId}/sections/`)
-        const sectionsData = sectionsResponse.data
-        console.log("Retrieved course sections:", sectionsData)
-        setSections(sectionsData)
-      } catch (error) {
-        console.error("Error retrieving course sections: ", error)
-      } finally {
-        setLoading(false)
-      }
-    }
     getData();
-  }, [])
+  }, [getData])
 
   if (loading) {
     return (<div>Loading...</div>)
@@ -57,23 +62,19 @@ function CreationDashboard() {
           <div className="w-3/4">
             <div>
               <SectionsHolder>
-                {!loading && sections && sections.map((section) => (
+                {sections && sections.map((section) => (
                   <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} courseId={courseId} />
                 ))}
               </SectionsHolder>
             </div>
             <div className="mt-6">
-              <CreationForm FormType={"Section"} course_id={courseId} submitCall={(newSection) => {
-                console.log("New section data is:", newSection)
-                newSection.progress_percent = 0
-                setSections((prevSections) => [...prevSections, newSection]);
-              }} />
+              <CreationForm FormType={"Section"} course_id={courseId}/>
             </div>
           </div>
           {/* Side div*/}
           <div className="flex-1 flex flex-col gap-6">
             <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
-            <ManageCard courseId={courseId} />
+            <ManageCard courseId={courseId}/>
           </div>
         </div>
       </div>
