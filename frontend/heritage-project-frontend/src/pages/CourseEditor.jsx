@@ -58,7 +58,7 @@ function CreationDashboard() {
             <div>
               <SectionsHolder>
                 {sections && sections.map((section) => (
-                  <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} />
+                  <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} courseId={courseId} />
                 ))}
               </SectionsHolder>
             </div>

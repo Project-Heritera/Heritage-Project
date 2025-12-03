@@ -52,12 +52,12 @@ const EditorSectionDropdown = ({ title, description, sectionId, courseId }) => {
                     {/* Display all rooms of section */}
                     <div className="flex flex-col gap-4 px-4 py-4">
                         {rooms && rooms.map((room) => (
-                            <RoomCard key={room.title} navigateLink={`/r/${courseId}/${sectionId}/${room.room_id}`} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent} />
+                            <RoomCard key={room.title} navigateLink={`/re/${courseId}/${sectionId}/${room.room_id}`} title={room.title} description={room.description} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${room.image}`} progress={room.progress_percent} />
                         ))}
                     </div>
 
                     <div className=" px-6 py-4">
-                        <CreationForm FormType={"Room"} section_id={sectionId} />
+                        <CreationForm FormType={"Room"} section_id={sectionId} course_id={courseId} />
                     </div>
                 </AccordionContent>
             </AccordionItem>
