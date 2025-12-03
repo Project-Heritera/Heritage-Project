@@ -54,28 +54,26 @@ function CreationDashboard() {
 
         <div className="flex gap-6 items-start">
           {/* Main div*/}
-          <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
-            <div className="w-3/4">
-              <div>
-                <SectionsHolder>
-                  {!loading && sections && sections.map((section) => (
-                    <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} courseId={courseId} />
-                  ))}
-                </SectionsHolder>
-              </div>
-              <div className="mt-6">
-                <CreationForm FormType={"Section"} course_id={courseId} submitCall={(newSection) => {
-                  console.log("New section data is:", newSection)
-                  newSection.progress_percent = 0
-                  setSections((prevSections) => [...prevSections, newSection]);
-                }} />
-              </div>
+          <div className="w-3/4">
+            <div>
+              <SectionsHolder>
+                {!loading && sections && sections.map((section) => (
+                  <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} courseId={courseId} />
+                ))}
+              </SectionsHolder>
             </div>
-            {/* Side div*/}
-            <div className="flex-1 flex flex-col gap-6">
-              <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
-              <ManageCard courseId={courseId} />
+            <div className="mt-6">
+              <CreationForm FormType={"Section"} course_id={courseId} submitCall={(newSection) => {
+                console.log("New section data is:", newSection)
+                newSection.progress_percent = 0
+                setSections((prevSections) => [...prevSections, newSection]);
+              }} />
             </div>
+          </div>
+          {/* Side div*/}
+          <div className="flex-1 flex flex-col gap-6">
+            <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
+            <ManageCard courseId={courseId} />
           </div>
         </div>
       </div>

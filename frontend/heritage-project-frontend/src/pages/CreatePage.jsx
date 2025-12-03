@@ -73,6 +73,7 @@ function CreatePage() {
                     imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`}
                     courseId={course.course_id}
                     progress={course.progress_percent}
+                    navLink={`/ce/${course.course_id}`}
                   />
                 ))}
             </div>
