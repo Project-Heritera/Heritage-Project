@@ -123,7 +123,6 @@ def whole_word_match(text, search, match_accents):
     }
 )
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def search_dict(request):
     query = request.GET.get('q', '').strip()
     search_definitions = 'search_definitions' in request.GET
@@ -258,7 +257,6 @@ def search_dict(request):
     }
 )
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def get_all_pos(request):
     all_pos = POS.objects.exclude(part_of_speech__isnull=True) \
                    .exclude(part_of_speech="") \
@@ -278,7 +276,6 @@ def get_all_pos(request):
     }
 )
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def get_all_sources(request):
     all_sources = Source.objects.exclude(text__isnull=True) \
                    .exclude(text="") \

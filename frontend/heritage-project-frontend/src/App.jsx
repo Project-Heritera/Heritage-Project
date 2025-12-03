@@ -14,6 +14,7 @@ import CourseDashboard from './pages/CourseDashboard'
 import CourseSettings from './pages/CourseSettings'
 import CreationDashboard from './pages/CourseEditor'
 import CreatePage from './pages/CreatePage'
+import Dictionary from './pages/louisiana_creole_dictionary'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
                 <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
                 <Route path='/create' element={<CreatePage />} />
+                <Route path="/louisiana_creole_dictionary" element={<Dictionary />} />
         </Route>
             </Route>
           </Routes>
