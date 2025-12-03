@@ -44,18 +44,20 @@ const CourseView = () => {
           <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
             Course List
           </h2>
-          <div>
-            <SearchBar
-              includeCourses={true}
-              courseAction={(course) => {
-                console.log("Navigating to course");
-                navigate(`/c/${course.course_id || "#"}`);
-              }}
-              searchFiller={"Search courses"}
-            />
-          </div>
-          <div className="create-course">
-           <CreationForm FormType={"Course"}/>
+          <div className="flex flex-row justify-between items-center w-full">
+            <div className="w-[20%] min-w-[300px]">
+              <SearchBar
+                includeCourses={true}
+                courseAction={(course) => {
+                  console.log("Navigating to course");
+                  navigate(`/c/${course.course_id || "#"}`);
+                }}
+                searchFiller={"Search courses"}
+              />
+            </div>
+            <div className="create-course">
+              <CreationForm FormType={"Course"} />
+            </div>
           </div>
         </div>
 
