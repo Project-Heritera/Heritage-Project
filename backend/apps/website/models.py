@@ -491,25 +491,6 @@ class SavedTask(models.Model):
     def __str__(self):
         return f"{self.user.username if self.user else 'Unknown'} → {self.task if self.task else 'No Saved Problems'} ({self.status})"
 
-
-class Dictionary(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-    language = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.language} Dictionary"
-
-
-class DictionaryEntry(models.Model):
-    language = models.ForeignKey(Dictionary, on_delete=models.SET_NULL, null=True)
-    word = models.CharField(max_length=100)
-    definition = models.CharField(max_length=200)
-    part_of_speech = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"{self.word}"
-
-
 class Geolocation(models.Model):
     name = models.CharField(max_length=255)
     address = models.TextField()
