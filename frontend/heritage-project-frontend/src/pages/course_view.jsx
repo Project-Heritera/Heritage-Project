@@ -7,7 +7,7 @@ import SearchBar from "@/components/Common/Search/SearchBar";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import CreationForm from "@/components/CreationForm";
+import CreationForm from "@/components/CourseView/CreationForm";
 import { useParams } from "react-router-dom";
 import Modal from "@/components/Modal";
 // Helper to generate a random progress value (0–1)
@@ -17,7 +17,6 @@ const CourseView = () => {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
-  const [courseCreationForm, setCourseCreationForm] = useState(false);
   useEffect(() => {
     setLoading(true);
     console.log("Retrieving coruses");
@@ -45,31 +44,21 @@ const CourseView = () => {
           <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
             Course List
           </h2>
-          <SearchBar
-            includeCourses={true}
-            courseAction={(course) => {
-              console.log("Navigating to course");
-              navigate(`/c/${course.course_id || "#"}`);
-            }}
-            searchFiller={"Search courses"}
-          />
-        </div>
-        <div className="create-course">
-          <Button onClick={() => setCourseCreationForm(true)}>
-            Create Course
-          </Button>
-
-          <Modal
-            isOpen={courseCreationForm}
-            onClose={() => window.location.reload() }
-          >
-            <CreationForm
-              onClose={() => {
-                window.location.reload()
-              }}
-              FormType={"Course"}
-            />
-          </Modal>
+          <div className="flex flex-row justify-between items-center w-full">
+            <div className="w-[20%] min-w-[300px]">
+              <SearchBar
+                includeCourses={true}
+                courseAction={(course) => {
+                  console.log("Navigating to course");
+                  navigate(`/c/${course.course_id || "#"}`);
+                }}
+                searchFiller={"Search courses"}
+              />
+            </div>
+            <div className="create-course">
+              <CreationForm FormType={"Course"} />
+            </div>
+          </div>
         </div>
 
         <div className="course-view-body-body grid grid-cols-3 gap-4">
@@ -80,9 +69,8 @@ const CourseView = () => {
                 link=""
                 title={course.title}
                 description={course.description}
-                imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
-                  course.image
-                }`}
+                imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image
+                  }`}
                 courseId={course.course_id}
                 progress={course.progress_percent}
               />

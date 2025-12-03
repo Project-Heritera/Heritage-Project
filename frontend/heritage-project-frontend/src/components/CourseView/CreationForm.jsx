@@ -1,43 +1,48 @@
 import PropTypes from "prop-types";
-import { React, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { Debug } from "../utils/debugLog";
+import React, { useState } from "react"; // FIXED: Correct React import
+import { useForm } from "react-hook-form"; // REMOVED: Unused useFieldArray
+import { Debug } from "../../utils/debugLog";
 import { create_course } from "@/services/course";
 import { create_section } from "@/services/section";
-import { create_room } from "../services/room";
+import { create_room } from "../../services/room";
 import { create_badge } from "@/services/badge";
-import { useErrorStore } from "../stores/ErrorStore";
+import { useErrorStore } from "../../stores/ErrorStore";
+
+// UI Imports
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger, // Ensures we can open the modal
+} from "../../components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toFormData } from "axios";
-CreationForm.propTypes = {
-  FormType: PropTypes.oneOf(["Course", "Section", "Room"]).isRequired,
-  room_id: PropTypes.number,
-  section_id: PropTypes.number,
-};
 
-function CreationForm({ onClose, FormType, course_id, section_id }) {
+function CreationForm({ FormType, course_id, section_id }) {
+  const [open, setOpen] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
-    control,
+    control, // Kept in case you add useFieldArray back later
+    reset, // Useful to reset form on close
   } = useForm();
+
   const [isCreated, setIsCreated] = useState(false);
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "Access_To",
-  });
-  //for displaying status like error popup
   const showError = useErrorStore((state) => state.showError);
+
+  // Reset form when modal closes
+  const handleOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+        // Optional: Reset logic here if needed
+        setTimeout(() => setIsCreated(false), 300); 
+    }
+  };
 
   const onSubmit = async (data) => {
     if (FormType == "Course") {
@@ -50,7 +55,6 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
   };
 
   const handleCreateCourse = async (data) => {
-    //create badge for course first
     let badge_status;
     try {
       const form_data = new FormData();
@@ -62,7 +66,7 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       badge_status = await create_badge(form_data);
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Room");
+      showError("Failed to Create Badge");
       return null;
     }
     try {
@@ -79,14 +83,13 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       setIsCreated(true);
       return course_status;
     } catch (err) {
-      Debug.error("Error in course.js or in course api at backend:", err);
+      Debug.error("Error in course creation:", err);
       showError("Failed to Create Course");
       return null;
     }
   };
 
   const handleCreateSection = async (data) => {
-    //create badge for course first
     let badge_status;
     try {
       const form_data = new FormData();
@@ -98,7 +101,7 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       badge_status = await create_badge(form_data);
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Room");
+      showError("Failed to Create Badge");
       return null;
     }
     try {
@@ -116,14 +119,13 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       setIsCreated(true);
       return section_status;
     } catch (err) {
-      Debug.error("Error in section.js or in section api at backend:", err);
-      showError("Failed to Section");
+      Debug.error("Error in section creation:", err);
+      showError("Failed to Create Section"); 
       return null;
     }
   };
 
   const handleCreateRoom = async (data) => {
-    //create badge for course first
     let badge_status;
     try {
       const form_data = new FormData();
@@ -135,7 +137,7 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       badge_status = await create_badge(form_data);
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Room");
+      showError("Failed to Create Badge");
       return null;
     }
     try {
@@ -158,41 +160,55 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
       setIsCreated(true);
       return room_status;
     } catch (err) {
-      Debug.error("Error in section.js or in section api at backend:", err);
+      Debug.error("Error in room creation:", err);
       showError("Failed to Create Room");
       return null;
     }
   };
 
   return (
-    <>
-      {isCreated ? (
-        <Card className="p-6 text-center shadow-lg">
-          <CardFooter>
-            <CardTitle className="text-green-600 text-xl font-bold">
-              Created Successfully! You can now close.
-            </CardTitle>
-          </CardFooter>
+    // FIXED: Passed setOpen to onOpenChange
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      {/* ADDED: A Trigger button so the modal can be opened */}
+      <DialogTrigger asChild>
+        <Button variant="default">Create New {FormType}</Button>
+      </DialogTrigger>
 
-          <CardFooter className="flex justify-center">
-            <Button variant="destructive" onClick={onClose}>
-              Close
-            </Button>
-          </CardFooter>
-        </Card>
-      ) : (
-        <Card className="p-6 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Create Post</CardTitle>
-          </CardHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+        {isCreated ? (
+          // SUCCESS STATE
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-green-600 text-center text-xl font-bold">
+                Created Successfully!
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                Your {FormType} has been created.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-center">
+              {/* FIXED: Use setOpen(false) */}
+              <Button variant="destructive" onClick={() => setOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          // FORM STATE
+          <>
+            <DialogHeader>
+              <DialogTitle>Create {FormType}</DialogTitle>
+              <DialogDescription>
+                Fill in the details below to create a new {FormType}.
+              </DialogDescription>
+            </DialogHeader>
 
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
               {/* TITLE */}
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
-                  type="text"
+                  id="title"
                   placeholder="Title"
                   {...register("title", { required: true, maxLength: 100 })}
                 />
@@ -200,9 +216,9 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
 
               {/* DESCRIPTION */}
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label htmlFor="description">Description</Label>
                 <Input
-                  type="text"
+                  id="description"
                   placeholder="Description"
                   {...register("description", {
                     required: true,
@@ -213,9 +229,9 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
 
               {/* BADGE TITLE */}
               <div className="space-y-2">
-                <Label>Badge Title</Label>
+                <Label htmlFor="badge_title">Badge Title</Label>
                 <Input
-                  type="text"
+                  id="badge_title"
                   placeholder="Badge Title"
                   {...register("badge_title", {
                     required: true,
@@ -226,9 +242,9 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
 
               {/* BADGE DESCRIPTION */}
               <div className="space-y-2">
-                <Label>Badge Description</Label>
+                <Label htmlFor="badge_description">Badge Description</Label>
                 <Input
-                  type="text"
+                  id="badge_description"
                   placeholder="Badge Description"
                   {...register("badge_description", {
                     required: true,
@@ -239,41 +255,52 @@ function CreationForm({ onClose, FormType, course_id, section_id }) {
 
               {/* BADGE ICON */}
               <div className="space-y-2">
-                <Label>Badge Icon</Label>
+                <Label htmlFor="badge_icon">Badge Icon</Label>
                 <Input
+                  id="badge_icon"
                   type="file"
                   accept=".jpg, .jpeg, .png"
                   {...register("badge_icon")}
                 />
               </div>
+
+              {/* MAIN IMAGE */}
               <div className="space-y-2">
-                <Label>{FormType} Image</Label>
+                <Label htmlFor="image">{FormType} Image</Label>
                 <Input
+                  id="image"
                   type="file"
                   accept=".jpg, .jpeg, .png"
                   {...register("image")}
                 />
               </div>
-              {/* SUBMIT */}
-              {/* SUBMIT + LEAVE BUTTON */}
-              <div className="flex justify-between gap-4">
-                <Button type="submit" className="flex-1">
-                  Create
-                </Button>
+
+              <DialogFooter className="flex flex-row justify-between gap-2 mt-4">
                 <Button
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={onClose}
+                  onClick={() => setOpen(false)} 
                 >
-                  Leave
+                  Cancel
                 </Button>
-              </div>
+                <Button type="submit" className="flex-1">
+                  Create
+                </Button>
+              </DialogFooter>
             </form>
-          </CardContent>
-        </Card>
-      )}
-    </>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
+
+CreationForm.propTypes = {
+  FormType: PropTypes.oneOf(["Course", "Section", "Room"]).isRequired,
+  room_id: PropTypes.number,
+  section_id: PropTypes.number,
+  course_id: PropTypes.number, // Added this as it was missing in propTypes
+};
+
 export default CreationForm;
