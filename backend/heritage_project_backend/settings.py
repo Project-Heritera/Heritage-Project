@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     "nested_admin",
     "friendship",
     'drf_spectacular',
-    'django_unused_media'
+    'django_unused_media',
+    'dictionary',
 ]
 
 MIDDLEWARE = [
