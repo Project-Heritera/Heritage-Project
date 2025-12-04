@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -49,7 +50,7 @@ User = get_user_model()
     tags=["Tasks"],
     summary="Update the progress of a task",
     description="Updates or creates a user's progress for a specific task. If a ProgressOfTask entry does not exist for (user, task), a new one will be created. Only the authenticated user's progress is modified. Make sure you use 'COMPLE', 'NOSTAR', or 'INCOMP' for 'status', otherwise it will have a HTTP 400.",
-    request=None,
+    request=ProgressOfTaskSerializer,
     responses={
         200: ProgressOfTaskSerializer,
         400: OpenApiResponse(description="Serializer Failed."),
@@ -69,6 +70,24 @@ def update_task_progress(request, task_id):
         user=user, task=task, defaults={"status": Status.NOSTAR, "attempts": 0}
     )
 
+    room_completed = False
+    section_completed = False
+    course_completed = False
+
+    # dont work
+    room = Room.objects.filter(id=task.room_id).user_progress_percent(user).first()
+    room_prog = room.progress_percent
+    section = Section.objects.filter(id=task.room.section_id).user_progress_percent(user).first()
+    section_prog = section.progress_percent
+    course = Course.objects.filter(id=task.room.course_id).user_progress_percent(user).first()
+    course_prog = course.progress_percent
+    if room_prog == 100:
+        room_completed = True
+    if section_prog == 100:
+        section_completed = True
+    if course_prog == 100:
+        course_completed = True
+
     # Feed existing instance + incoming update data into serializer
     serializer = ProgressOfTaskSerializer(progress, data=request.data, partial=True)
 
@@ -79,7 +98,14 @@ def update_task_progress(request, task_id):
     # Save the update
     serializer.save()
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({
+        **serializer.data,
+        "room_completed": room_completed,
+        "section_completed": section_completed,
+        "course_completed": course_completed,
+        }, 
+        status=status.HTTP_200_OK
+    )
 
 
 @extend_schema(
@@ -97,21 +123,6 @@ def update_task_progress(request, task_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_task_progress_for_room(request, course_id, section_id, room_id):
-    """
-    get_task_progress_for_room: Retrieves task progress for all tasks in a room.
-
-    @param request: HTTP request object.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
-    @param room_id: ID of the room.
-    @return:
-        * HTTP 200: List of task progress data.
-        * HTTP 403: If user lacks permission to view the room.
-        * HTTP 404: If the room does not exist.
-    @note:
-        Checks room access, gets all task IDs in the room, and returns
-        ProgressOfTask entries for the current user matching those task IDs.
-    """
     # Check if room exists and user has access
     room = get_object_or_404(Room, id=room_id)
 
@@ -558,6 +569,9 @@ def get_courses_contributed(request):
 
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+    
+    # Only get courses that aren't public
+    qs = qs.filter(~Q(visibility=VisibilityLevel.PUBLIC))
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -1319,6 +1333,7 @@ def publish_room(request, room_id):
         207: OpenApiResponse(
             description="Some users were found and access levels created successfully, some were not."
         ),
+        403: OpenApiResponse(description="Cannot invite contributers if you're not the course creator."),
         404: OpenApiResponse(
             description="One or more users not found, or course not found."
         ),
@@ -1341,13 +1356,6 @@ def add_course_editors(request, course_id):
 
     # 1. Validate Course (Corrected: fetch Course instead of Room)
     course = get_object_or_404(Course, id=course_id)
-
-    # Use the model's VisibilityLevel constants
-    if course.visibility == "PUB":  # Assuming 'PUB' is VisibilityLevel.PUBLIC
-        return Response(
-            {"message": "Cannot manually assign access level for public course."},
-            status=status.HTTP_409_CONFLICT,
-        )
 
     created_access_records = []
     missing_users = []
@@ -1383,6 +1391,9 @@ def add_course_editors(request, course_id):
             },
             status=status.HTTP_207_MULTI_STATUS,
         )
+    
+    if user != course.creator:
+        return Response({"messege": "Cannot invite others unless you are the course creator."}, status=status.HTTP_403_FORBIDDEN)
 
     # All users processed successfully
     return Response(created_access_records, status=status.HTTP_201_CREATED)
