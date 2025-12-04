@@ -6,7 +6,9 @@ import { marked } from 'marked';
 const Markdown = ({content}) => {
     
     return (
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <div className="prose max-w-none">
+            <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
     );
 };
 
