@@ -76,30 +76,6 @@ export default function Home() {
         </div>
 
         <div className="col-span-1 space-y-4">
-          {/* Title */}
-          {/* Daily Quests */}
-          <Card className="p-4">
-            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-              Daily Quest{" "}
-            </h2>
-
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">📘 Complete 1 Lesson</p>
-                <p className="text-sm text-muted-foreground">+20 XP</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">⏱ Study 15 Minutes</p>
-                <p className="text-sm text-muted-foreground">+15 XP</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🔁 Review a Previous Lesson</p>
-                <p className="text-sm text-muted-foreground">+10 XP</p>
-              </div>
-            </div>
-          </Card>
 
           <Card className="p-4">
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
@@ -107,13 +83,17 @@ export default function Home() {
             </h2>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🏅 {user && user.streak}-Day Study Streak</p>
-              </div>
+              {/* Only render if user exists AND streak is > 0 */}
+              {user && user.streak > 0 && (
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="font-medium">🏅 {user.streak}-Day Study Streak</p>
+                </div>
+              )}
 
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🎉 First Course Started</p>
-              </div>
+              {/* Optional: Show this if they have NO streak */}
+              {user && user.streak === 0 && (
+                <p className="text-sm text-muted-foreground">Start a lesson to earn a streak!</p>
+              )}
             </div>
           </Card>
         </div>
