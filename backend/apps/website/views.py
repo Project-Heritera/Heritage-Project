@@ -183,6 +183,9 @@ def award_badge(request, badge_id):
     user = request.user
     badge = get_object_or_404(Badge, id=badge_id)
 
+    # Update the streak BEFORE creating the badge
+    user.update_streak()
+
     # Check if user already has this badge
     user_badge, created = UserBadge.objects.get_or_create(user=user, badge=badge)
 
