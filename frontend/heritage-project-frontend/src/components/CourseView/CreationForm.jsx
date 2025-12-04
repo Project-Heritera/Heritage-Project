@@ -87,6 +87,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       if (submitCall) {
         submitCall(course_status);
       }
+      navigate(`/ce/${course_status.course_id}`)
       return course_status;
     } catch (err) {
       Debug.error("Error in course creation:", err);
