@@ -372,7 +372,8 @@ def create_course(request):
     description="Make the is_published=True and visibility=PUB for the course given.",
     request=None,
     responses={
-        200: OpenApiResponse(description="Course publicized successfully.")
+        200: OpenApiResponse(description="Course publicized successfully."),
+        404: OpenApiResponse(description="Could not get course.")
     },
 )
 @api_view(["PUT"])
@@ -383,6 +384,26 @@ def publish_course(request, course_id):
     course.is_published = True
     course.save()
     return Response({"messege": "Course publicized successfully"}, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Courses"],
+    summary="Private a course",
+    description="Make the is_published=False and visibility=PRI for the course given.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description="Course privated successfully."),
+        404: OpenApiResponse(description="Could not get course.")
+    },
+)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def private_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    course.visibility = VisibilityLevel.PRIVATE
+    course.is_published = False
+    course.save()
+    return Response({"messege": "Course privated successfully"}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -1328,6 +1349,9 @@ def publish_room(request, room_id):
     room.is_published = True
     room.can_edit = False
     room.save(update_fields=["visibility", "can_edit", "is_published"])
+
+    room.section.visibility = VisibilityLevel.PUBLIC
+    room.section.is_published = True
 
     return Response(status=status.HTTP_200_OK)
 
