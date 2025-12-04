@@ -152,7 +152,7 @@ function CourseDashboard() {
                                     <ContributorCard key={owner.user || owner.username} username={owner.user || owner.username} description={"Owner"} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 )}
                                 {filteredUsers.map((user) => (
-                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username)} />
+                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username) } imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 ))}
                             </div>
                         </CardContent>
