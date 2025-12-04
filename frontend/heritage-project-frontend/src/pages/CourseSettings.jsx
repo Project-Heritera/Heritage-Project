@@ -22,6 +22,7 @@ function CourseDashboard() {
 
     const [sections, setSections] = useState([])
     const [courseInfo, setCourseInfo] = useState(null)
+    const [currentUser, setCurrentUser] = useState(null);
     useEffect(() => {
         setLoading(true)
 
@@ -47,6 +48,10 @@ function CourseDashboard() {
                 const usersData = usersResponse.data
                 console.log("Retrieved users:", usersData)
                 setUsers(usersData)
+                //Get currently logged in user
+                const currentUserResponse = api.get('/accounts/user_info/')
+                const currentUserData = currentUserResponse.data
+                setCurrentUser(currentUserData)
             } catch (error) {
                 console.error("Error retrieving course sections: ", error)
             } finally {
@@ -83,6 +88,8 @@ function CourseDashboard() {
 
         return usernameString.toLowerCase().includes(filterQuery.toLowerCase());
     });
+
+    const isOwner = currentUser && owner && (currentUser.user || currentUser.username === owner.user || owner.username);
 
     return (
 
@@ -152,7 +159,7 @@ function CourseDashboard() {
                                     <ContributorCard key={owner.user || owner.username} username={owner.user || owner.username} description={"Owner"} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 )}
                                 {filteredUsers.map((user) => (
-                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username) } imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
+                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={isOwner ? () => removeUser(user.user || user.username) : undefined } imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 ))}
                             </div>
                         </CardContent>

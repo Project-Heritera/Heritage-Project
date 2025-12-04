@@ -25,12 +25,14 @@ const RoomCard = ({ username, description, imageLink, navigateLink, onTrash }) =
             </div>
 
             {/* Right Side: Actions (Delete Button) */}
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                    onClick={onTrash}>
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            </div>
+            {onTrash && (
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={onTrash}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
