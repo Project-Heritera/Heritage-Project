@@ -192,10 +192,6 @@ def award_badge(request, badge_id):
     # Serialize and return the data
     serializer = UserBadgeSerializer(user_badge)
 
-    # Validate incoming data
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     if created:
         return Response(status=status.HTTP_409_CONFLICT)
 
