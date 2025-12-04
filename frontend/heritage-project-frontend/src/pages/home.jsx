@@ -1,11 +1,12 @@
-// This page is the render for the home page at the root
-
 import CourseCard from "../components/CourseViewer/CourseCard";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { useParams } from "react-router-dom";
+// 1. ADD: Import Button and useNavigate
+import { Button } from "@/components/ui/button";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "@/services/api";
+import { Link } from "react-router-dom";
 
 // Helper for random progress
 const rand = () => Math.random().toFixed(2);
@@ -13,8 +14,11 @@ const rand = () => Math.random().toFixed(2);
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
-  const [username, setUsername] = useState(null)
-  const [user, setUser] = useState(null)
+  const [username, setUsername] = useState(null);
+  const [user, setUser] = useState(null);
+
+  // 2. ADD: Initialize the navigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -24,15 +28,12 @@ export default function Home() {
         const response = await api.get(`/website/courses_progressed/`);
         const courseList = response.data;
 
-        const userResponse = await api.get(`/accounts/user_info/`)
-        const userData = userResponse.data
-        setUser(userData)
-        setUsername(userData.username)
-        console.log("Users streak is:", userData.streak)
+        const userResponse = await api.get(`/accounts/user_info/`);
+        const userData = userResponse.data;
+        setUser(userData);
+        setUsername(userData.username);
 
-        console.log("Success loading user:", username)
-        console.log("Users data is:", userData)
-        console.log("Loaded course list is:", courseList);
+        // Safety check to ensure courseList is an array
         setCourses(courseList || []);
       } catch (error) {
         console.error("Error retrieving courses:", error);
@@ -58,8 +59,22 @@ export default function Home() {
 
           {/* 2-column course grid */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Example courses — same ones from your CourseView */}
-            {!loading &&
+
+
+            {!loading && courses.length === 0 ? (
+              <Card className="col-span-2">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Welcome to Vivan! Navigate to courses to get started.</CardTitle>
+                    <Link to={'/courses'}>
+                      <Button>Browse Courses</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+              </Card>
+            ) : (
+              // THIS IS THE EXISTING LIST
+              !loading &&
               courses.map((course) => (
                 <CourseCard
                   key={course.title}
@@ -71,49 +86,32 @@ export default function Home() {
                   courseId={course.course_id}
                   progress={course.progress_percent}
                 />
-              ))}
+              ))
+            )}
+
           </div>
         </div>
 
         <div className="col-span-1 space-y-4">
-          {/* Title */}
-          {/* Daily Quests */}
-          <Card className="p-4">
-            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-              Daily Quest{" "}
-            </h2>
-
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">📘 Complete 1 Lesson</p>
-                <p className="text-sm text-muted-foreground">+20 XP</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">⏱ Study 15 Minutes</p>
-                <p className="text-sm text-muted-foreground">+15 XP</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🔁 Review a Previous Lesson</p>
-                <p className="text-sm text-muted-foreground">+10 XP</p>
-              </div>
-            </div>
-          </Card>
-
           <Card className="p-4">
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
               Achievements
             </h2>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🏅 {user && user.streak}-Day Study Streak</p>
-              </div>
+              {/* Only render if user exists AND streak is > 0 */}
+              {user && user.streak > 0 && (
+                <div className="p-3 rounded-lg bg-muted">
+                  <p className="font-medium">🏅 {user.streak}-Day Study Streak</p>
+                </div>
+              )}
 
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🎉 First Course Started</p>
-              </div>
+              {/* Optional: Show this if they have NO streak */}
+              {user && user.streak === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Start a lesson to earn a streak!
+                </p>
+              )}
             </div>
           </Card>
         </div>

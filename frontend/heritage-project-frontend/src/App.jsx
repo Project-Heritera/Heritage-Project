@@ -14,6 +14,7 @@ import CourseDashboard from './pages/CourseDashboard'
 import CourseSettings from './pages/CourseSettings'
 import CreationDashboard from './pages/CourseEditor'
 import CreatePage from './pages/CreatePage'
+import Signup from './pages/Signup'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<AuthLogin />} />
               <Route path='/login' element={<AuthLogin />} />
+              <Route path='/signup' element={<Signup />} />
               {/*Protected Routes*/}
               <Route element={<ProtectedRoute />}>
                 <Route path='/home' element={<Home />} />

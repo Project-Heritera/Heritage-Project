@@ -4,7 +4,7 @@ from django.contrib import messages
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer, OpenApiParameter
 
 from apps.website.models import Course
@@ -80,10 +80,11 @@ def search_users(request):
     }
 )
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def signup_user(request):
-    username = request.POST["username"]
-    email = request.POST["email"]
-    password = request.POST["password"]
+    username = request.data.get("username")
+    email = request.data.get("email")
+    password = request.data.get("password")
     user = User.objects.create_user(username, email, password)
     if user:
         user.save()
