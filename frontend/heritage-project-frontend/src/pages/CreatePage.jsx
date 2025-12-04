@@ -40,11 +40,13 @@ function CreatePage() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen p-6 ">
+    <div className="flex flex-col items-center w-full min-h-screen p-8 ">
       <div className="w-full max-w-[95%]">
-        <h2 className="text-2xl font-bold tracking-tight mb-6">
-          Navigate editable courses
-        </h2>
+        <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
+              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+                Navigate editable courses
+              </h1>
+            </div>
 
         <div className="flex gap-6 items-start">
           {/* Main div*/}
