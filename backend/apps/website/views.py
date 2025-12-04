@@ -1350,6 +1350,9 @@ def publish_room(request, room_id):
     room.can_edit = False
     room.save(update_fields=["visibility", "can_edit", "is_published"])
 
+    room.section.visibility = VisibilityLevel.PUBLIC
+    room.section.is_published = True
+
     return Response(status=status.HTTP_200_OK)
 
 
