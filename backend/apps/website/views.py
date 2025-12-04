@@ -1356,13 +1356,6 @@ def add_course_editors(request, course_id):
     # 1. Validate Course (Corrected: fetch Course instead of Room)
     course = get_object_or_404(Course, id=course_id)
 
-    # Use the model's VisibilityLevel constants
-    if course.visibility == "PUB":  # Assuming 'PUB' is VisibilityLevel.PUBLIC
-        return Response(
-            {"message": "Cannot manually assign access level for public course."},
-            status=status.HTTP_409_CONFLICT,
-        )
-
     created_access_records = []
     missing_users = []
 
