@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -568,6 +569,9 @@ def get_courses_contributed(request):
 
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+    
+    # Only get courses that aren't public
+    qs = qs.filter(~Q(visibility=VisibilityLevel.PUBLIC))
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
