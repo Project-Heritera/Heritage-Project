@@ -258,6 +258,7 @@ const RoomEditor = () => {
               </div>
             </CardContent>
           </Card>
+
    <Modal
           isOpen={publishModalOpen}
           onClose={() => {navigate(-1)}}

@@ -60,12 +60,10 @@ serialize: () => {
 
     return (
       <Card className="task-editor bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
-        {/* Tag Section */}
         <CardHeader className="pb-2">
           <h3 className="text-lg font-bold">Tags</h3>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {/* Display current tags */}
           <div className="flex flex-wrap gap-2">
             {tags.map((tag, index) => (
               <div
@@ -85,7 +83,6 @@ serialize: () => {
             ))}
           </div>
 
-          {/* Add Tag Button */}
           <Button
             onClick={() => setTagSelectionMenu(true)}
             className="flex items-center gap-1 bg-indigo-600 text-white hover:bg-indigo-700"
@@ -93,8 +90,16 @@ serialize: () => {
             <CirclePlus className="w-4 h-4" />
             Add Tag
           </Button>
-
-          {/* Tag Selection Modal */}
+ <TagSelectionMenu
+              onSelect={(selectedTag) => {
+                if (!tags.includes(selectedTag)) {
+                  setTags([...tags, selectedTag]);
+                }
+                setTagSelectionMenu(false);
+              }}
+              onClose={() => setTagSelectionMenu(false)}
+              tagCatalogue={availableTags}
+            />
           <Modal
             isOpen={tagSelectionMenu}
             onClose={() => setTagSelectionMenu(false)}
@@ -113,14 +118,12 @@ serialize: () => {
           </Modal>
         </CardContent>
 
-        {/* Task Components Section */}
         <CardHeader className="pt-4 pb-2">
           <h3 className="text-lg font-bold">Task Components</h3>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <TaskBase components={taskComponents} isEditing={true} ref={(el) => (taskBaseRef.current = el)} />
 
-          {/* Add Task Component Button */}
           <Button
             onClick={() => setTaskComponentMenu(true)}
             className="flex items-center gap-1"
@@ -129,7 +132,6 @@ serialize: () => {
             Add Task Component
           </Button>
 
-          {/* Task Component Modal */}
           <Modal
             isOpen={taskComponentMenu}
             onClose={() => setTaskComponentMenu(false)}

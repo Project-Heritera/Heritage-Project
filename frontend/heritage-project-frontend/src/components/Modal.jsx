@@ -1,4 +1,7 @@
 import React, { useEffect } from "react";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { ThemeProvider } from "./theme-provider";
+import { StrictMode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /*
@@ -43,29 +46,37 @@ const Modal = ({
   };
 
   const selectedAnim = animations[animationType] || animations.popup;
-
   return (
+    <StrictMode>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: `rgba(0, 0, 0, ${backgroundOpacity})` }}
-          onClick={onClose}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
         >
           <motion.div
-            className="flex flex-col items-center justify-between rounded-lg shadow-lg max-w-md w-full bg-white p-6 relative"
             onClick={(e) => e.stopPropagation()}
             initial={selectedAnim.initial}
             animate={selectedAnim.animate}
             exit={selectedAnim.exit}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
+            className="w-full max-w-lg px-4"
           >
-            {children}
+            <Card className="border shadow-xl rounded-2xl">
+
+
+              <CardContent>
+                {children}
+              </CardContent>
+
+            </Card>
           </motion.div>
         </div>
       )}
     </AnimatePresence>
+        </ThemeProvider>
+    </StrictMode>
   );
 };
-
 export default Modal;
