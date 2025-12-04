@@ -1,10 +1,14 @@
+from unittest import TestCase
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import status
-import json
-# Create your tests here.
+from django.test import TestCase
+from freezegun import freeze_time
+
+User = get_user_model()
+
 class LoginSystemAPITestCase(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(username="TestingAdmin",email="admin@example.com", password="testingdminpass")
@@ -82,3 +86,31 @@ class LoginSystemAPITestCase(APITestCase):
         self.client.login(username="django_lover6969", password="django_be_like")
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class StreakTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="test",
+            password="pass"
+        )
+
+    @freeze_time("2025-01-01")
+    def test_streak_resets_after_missing_day(self):
+        # Day 1
+        self.user.update_streak()
+        self.assertEqual(self.user.streak, 1)
+
+        # Day 2 → streak increments
+        with freeze_time("2025-01-02"):
+            self.user.update_streak()
+            self.user.refresh_from_db()
+            self.assertEqual(self.user.streak, 2)
+
+        # Day 3 → no action (missed day)
+
+        # Day 4 → streak resets
+        with freeze_time("2025-01-04"):
+            self.user.update_streak()
+            self.user.refresh_from_db()
+            self.assertEqual(self.user.streak, 0)
