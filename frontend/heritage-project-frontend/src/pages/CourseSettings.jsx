@@ -49,8 +49,9 @@ function CourseDashboard() {
                 console.log("Retrieved users:", usersData)
                 setUsers(usersData)
                 //Get currently logged in user
-                const currentUserResponse = api.get('/accounts/user_info/')
+                const currentUserResponse = await api.get('/accounts/user_info/')
                 const currentUserData = currentUserResponse.data
+                console.log("Current user data is:", currentUserData)
                 setCurrentUser(currentUserData)
             } catch (error) {
                 console.error("Error retrieving course sections: ", error)
@@ -90,6 +91,10 @@ function CourseDashboard() {
     });
 
     const isOwner = currentUser && owner && (currentUser.user || currentUser.username === owner.user || owner.username);
+    if (currentUser && owner) {
+        console.log("Current user is:", currentUser.username || currentUser.user)
+        console.log("Owner is set as:", owner.username || owner.user)
+    }
 
     return (
 
@@ -159,7 +164,7 @@ function CourseDashboard() {
                                     <ContributorCard key={owner.user || owner.username} username={owner.user || owner.username} description={"Owner"} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 )}
                                 {filteredUsers.map((user) => (
-                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={isOwner ? () => removeUser(user.user || user.username) : undefined } imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
+                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={isOwner ? () => removeUser(user.user || user.username) : undefined} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 ))}
                             </div>
                         </CardContent>
