@@ -13,12 +13,13 @@ const ErrorPopup = () => {
       : errorData?.type === "warning"
       ? AlertTriangle
       : CheckCircle;
+
   const colorClass = 
     errorData?.type === "error"
-      ? "text-red-600"
+      ? "text-red-900"
       : errorData?.type === "warning"
-      ? "text-yellow-600"
-      : "text-green-600";
+      ? "text-yellow-900"
+      : "text-green-900";
 
   return (
     <AnimatePresence>
@@ -28,13 +29,13 @@ const ErrorPopup = () => {
           onClick={clearError}
         >
           <motion.div
-           className={`flex flex-col items-center justify-between border-4 rounded-lg shadow-lg max-w-md w-full p-6 relative bg-white
+           className={`flex flex-col items-center justify-between border-4 rounded-lg shadow-lg max-w-md w-full p-6 relative
             ${
               errorData.type === "error"
-                ? "border-red-600 "
+                ? "bg-red-300 border-red-300"
                 : errorData.type === "warning"
-                ? "border-yellow-600"
-                : "border-green-600 "
+                ? "bg-yellow 300 border-yellow-300"
+                : "bg-green-300 border-green-300 "
             }
             `}
             onClick={(e) => e.stopPropagation()}
