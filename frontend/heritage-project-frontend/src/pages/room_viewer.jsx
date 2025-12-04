@@ -216,13 +216,12 @@ const RoomViewer = () => {
 >
       <CardHeader>
         <CardTitle>Task #{index+1}</CardTitle>
-        {task.title && <CardDescription>{task.title}</CardDescription>}
       </CardHeader>
       <CardContent>
         <TaskViewer
           ref={(el) => (taskRefs.current[task.task_id] = el)}
           initialComponents={task.task_components || task.components || []}
-          intialStatus={task.progress?.status || null}
+          initialStatus={task.progress?.status || null}
           initialAttempts={task.progress?.attempts ?? 0}
           initialMetadata={task.progress?.metadata || {}}
           taskId={task.task_id}

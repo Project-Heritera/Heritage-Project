@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
+import { CheckCircle, XCircle } from "lucide-react";
 import TaskBase from "./TaskBase";
 import statusTypes, { statusDisplayToKey } from "../../utils/statusTypes";
 import confetti from "canvas-confetti";
@@ -65,50 +66,74 @@ const TaskViewer = forwardRef(
       }
     }, [taskStatus]);
     // Render different content based on taskStatus
-    const renderContent = () => {
-      const questionProgressData = {
-        attempts: attempts,
-        status: taskStatus,
-        metadata: metadata,
-      };
-      if (taskStatus === "COMPLE") {
-        return (
-          
-          <div className="task-complete">
-            <h3>✓ Task Complete</h3>
-            <p>You have successfully completed this task!</p>
-          </div>
-        );
-      } else if (taskStatus === "INCOMP") {
-        return (
-          <div className="task-incomplete">
-            <h3>✗ Incorrect Answer</h3>
-            <p>Please try again.</p>
-            <TaskBase
-              components={taskComponents}
-              isEditing={false}
-              contextValues={contextValues}
-              taskID={taskID}
-              questionProgressData={questionProgressData}
-            />
-          </div>
-        );
-      } else {
-        // NOSTAR or null - show the task normally
-        return (
-          <TaskBase
-            components={taskComponents}
-            isEditing={false}
-            taskID={taskID}
-            contextValues={contextValues}
-            questionProgressData={questionProgressData}
-          />
-        );
-      }
-    };
 
-    return <div className="task-viewer">{renderContent()}</div>;
+const renderContent = () => {
+  const questionProgressData = {
+    attempts: attempts,
+    status: taskStatus,
+    metadata: metadata,
+  };
+
+  // CASE 1: Completed
+  if (taskStatus === "COMPLE") {
+    return (
+      <div className="relative pt-10">
+        <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+          <CheckCircle size={32} />
+          Complete
+        </div>
+        <div>
+        <TaskBase
+          components={taskComponents}
+          isEditing={false}
+          contextValues={contextValues}
+          taskID={taskID}
+          questionProgressData={questionProgressData}
+        />
+        </div>
+      </div>
+    );
+  }
+
+  // CASE 2: Incomplete
+  if (taskStatus === "INCOMP") {
+    return (
+         <div className="relative pt-10">
+        {/* STATUS BADGE */}
+        <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+          <XCircle size={32} />
+          Incorrect
+        </div>
+        <div>
+
+        <TaskBase
+          components={taskComponents}
+          isEditing={false}
+          contextValues={contextValues}
+          taskID={taskID}
+          questionProgressData={questionProgressData}
+        />
+        </div>
+      </div>
+    );
+  }
+
+  // CASE 3: Default
+  return (
+    <TaskBase
+      components={taskComponents}
+      isEditing={false}
+      contextValues={contextValues}
+      taskID={taskID}
+      questionProgressData={questionProgressData}
+    />
+  );
+};
+return <div className="task-viewer">{renderContent()}</div>;
+
   }
 );
+
+
 
 export default TaskViewer;
