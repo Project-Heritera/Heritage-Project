@@ -81,9 +81,9 @@ def search_users(request):
 )
 @api_view(["POST"])
 def signup_user(request):
-    username = request.POST["username"]
-    email = request.POST["email"]
-    password = request.POST["password"]
+    username = request.data.get("username")
+    email = request.data.get("email")
+    password = request.data.get("password")
     user = User.objects.create_user(username, email, password)
     if user:
         user.save()
