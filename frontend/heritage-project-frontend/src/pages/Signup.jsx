@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import api from "@/services/api";
 
 export default function Signup() {
     // 1. Define State Variables
@@ -13,8 +14,27 @@ export default function Signup() {
     // 2. Handle the Signup Logic
     const handleSignup = async () => {
         console.log("Signing up with:", { username, email, password });
-        
-        
+
+        if (!username || !email || !password) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        try {
+            const res = await api.post("/accounts/signup/", {
+                username: username,
+                email: email,
+                password: password
+            });
+        } catch (error) {
+            console.error("Error on signup:", error)
+            if (error.response && error.response.data) {
+                alert(`Signup failed: ${JSON.stringify(error.response.data)}`);
+            } else {
+                alert("An error occurred during signup.");
+            }
+        }
+
     };
 
     return (
@@ -26,7 +46,7 @@ export default function Signup() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4">
-                        
+
                         {/* USERNAME FIELD */}
                         <div className="grid gap-2">
                             <Label htmlFor="username">Username</Label>
@@ -44,7 +64,7 @@ export default function Signup() {
                             <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
-                                type="email" 
+                                type="email"
                                 placeholder="name@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}

@@ -35,6 +35,10 @@ api.interceptors.response.use(
     async (error) => {
         const ogRequest = error.config;//Origional request sent before the response
 
+        if (ogRequest.url.includes("/login/") || ogRequest.url.includes("/signup/")) {
+             return Promise.reject(error);
+        }
+
         //Check for 401 (unautorized) or if we have already intercepted this response
         if (error.response.status === 401 && !ogRequest._retry) {
             ogRequest._retry = true//Mark response as already taken once
