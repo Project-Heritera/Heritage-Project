@@ -41,9 +41,11 @@ const CourseView = () => {
     <>
       <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
         <div className="courses-view-header flex-col  ">
-          <h2 className="scroll-m-20  text-3xl font-semibold tracking-tight m-4">
-            Course List
-          </h2>
+          <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
+              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+                Course List
+              </h1>
+            </div>
           <div className="flex flex-row justify-between items-center w-full">
             <div className="w-[20%] min-w-[300px]">
               <SearchBar
