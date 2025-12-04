@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -441,7 +442,7 @@ def get_courses(request):
     qs = (
         Course.objects
         .user_progress_percent(user)
-        .filter(visibility=VisibilityLevel.PUBLIC)
+        .filter(Q(visibility=VisibilityLevel.PUBLIC) | Q(creator=user))
     )
 
     if not qs.exists():

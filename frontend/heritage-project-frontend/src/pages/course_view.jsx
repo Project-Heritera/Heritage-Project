@@ -41,11 +41,14 @@ const CourseView = () => {
     <>
       <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
         <div className="courses-view-header flex-col  ">
-          <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
-              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-                Course List
-              </h1>
-            </div>
+          <div
+            className="flex items-center justify-between m-4 "
+            style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
+          >
+            <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+              Course List
+            </h1>
+          </div>
           <div className="flex flex-row justify-between items-center w-full">
             <div className="w-[20%] min-w-[300px]">
               <SearchBar
@@ -66,16 +69,24 @@ const CourseView = () => {
         <div className="course-view-body-body grid grid-cols-3 gap-4">
           {!loading &&
             courses.map((course) => (
-              <CourseCard
-                key={course.title}
-                link=""
-                title={course.title}
-                description={course.description}
-                imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image
+              <div key={course.course_id} className="relative">
+                {course.visibility=="PRI" && (
+                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
+                    Private
+                  </div>
+                )}
+
+                <CourseCard
+                  link=""
+                  title={course.title}
+                  description={course.description}
+                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                    course.image
                   }`}
-                courseId={course.course_id}
-                progress={course.progress_percent}
-              />
+                  courseId={course.course_id}
+                  progress={course.progress_percent}
+                />
+              </div>
             ))}
         </div>
       </div>

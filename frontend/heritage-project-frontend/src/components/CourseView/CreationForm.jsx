@@ -54,7 +54,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
     } else if (FormType == "Room") {
       return handleCreateRoom(data);
     }
-  };
+      };
 
   const handleCreateCourse = async (data) => {
     let badge_status;
@@ -95,6 +95,11 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
     }
   };
 
+  const onClose = () => {
+    setOpen(false);
+    //force refresh to display updated content
+    window.location.reload();
+  }
   const handleCreateSection = async (data) => {
     let badge_status;
     try {
@@ -181,16 +186,13 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
   };
 
   return (
-    // FIXED: Passed setOpen to onOpenChange
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {/* ADDED: A Trigger button so the modal can be opened */}
       <DialogTrigger asChild>
         <Button variant="default">Create New {FormType}</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         {isCreated ? (
-          // SUCCESS STATE
           <>
             <DialogHeader>
               <DialogTitle className="text-green-600 text-center text-xl font-bold">
@@ -201,8 +203,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-center">
-              {/* FIXED: Use setOpen(false) */}
-              <Button variant="destructive" onClick={() => setOpen(false)}>
+              <Button variant="destructive" onClick={() => onClose()}>
                 Close
               </Button>
             </DialogFooter>
@@ -218,7 +219,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
-              {/* TITLE */}
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input
@@ -228,7 +228,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 />
               </div>
 
-              {/* DESCRIPTION */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Input
@@ -241,7 +240,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 />
               </div>
 
-              {/* BADGE TITLE */}
               <div className="space-y-2">
                 <Label htmlFor="badge_title">Badge Title</Label>
                 <Input
@@ -254,7 +252,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 />
               </div>
 
-              {/* BADGE DESCRIPTION */}
               <div className="space-y-2">
                 <Label htmlFor="badge_description">Badge Description</Label>
                 <Input
@@ -267,7 +264,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 />
               </div>
 
-              {/* BADGE ICON */}
               <div className="space-y-2">
                 <Label htmlFor="badge_icon">Badge Icon</Label>
                 <Input
@@ -278,7 +274,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 />
               </div>
 
-              {/* MAIN IMAGE */}
               <div className="space-y-2">
                 <Label htmlFor="image">{FormType} Image</Label>
                 <Input

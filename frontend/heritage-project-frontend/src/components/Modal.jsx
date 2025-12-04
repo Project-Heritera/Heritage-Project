@@ -1,7 +1,5 @@
 import React, { useEffect } from "react";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import { ThemeProvider } from "./theme-provider";
-import { StrictMode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /*
@@ -47,8 +45,6 @@ const Modal = ({
 
   const selectedAnim = animations[animationType] || animations.popup;
   return (
-    <StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
     <AnimatePresence>
       {isOpen && (
         <div
@@ -75,8 +71,6 @@ const Modal = ({
         </div>
       )}
     </AnimatePresence>
-        </ThemeProvider>
-    </StrictMode>
   );
 };
 export default Modal;
