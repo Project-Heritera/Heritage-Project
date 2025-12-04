@@ -500,3 +500,10 @@ class Geolocation(models.Model):
 
     def __str__(self):
         return self.name
+
+class Report(models.Model):
+    messege = models.CharField(max_length=1000)
+    reported_obj = models.JSONField(default=dict, blank=True)
+
+    def __str__(self):
+        return self.messege

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
@@ -15,6 +15,7 @@ import json
 from .permissions import user_has_access
 from .serializers import (
     ProgressOfTaskSerializer,
+    ReportSerializer,
     RoomSerializer,
     CourseSerializer,
     SectionSerializer,
@@ -27,6 +28,7 @@ from .models import (
     Badge,
     Course,
     ProgressOfTask,
+    Report,
     Section,
     Room,
     Status,
@@ -1659,3 +1661,65 @@ def remove_course_editors(request, course_id):
 
     # Otherwise, clean 200 OK
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Report-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["Moderation"],
+    summary="Report something to the mods",
+    description="Creates a Report object (json + messege), stored in the database",
+    request=inline_serializer(
+        name="CreateReportRequest",
+        fields={
+            "reported_obj": serializers.JSONField(),
+            "messege": serializers.CharField()
+        }
+    ),
+    responses={
+        201: OpenApiResponse(ReportSerializer, description="Report made successfully."),
+        400: OpenApiResponse(description="Serializer failed."),
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def report(request):
+    serializer = ReportSerializer
+    if not serializer.is_valid():
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@extend_schema(
+    tags=["Moderation"],
+    summary="Get all reports",
+    description="Gets every Report object in the database.",
+    request=None,
+    responses={
+        200: OpenApiResponse(ReportSerializer, description="Got Reports."),
+        404: OpenApiResponse(description="Couldn't find any reports."),
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def get_reports(request):
+    return Response(Report.objects.all(), status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Moderation"],
+    summary="Delete report",
+    description="Delete a report meaining that it has been handled properly.",
+    request=None,
+    responses={
+        204: OpenApiResponse(ReportSerializer, description="Report deleted successfully."),
+        404: OpenApiResponse(description="Couldn't find the report."),
+    }
+)
+@api_view(["DELETE"])
+@permission_classes([IsAdminUser])
+def delete_report(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    report.delete()
+    return Response({"messege": "Report deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
