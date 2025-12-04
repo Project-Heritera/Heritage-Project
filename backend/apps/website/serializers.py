@@ -4,6 +4,7 @@ from django.db import transaction
 from .models import (
     Badge,
     ProgressOfTask,
+    Report,
     Room,
     Course,
     Section,
@@ -19,6 +20,13 @@ from .models import (
     UserSectionAccessLevel
 )
 
+# -------------------------------
+# Report Serializer
+# -------------------------------
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ["messege", "reported_obj"]
 
 # -------------------------------
 # UserXAccessLevel Serializers
