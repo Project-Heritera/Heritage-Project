@@ -7,11 +7,9 @@ export default function CreatePageCard({ courseId }) {
         <Card>
             <CardHeader>
                 <CardTitle className="text-lg font-semibold">Creation Dashboard</CardTitle>
-                <ScrollArea className="h-18">
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Welcome to your creation dashboard. Navigate the courses you have been invited to or create a new course to start proserving a culture or heritage.
-                    </p>
-                </ScrollArea>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Welcome to your creation dashboard. Navigate the courses you have been invited to or create a new course to start proserving a culture or heritage.
+                </p>
             </CardHeader>
         </Card>
 

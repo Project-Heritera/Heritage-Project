@@ -18,7 +18,7 @@ export default function ManageCard({ courseId, isPublished }) {
                     </Button>
                 </Link>
                 <CardTitle className="text-lg font-semibold">Manage access: </CardTitle>
-                <PublishCourse isPublished={isPublished}/>
+                <PublishCourse isPublished={isPublished} courseId={courseId}/>
             </CardHeader>
         </Card>
 
