@@ -1411,7 +1411,7 @@ def add_course_editors(request, course_id):
             status=status.HTTP_207_MULTI_STATUS,
         )
     
-    if user != course.creator:
+    if request.user.id != course.creator_id:
         return Response({"messege": "Cannot invite others unless you are the course creator."}, status=status.HTTP_403_FORBIDDEN)
 
     # All users processed successfully
