@@ -60,7 +60,7 @@ function CourseDashboard() {
           <div className="w-3/4">
             <SectionsHolder>
               {sections && sections.map((section) => (
-                <SectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} />
+                <SectionDropdown key={section.title} title={section.title} courseId={courseId} description={section.description} sectionId={section.section_id} />
               ))}
             </SectionsHolder>
           </div>
