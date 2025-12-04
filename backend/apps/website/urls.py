@@ -5,6 +5,7 @@ urlpatterns = [
     # course apis
     path("courses/create_course/", views.create_course),
     path("courses/", views.get_courses),
+    path("publish_course/<int:course_id>/", views.publish_course),
     path("courses_progressed/", views.get_courses_progressed),
     path("courses_contributed/", views.get_courses_contributed),
     path("course/<int:course_id>/", views.get_course),
