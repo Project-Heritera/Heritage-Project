@@ -5,6 +5,7 @@ import { USER_NAME } from "@/services/LocalStorage";
 import api from "../services/api"
 import { useState, useEffect } from "react";
 import ConnectionsContainer from "@/components/ProfilePage/ProfileContainers/ConnectionsContainer";
+import CoursesCompletedContainer from "@/components/ProfilePage/ProfileContainers/CoursesCompletedContainer";
 
 
 function Profile() {
@@ -42,6 +43,7 @@ function Profile() {
       <ProfileDisplay isOwner={isOwner} profImage={profPicLink} name={username} description={description} viewUser={loggedInUser}/>
       <BadgeContainer username={username}/>
       <ConnectionsContainer username={username}/>
+      <CoursesCompletedContainer username={username}/>
     </div>
   )
 }
