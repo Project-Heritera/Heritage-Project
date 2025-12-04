@@ -183,15 +183,14 @@ def award_badge(request, badge_id):
     user = request.user
     badge = get_object_or_404(Badge, id=badge_id)
 
+    # Update the streak BEFORE creating the badge
+    user.update_streak()
+
     # Check if user already has this badge
     user_badge, created = UserBadge.objects.get_or_create(user=user, badge=badge)
 
     # Serialize and return the data
     serializer = UserBadgeSerializer(user_badge)
-
-    # Validate incoming data
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if created:
         return Response(status=status.HTTP_409_CONFLICT)

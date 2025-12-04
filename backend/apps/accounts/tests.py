@@ -1,10 +1,12 @@
+from unittest import TestCase
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import status
-import json
-# Create your tests here.
+
+User = get_user_model()
+
 class LoginSystemAPITestCase(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(username="TestingAdmin",email="admin@example.com", password="testingdminpass")
