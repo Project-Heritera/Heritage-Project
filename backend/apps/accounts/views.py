@@ -80,6 +80,7 @@ def search_users(request):
     }
 )
 @api_view(["POST"])
+@permission_classes(['AllowAny'])
 def signup_user(request):
     username = request.data.get("username")
     email = request.data.get("email")
