@@ -1685,9 +1685,10 @@ def remove_course_editors(request, course_id):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def report(request):
-    serializer = ReportSerializer
+    serializer = ReportSerializer(data=request.data)
     if not serializer.is_valid():
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -1698,13 +1699,18 @@ def report(request):
     request=None,
     responses={
         200: OpenApiResponse(ReportSerializer, description="Got Reports."),
+        200: OpenApiResponse(description="No reports found."),
         404: OpenApiResponse(description="Couldn't find any reports."),
     }
 )
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def get_reports(request):
-    return Response(Report.objects.all(), status=status.HTTP_200_OK)
+    reports = Report.objects.all()
+    serializer = ReportSerializer(reports, many=True)
+    if not reports:
+        return Response({"messege": "No reports could be found."}, status=status.HTTP_204_NO_CONTENT)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
