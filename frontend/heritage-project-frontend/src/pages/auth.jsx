@@ -28,7 +28,7 @@ const AuthLogin = () => {
       } catch (error) {
         //If somthing in try failed, default to here
         if (error.status == 404){
-          showError("Invalid Log in. Incorrect password provided or account dosen't exist", "error");
+          showError("Invalid login. Incorrect password provided or account doesn't exist.", "error");
         }
         else {
           showError("Something went wrong when logging in. Please try again later", "error");
