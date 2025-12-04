@@ -25,7 +25,7 @@ const AuthLogin = () => {
         setUsername("");
         setPassword("");
 
-        navigate('/home/' + username);
+        navigate('/home');
       } catch (error) {
         //If somthing in try failed, default to here
         if (error.status == 404) {
