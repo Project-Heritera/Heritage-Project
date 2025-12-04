@@ -72,7 +72,7 @@
   --muted-foreground: #5F6368;     /* Medium gray text */
   
   /* Accent - Lighter blue for hover states */
-  --accent: #0A5F7F;               /* Lighter teal-blue */
+  --accent: #cedfe5;               /* Lighter teal-blue */
   --accent-foreground: #FFFFFF;
   
   /* Destructive - Warm red that complements palette */
