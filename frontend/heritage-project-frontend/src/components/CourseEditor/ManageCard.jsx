@@ -4,8 +4,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom"
 import { Button } from "../ui/button";
 import PublishCourse from "./PublishCourse";
+import { useState } from "react";
 
 export default function ManageCard({ courseId, isPublished }) {
+    const [published, setPublished] = useState(isPublished)
     return (
         <Card>
             <CardHeader>
