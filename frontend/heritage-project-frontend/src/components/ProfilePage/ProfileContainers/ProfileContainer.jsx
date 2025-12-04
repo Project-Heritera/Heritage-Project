@@ -44,7 +44,7 @@ function ProfileContainer({children, title, itemsPerRow}) {
         </div>
         {/* Display desired children */}
         <div className="profileContainerChildrenDiv">
-            <div className={`inline-grid grid-cols-1 ${gridColsClass} gap-4`}>
+            <div className={`inline-grid grid-cols-1 ${gridColsClass} gap-4 w-full`}>
             {viewableChildren}
         </div>
         </div>

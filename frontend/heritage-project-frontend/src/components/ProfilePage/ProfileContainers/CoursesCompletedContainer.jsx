@@ -13,8 +13,10 @@ function CoursesCompletedContainer({ username }) {
                 const response = await api.get(`/accounts/courses_completed/${username}`);
                 console.log("API compelted coruses response:", response.data)
                 setCompletedCourses(response.data);
+                setLoading(false)
             } catch (error) {
                 console.error("Error geting CompletedCourses:", error)
+                setLoading(false)
             }
         };
 

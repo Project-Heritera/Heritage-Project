@@ -13,8 +13,10 @@ function CoursesCompletedContainer({ username }) {
                 const response = await api.get(`/accounts/courses_created/${username}`);
                 console.log("API compelted coruses response:", response.data)
                 setContributedCourses(response.data);
+                setLoading(false)
             } catch (error) {
                 console.error("Error geting ContributedCourses:", error)
+                setLoading(false)
             }
         };
 
@@ -34,10 +36,10 @@ function CoursesCompletedContainer({ username }) {
                 contributedCourses.map((course) => (
                     <CourseCard
                         key={course.title}
-                        link={`/c/${course_id}`}
+                        link={`/c/${course.course_id}`}
                         title={course.title}
                         description={course.description}
-                        imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`}
+                        imageLink={`${course.image}`}
                         courseId={course.course_id}
                         progress={course.progress_percent}
                     />
