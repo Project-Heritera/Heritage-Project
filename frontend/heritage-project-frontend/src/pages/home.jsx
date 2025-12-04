@@ -56,17 +56,16 @@ export default function Home() {
 
       <div className="grid grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
-
           {/* 2-column course grid */}
           <div className="grid grid-cols-2 gap-4">
-
-
             {!loading && courses.length === 0 ? (
               <Card className="col-span-2">
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle>Welcome to Vivan! Navigate to courses to get started.</CardTitle>
-                    <Link to={'/courses'}>
+                    <CardTitle>
+                      Welcome to Vivan! Navigate to courses to get started.
+                    </CardTitle>
+                    <Link to={"/courses"}>
                       <Button>Browse Courses</Button>
                     </Link>
                   </div>
@@ -81,28 +80,27 @@ export default function Home() {
                   link=""
                   title={course.title}
                   description={course.description}
-                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image
-                    }`}
+                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                    course.image
+                  }`}
                   courseId={course.course_id}
                   progress={course.progress_percent}
                 />
               ))
             )}
-
           </div>
         </div>
 
         <div className="col-span-1 space-y-4">
           <Card className="p-4">
-            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-              Achievements
-            </h2>
-
+            <CardHeader>Achievements</CardHeader>
             <div className="space-y-3">
               {/* Only render if user exists AND streak is > 0 */}
               {user && user.streak > 0 && (
                 <div className="p-3 rounded-lg bg-muted">
-                  <p className="font-medium">🏅 {user.streak}-Day Study Streak</p>
+                  <p className="font-medium">
+                    🏅 {user.streak}-Day Study Streak
+                  </p>
                 </div>
               )}
 
