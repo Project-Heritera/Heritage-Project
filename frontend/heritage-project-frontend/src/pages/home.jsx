@@ -49,15 +49,30 @@ export default function Home() {
     <div className="flex flex-col p-4">
       {/* Header */}
       <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
-              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-                Welcome back, {username}
-              </h1>
-            </div>
+        <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+          Welcome back, {username}
+        </h1>
+      </div>
 
       <div className="grid grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
           {/* 2-column course grid */}
           <div className="grid grid-cols-2 gap-4">
+            {!loading && courses.length > 0 && (
+              <Card className="col-span-2">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>
+                      View your recent courses or navigate to the courses page to find a new course.
+                    </CardTitle>
+                    <Link to={"/courses"}>
+                      <Button>Browse Courses</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+              </Card>
+            )}
+
             {!loading && courses.length === 0 ? (
               <Card className="col-span-2">
                 <CardHeader>
@@ -80,9 +95,8 @@ export default function Home() {
                   link=""
                   title={course.title}
                   description={course.description}
-                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
-                    course.image
-                  }`}
+                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image
+                    }`}
                   courseId={course.course_id}
                   progress={course.progress_percent}
                 />
@@ -93,24 +107,26 @@ export default function Home() {
 
         <div className="col-span-1 space-y-4">
           <Card className="p-4">
-            <CardHeader>Achievements</CardHeader>
-            <div className="space-y-3">
-              {/* Only render if user exists AND streak is > 0 */}
-              {user && user.streak > 0 && (
-                <div className="p-3 rounded-lg bg-muted">
-                  <p className="font-medium">
-                    🏅 {user.streak}-Day Study Streak
-                  </p>
-                </div>
-              )}
+            <CardHeader >
+              <CardTitle className="text-lg font-semibold">Achievments</CardTitle>
+              <div className="space-y-3">
+                {/* Only render if user exists AND streak is > 0 */}
+                {user && user.streak > 0 && (
+                  <div className="p-3 rounded-lg bg-muted">
+                    <p className="font-medium">
+                      🏅 {user.streak}-Day Study Streak
+                    </p>
+                  </div>
+                )}
 
-              {/* Optional: Show this if they have NO streak */}
-              {user && user.streak === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Start a lesson to earn a streak!
-                </p>
-              )}
-            </div>
+                {/* Optional: Show this if they have NO streak */}
+                {user && user.streak === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Start a lesson to earn a streak!
+                  </p>
+                )}
+              </div>
+            </CardHeader>
           </Card>
         </div>
       </div>
