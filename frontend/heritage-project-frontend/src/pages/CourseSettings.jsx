@@ -18,6 +18,7 @@ function CourseDashboard() {
     const [loading, setLoading] = useState(true)
     const [users, setUsers] = useState([])
     const [filterQuery, setFilterQuery] = useState("")
+    const [owner, setOwner] = useState(null)
 
     const [sections, setSections] = useState([])
     const [courseInfo, setCourseInfo] = useState(null)
@@ -29,6 +30,11 @@ function CourseDashboard() {
                 //Get course data
                 const courseResponse = await api.get(`/website/course/${courseId}/`)
                 const courseData = courseResponse.data
+                //get owner
+                const ownerName = courseData.creator
+                const courseOwner = await api.get(`/accounts/another_user_info/${ownerName}`)
+                setOwner(courseOwner.data)
+                console.log("Course owner is:", courseOwner)
                 console.log("Retrieved course data:", courseData)
                 setCourseInfo(courseData)
                 //Get sections
@@ -142,6 +148,9 @@ function CourseDashboard() {
                             </div>
 
                             <div className="divide-y">
+                                {owner && (
+                                    <ContributorCard key={owner.user || owner.username} username={owner.user || owner.username} description={"Owner"} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
+                                )}
                                 {filteredUsers.map((user) => (
                                     <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username)} />
                                 ))}
