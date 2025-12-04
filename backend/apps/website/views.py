@@ -1333,6 +1333,7 @@ def publish_room(request, room_id):
         207: OpenApiResponse(
             description="Some users were found and access levels created successfully, some were not."
         ),
+        403: OpenApiResponse(description="Cannot invite contributers if you're not the course creator."),
         404: OpenApiResponse(
             description="One or more users not found, or course not found."
         ),
@@ -1390,6 +1391,9 @@ def add_course_editors(request, course_id):
             },
             status=status.HTTP_207_MULTI_STATUS,
         )
+    
+    if user != course.creator:
+        return Response({"messege": "Cannot invite others unless you are the course creator."}, status=status.HTTP_403_FORBIDDEN)
 
     # All users processed successfully
     return Response(created_access_records, status=status.HTTP_201_CREATED)
