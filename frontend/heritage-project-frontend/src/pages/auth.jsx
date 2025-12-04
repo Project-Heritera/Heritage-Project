@@ -87,7 +87,6 @@ const AuthLogin = () => {
 
             <div className="flex items-center justify-between gap-2">
               <Button onClick={handleLogin}>Sign In</Button>
-              <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
             </div>
          </div>
         </CardContent>

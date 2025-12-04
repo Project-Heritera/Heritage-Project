@@ -20,7 +20,7 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { path: "/", label: "HOME" },
+    { path: "/home", label: "HOME" },
     { path: "/courses", label: "COURSES" },
     { path: "/create", label: "CREATE" },
     { path: "/about", label: "ABOUT" },

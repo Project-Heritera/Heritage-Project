@@ -74,7 +74,7 @@ function NavbarDropDown() {
                 </div>
                 {/* Links go here */}
                 <div className="flex flex-col gap-4 mt-8 px-6">
-                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                    <Link to="/home" className="text-lg font-medium hover:text-primary">
                         HOME
                     </Link>
                     <Link to="/courses" className="text-lg font-medium hover:text-primary">
