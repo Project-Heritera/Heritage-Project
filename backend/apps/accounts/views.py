@@ -163,6 +163,8 @@ def update_user_info(request):
                 "username": serializers.CharField(),
                 "profile_pic": serializers.ImageField(),
                 "description": serializers.CharField(),
+                "streak": serializers.IntegerField(),
+                "longest_streak": serializers.IntegerField(),
                 "courses_created": serializers.IntegerField(),
                 "courses_completed": serializers.IntegerField()
             }
@@ -203,6 +205,8 @@ def get_user_info(request):
                 "username": serializers.CharField(),
                 "profile_pic": serializers.ImageField(),
                 "description": serializers.CharField(),
+                "streak": serializers.IntegerField(),
+                "longest_streak": serializers.IntegerField(),
                 "courses_created": serializers.IntegerField(),
                 "courses_completed": serializers.IntegerField()
             }
