@@ -25,6 +25,7 @@ function NavbarDropDown() {
     const performLogout = useLogout();
     const location = useLocation();
 
+
     useEffect(() => {
         const getUserData = async () => {
             if (!user) {
@@ -48,7 +49,7 @@ function NavbarDropDown() {
                 <Menu className="" strokeWidth={2.5} />
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]" style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
                 <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                     <SheetDescription>
@@ -74,16 +75,16 @@ function NavbarDropDown() {
                 </div>
                 {/* Links go here */}
                 <div className="flex flex-col gap-4 mt-8 px-6">
-                    <Link to="/home" className="text-lg font-medium hover:text-primary">
+                    <Link to="/home" className="text-lg font-medium hover:text-yellow-500" style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
                         HOME
                     </Link>
-                    <Link to="/courses" className="text-lg font-medium hover:text-primary">
+                    <Link to="/courses" className="text-lg font-medium hover:text-yellow-500" style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
                         COURSES
                     </Link>
-                    <Link to="/create" className="text-lg font-medium hover:text-primary">
+                    <Link to="/create" className="text-lg font-medium hover:text-yellow-500" style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
                         CREATE
                     </Link>
-                    <Link to="/about" className="text-lg font-medium hover:text-primary">
+                    <Link to="/about" className="text-lg font-medium hover:text-yellow-500" style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
                         ABOUT
                     </Link>
 

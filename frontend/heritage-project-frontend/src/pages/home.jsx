@@ -48,11 +48,11 @@ export default function Home() {
   return (
     <div className="flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between m-4">
-        <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-          Welcome back, {username}
-        </h1>
-      </div>
+      <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
+              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+                Welcome back, {username}
+              </h1>
+            </div>
 
       <div className="grid grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
