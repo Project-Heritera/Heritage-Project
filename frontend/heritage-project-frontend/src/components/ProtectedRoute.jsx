@@ -9,7 +9,7 @@ const ProtectedRoute = () => {
     //Check if they have logged in yet
     if (!token) {
         console.log("User not logged in so redirect")
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login"/>;
     }
 
     //Token exists
