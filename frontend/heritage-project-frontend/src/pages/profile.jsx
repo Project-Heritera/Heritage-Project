@@ -6,6 +6,7 @@ import api from "../services/api"
 import { useState, useEffect } from "react";
 import ConnectionsContainer from "@/components/ProfilePage/ProfileContainers/ConnectionsContainer";
 import CoursesCompletedContainer from "@/components/ProfilePage/ProfileContainers/CoursesCompletedContainer";
+import ContributesToCoursesContainer from "@/components/ProfilePage/ProfileContainers/ContributesToCoursesContainer"
 
 
 function Profile() {
@@ -44,6 +45,7 @@ function Profile() {
       <BadgeContainer username={username}/>
       <ConnectionsContainer username={username}/>
       <CoursesCompletedContainer username={username}/>
+      <ContributesToCoursesContainer username={username}/>
     </div>
   )
 }
