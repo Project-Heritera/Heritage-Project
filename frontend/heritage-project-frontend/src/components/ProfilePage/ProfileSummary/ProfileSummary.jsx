@@ -50,7 +50,7 @@ function ProfileSummary({username}) {
 
     fetchContributedCourses();
     setLoading(false)
-  }, []);
+  }, [username]);
 
   return (
     <div className="profileSummaryDiv">

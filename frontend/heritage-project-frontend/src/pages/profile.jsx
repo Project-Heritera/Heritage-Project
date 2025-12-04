@@ -27,7 +27,7 @@ function Profile() {
     };
 
     fetchUserData();
-  }, []);
+  }, [username]);
 
   if (!userDataResponse) {
       return <div>Loading...</div>;

@@ -21,7 +21,7 @@ function CoursesCompletedContainer({ username }) {
         };
 
         fetchContributedCourses();
-    }, []);
+    }, [username]);
 
     if (!contributedCourses) {
         return (
