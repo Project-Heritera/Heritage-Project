@@ -3,8 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
-
-from backend.apps.website.utils import censor_with_xxxx
+from .utils import censor_json, censor_with_xxxx
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -424,6 +423,11 @@ class TaskComponent(OrderedModel):
 
     def __str__(self):
         return f"{self.task} - {self.type}"
+    
+    def save(self, *args, **kwargs):
+        # Censor all string values inside the JSON
+        self.content = censor_json(self.content)
+        super().save(*args, **kwargs)
 
 
 class UserCourseAccessLevel(models.Model):
