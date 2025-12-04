@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsername] = useState("");
@@ -16,18 +17,18 @@ const AuthLogin = () => {
   // Function to handle sign in
   async function handleLogin() {
     //Check if username and password are not empty
-    if (username && password){
+    if (username && password) {
       try {
         const data = await login(username, password);//Wait for external login function reply
         showError("Login success", "success");
         Debug.log("Login success:", data);
         setUsername("");
         setPassword("");
-        
-        navigate('/home/'+username);
+
+        navigate('/home/' + username);
       } catch (error) {
         //If somthing in try failed, default to here
-        if (error.status == 404){
+        if (error.status == 404) {
           showError("Invalid Log in. Incorrect password provided or account dosen't exist", "error");
         }
         else {
@@ -36,7 +37,7 @@ const AuthLogin = () => {
         console.error(error);//log error
       }
     }
-    else{
+    else {
       showError("Enter Username and Password", "warning");
     }
   };
@@ -46,7 +47,7 @@ const AuthLogin = () => {
     try {
       // TODO: send sign-out request to backend
       console.log("Signing out:", username);
-        showError("Logout success", "success");
+      showError("Logout success", "success");
     } catch (error) {
       console.error("Sign out failed:", error);
     }
@@ -72,7 +73,7 @@ const AuthLogin = () => {
               />
             </div>
             <div>
-           </div>
+            </div>
 
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -87,8 +88,11 @@ const AuthLogin = () => {
 
             <div className="flex items-center justify-between gap-2">
               <Button onClick={handleLogin}>Sign In</Button>
+              <Link to={`/signup`}>
+                <Button variant="outline">Sign Up</Button>
+              </Link>
             </div>
-         </div>
+          </div>
         </CardContent>
       </Card>
     </div>
