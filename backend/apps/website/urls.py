@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # course apis
     path("courses/create_course/", views.create_course),
+    path("courses/<int:course_id>/update_course/", views.update_course),
     path("courses/", views.get_courses),
     path("publish_course/<int:course_id>/", views.publish_course),
     path("private_course/<int:course_id>/", views.private_course),
@@ -15,6 +16,7 @@ urlpatterns = [
     
     # section apis
     path("courses/<int:course_id>/create_section/", views.create_section),
+    path("sections/<int:section_id>/update_section/", views.update_section),
     path("courses/<int:course_id>/sections/", views.get_sections),
     path("courses/title/<str:course_title>/sections/", views.get_sections_by_title),
     path("sections/<int:section_id>/progress/", views.get_section_progress),
@@ -22,6 +24,7 @@ urlpatterns = [
     
     # room apis
     path("courses/<int:course_id>/sections/<int:section_id>/create_room/", views.create_room),
+    path("rooms/<int:room_id>/update_room/", views.update_room),
     path("sections/<int:section_id>/rooms/", views.get_rooms),
     path("sections/title/<str:section_title>/rooms/", views.get_rooms_by_title),
     path("rooms/<int:room_id>/progress/", views.get_room_progress),
