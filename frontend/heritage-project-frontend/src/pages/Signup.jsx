@@ -4,12 +4,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
     // 1. Define State Variables
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");       // <--- ADDED EMAIL STATE
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     // 2. Handle the Signup Logic
     const handleSignup = async () => {
@@ -26,6 +28,7 @@ export default function Signup() {
                 email: email,
                 password: password
             });
+            navigate(`/login`)
         } catch (error) {
             console.error("Error on signup:", error)
             if (error.response && error.response.data) {
