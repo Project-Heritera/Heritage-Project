@@ -43,9 +43,17 @@ function Profile() {
     <div className="flex flex-col gap-6 p-6">
       <ProfileDisplay isOwner={isOwner} profImage={profPicLink} name={username} description={description} viewUser={loggedInUser}/>
       <BadgeContainer username={username}/>
-      <ConnectionsContainer username={username}/>
-      <CoursesCompletedContainer username={username}/>
-      <ContributesToCoursesContainer username={username}/>
+      <div id="connections-section">
+        <ConnectionsContainer username={username}/>
+      </div>
+
+      <div id="courses-completed-section">
+        <CoursesCompletedContainer username={username}/>
+      </div>
+
+      <div id="courses-created-section">
+        <ContributesToCoursesContainer username={username}/>
+      </div>
     </div>
   )
 }

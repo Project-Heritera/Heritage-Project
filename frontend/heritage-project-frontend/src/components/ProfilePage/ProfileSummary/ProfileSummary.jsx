@@ -6,7 +6,7 @@ import { Flag, NotebookPen, Handshake } from "lucide-react"
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 
-function ProfileSummary({username}) {
+function ProfileSummary({ username }) {
 
   const [contributedCourses, setContributedCourses] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -52,11 +52,26 @@ function ProfileSummary({username}) {
     setLoading(false)
   }, [username]);
 
+  const handleScroll = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="profileSummaryDiv">
-      <Summary Icon={Flag} title={"Courses Completed"} value={ completedCourses && completedCourses.length || 0 } ></Summary>
-      <Summary Icon={NotebookPen} title={"Courses Created"} value={contributedCourses && contributedCourses.length || 0}></Summary>
-      <Summary Icon={Handshake} title={"Connections"} value={connections && connections.length || 0}></Summary>
+      <div onClick={() => handleScroll('courses-completed-section')} className="cursor-pointer hover:underline">
+        <Summary Icon={Flag} title={"Courses Completed"} value={completedCourses && completedCourses.length || 0} ></Summary>
+      </div>
+
+      <div onClick={() => handleScroll('courses-created-section')} className="cursor-pointer hover:underline">
+        <Summary Icon={NotebookPen} title={"Courses Created"} value={contributedCourses && contributedCourses.length || 0}></Summary>
+      </div>
+
+      <div onClick={() => handleScroll('connections-section')} className="cursor-pointer hover:underline">
+        <Summary Icon={Handshake} title={"Connections"} value={connections && connections.length || 0}></Summary>
+      </div>
     </div>
   )
 }
