@@ -28,6 +28,7 @@ export default function Home() {
         const userData = userResponse.data
         setUser(userData)
         setUsername(userData.username)
+        console.log("Users streak is:", userData.streak)
 
         console.log("Success loading user:", username)
         console.log("Users data is:", userData)
@@ -102,20 +103,16 @@ export default function Home() {
 
           <Card className="p-4">
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-              Achievements{" "}
+              Achievements
             </h2>
 
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-muted">
-                <p className="font-medium">🏅 3-Day Study Streak</p>
+                <p className="font-medium">🏅 {user && user.streak}-Day Study Streak</p>
               </div>
 
               <div className="p-3 rounded-lg bg-muted">
                 <p className="font-medium">🎉 First Course Started</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted opacity-60">
-                <p className="font-medium">🔒 Complete 5 Courses</p>
               </div>
             </div>
           </Card>
