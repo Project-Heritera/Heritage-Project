@@ -59,7 +59,7 @@ export default function About() {
               • William Morales
             </p>
             <p className="text-muted-foreground mb-4">
-              • Hudson Vũ
+              • Hudson Vu
             </p>
             <p className="text-muted-foreground mb-4">
               • Mujtaba Malik
