@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import CreationForm from "@/components/CourseView/CreationForm";
 import { useParams } from "react-router-dom";
 import Modal from "@/components/Modal";
+import LocalSearchBar from "@/components/CourseEditDashboard/ContributorSearchBar";
 // Helper to generate a random progress value (0–1)
 const rand = () => Math.random().toFixed(2);
 
 const CourseView = () => {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [filterQuery, setFilterQuery] = useState("")
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true);
@@ -37,6 +39,13 @@ const CourseView = () => {
     getCourses();
   }, []);
 
+  const filteredCourses = courses.filter((course) => {
+    // safely get the string, checking both possible keys
+    const courseString = course.title || "";
+
+    return courseString.toLowerCase().includes(filterQuery.toLowerCase());
+  });
+
   return (
     <>
       <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
@@ -48,14 +57,7 @@ const CourseView = () => {
             </div>
           <div className="flex flex-row justify-between items-center w-full">
             <div className="w-[20%] min-w-[300px]">
-              <SearchBar
-                includeCourses={true}
-                courseAction={(course) => {
-                  console.log("Navigating to course");
-                  navigate(`/c/${course.course_id || "#"}`);
-                }}
-                searchFiller={"Search courses"}
-              />
+              <LocalSearchBar onSearchChange={setFilterQuery} />
             </div>
             <div className="create-course">
               <CreationForm FormType={"Course"} />
@@ -65,7 +67,7 @@ const CourseView = () => {
 
         <div className="course-view-body-body grid grid-cols-3 gap-4">
           {!loading &&
-            courses.map((course) => (
+            filteredCourses.map((course) => (
               <CourseCard
                 key={course.title}
                 link=""
