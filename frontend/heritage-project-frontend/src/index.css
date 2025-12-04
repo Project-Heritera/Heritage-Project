@@ -155,6 +155,18 @@
   --sidebar-ring: #FDD023;
 }
 
+.dark .prose {
+  color: white; /* body text */
+  
+}
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  color: white;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;

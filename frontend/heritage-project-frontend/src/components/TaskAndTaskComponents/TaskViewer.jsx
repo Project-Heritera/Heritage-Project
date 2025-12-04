@@ -2,7 +2,7 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import TaskBase from "./TaskBase";
 import statusTypes, { statusDisplayToKey } from "../../utils/statusTypes";
-
+import confetti from "canvas-confetti";
 const TaskViewer = forwardRef(
   (
     {
@@ -54,6 +54,16 @@ const TaskViewer = forwardRef(
       setTaskStatus,
     };
 
+
+    useEffect(() => {
+      if (taskStatus === "COMPLE") {
+        confetti({
+          particleCount: 20,
+          spread: 60,
+          origin: { y: 1 }
+        });
+      }
+    }, [taskStatus]);
     // Render different content based on taskStatus
     const renderContent = () => {
       const questionProgressData = {
@@ -63,6 +73,7 @@ const TaskViewer = forwardRef(
       };
       if (taskStatus === "COMPLE") {
         return (
+          
           <div className="task-complete">
             <h3>✓ Task Complete</h3>
             <p>You have successfully completed this task!</p>
