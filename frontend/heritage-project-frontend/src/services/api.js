@@ -42,7 +42,7 @@ api.interceptors.response.use(
 
             try {
                 const refToken = localStorage.getItem(REFRESH_TOKEN);
-                const response = await axios.post(`${import.meta.env.VITE_API_URL_FOR_TEST}/token/refresh`, {refresh: refToken});//Try to refresh token
+                const response = await axios.post(`${import.meta.env.VITE_API_URL_FOR_TEST}/accounts/token/refresh/`, {refresh: refToken});//Try to refresh token
                 
                 //Success so send another request
                 const { access } = response.data;
