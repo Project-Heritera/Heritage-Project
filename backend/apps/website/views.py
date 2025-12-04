@@ -49,7 +49,7 @@ User = get_user_model()
     tags=["Tasks"],
     summary="Update the progress of a task",
     description="Updates or creates a user's progress for a specific task. If a ProgressOfTask entry does not exist for (user, task), a new one will be created. Only the authenticated user's progress is modified. Make sure you use 'COMPLE', 'NOSTAR', or 'INCOMP' for 'status', otherwise it will have a HTTP 400.",
-    request=None,
+    request=ProgressOfTaskSerializer,
     responses={
         200: ProgressOfTaskSerializer,
         400: OpenApiResponse(description="Serializer Failed."),
@@ -69,6 +69,24 @@ def update_task_progress(request, task_id):
         user=user, task=task, defaults={"status": Status.NOSTAR, "attempts": 0}
     )
 
+    room_completed = False
+    section_completed = False
+    course_completed = False
+
+    # dont work
+    room = Room.objects.filter(id=task.room_id).user_progress_percent(user).first()
+    room_prog = room.progress_percent
+    section = Section.objects.filter(id=task.room.section_id).user_progress_percent(user).first()
+    section_prog = section.progress_percent
+    course = Course.objects.filter(id=task.room.course_id).user_progress_percent(user).first()
+    course_prog = course.progress_percent
+    if room_prog == 100:
+        room_completed = True
+    if section_prog == 100:
+        section_completed = True
+    if course_prog == 100:
+        course_completed = True
+
     # Feed existing instance + incoming update data into serializer
     serializer = ProgressOfTaskSerializer(progress, data=request.data, partial=True)
 
@@ -79,7 +97,14 @@ def update_task_progress(request, task_id):
     # Save the update
     serializer.save()
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({
+        **serializer.data,
+        "room_completed": room_completed,
+        "section_completed": section_completed,
+        "course_completed": course_completed,
+        }, 
+        status=status.HTTP_200_OK
+    )
 
 
 @extend_schema(
@@ -97,21 +122,6 @@ def update_task_progress(request, task_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_task_progress_for_room(request, course_id, section_id, room_id):
-    """
-    get_task_progress_for_room: Retrieves task progress for all tasks in a room.
-
-    @param request: HTTP request object.
-    @param course_id: ID of the parent course.
-    @param section_id: ID of the parent section.
-    @param room_id: ID of the room.
-    @return:
-        * HTTP 200: List of task progress data.
-        * HTTP 403: If user lacks permission to view the room.
-        * HTTP 404: If the room does not exist.
-    @note:
-        Checks room access, gets all task IDs in the room, and returns
-        ProgressOfTask entries for the current user matching those task IDs.
-    """
     # Check if room exists and user has access
     room = get_object_or_404(Room, id=room_id)
 
