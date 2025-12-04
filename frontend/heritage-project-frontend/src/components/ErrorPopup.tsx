@@ -32,10 +32,10 @@ const ErrorPopup = () => {
            className={`flex flex-col items-center justify-between border-4 rounded-lg shadow-lg max-w-md w-full p-6 relative
             ${
               errorData.type === "error"
-                ? "bg-red-300 border-red-300"
+                ? "bg-red-200 border-red-200"
                 : errorData.type === "warning"
-                ? "bg-yellow 300 border-yellow-300"
-                : "bg-green-300 border-green-300 "
+                ? "bg-yellow-200 border-yellow-200"
+                : "bg-green-200 border-green-200 "
             }
             `}
             onClick={(e) => e.stopPropagation()}

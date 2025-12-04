@@ -83,12 +83,10 @@ function NavbarDropDown() {
                     <Link to="/create" className="text-lg font-medium hover:text-primary">
                         CREATE
                     </Link>
-                    <Link to="/" className="text-lg font-medium hover:text-primary">
+                    <Link to="/about" className="text-lg font-medium hover:text-primary">
                         ABOUT
                     </Link>
-                    <Link to="/" className="text-lg font-medium hover:text-primary">
-                        CONTACT
-                    </Link>
+
                 </div>
 
                 {/* User Section */}

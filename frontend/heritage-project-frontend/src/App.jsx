@@ -15,6 +15,7 @@ import CourseSettings from './pages/CourseSettings'
 import CreationDashboard from './pages/CourseEditor'
 import CreatePage from './pages/CreatePage'
 import Signup from './pages/Signup'
+import About from './pages/contact.jsx'
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
                 <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
                 <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
                 <Route path='/create' element={<CreatePage />} />
+                {<Route path='/about' element={<About />} />}
         </Route>
             </Route>
           </Routes>
