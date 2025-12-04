@@ -339,6 +339,38 @@ def search_courses(request):
 
 @extend_schema(
     tags=["Courses"],
+    summary="Updates a course",
+    description="Replaces the course title, description, image, and badge info.",
+    request=inline_serializer(
+        name="UpdateCourseRequest",
+        fields={
+            "title": serializers.CharField(),
+            "description": serializers.CharField(),
+            "badge": BadgeSerializer,
+            "image": serializers.ImageField(),
+        },
+    ),
+    responses={
+        201: CourseSerializer(),
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
+)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    serializer = CourseSerializer(course, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save(
+            creator=request.user,
+            metadata={},  # empty for now
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["Courses"],
     summary="Create a new course",
     description="Creates a course and assigns the current user as creator. The authenticated user is automatically set as the course creator.",
     request=inline_serializer(
@@ -875,6 +907,38 @@ def create_section(request, course_id):
 
 
 @extend_schema(
+    tags=["Section"],
+    summary="Updates a section",
+    description="Replaces the section title, description, image, and badge info.",
+    request=inline_serializer(
+        name="UpdateSectionRequest",
+        fields={
+            "title": serializers.CharField(),
+            "description": serializers.CharField(),
+            "badge": BadgeSerializer,
+            "image": serializers.ImageField(),
+        },
+    ),
+    responses={
+        201: SectionSerializer(),
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
+)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_section(request, section_id):
+    section = get_object_or_404(Section, id=section_id)
+    serializer = SectionSerializer(section, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save(
+            creator=request.user,
+            metadata={},  # empty for now
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
     tags=["Sections"],
     summary="Get section progress",
     description="Get the total progress of the section as a percentage.",
@@ -1147,6 +1211,38 @@ def create_room(request, course_id, section_id):
             metadata={},
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["Rooms"],
+    summary="Updates a room",
+    description="Replaces the room title, description, image, and badge info.",
+    request=inline_serializer(
+        name="UpdateRoomRequest",
+        fields={
+            "title": serializers.CharField(),
+            "description": serializers.CharField(),
+            "badge": BadgeSerializer,
+            "image": serializers.ImageField(),
+        },
+    ),
+    responses={
+        201: RoomSerializer(),
+        400: OpenApiResponse(description="Serializer Failed."),
+    },
+)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_room(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+    serializer = RoomSerializer(room, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save(
+            creator=request.user,
+            metadata={},  # empty for now
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
