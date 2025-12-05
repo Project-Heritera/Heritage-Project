@@ -18,7 +18,7 @@ import { AlertCircle } from "lucide-react"
 function Enable2FA({ open, setOpen }) {
     //Store data for whats being edited
     const [users, setUsers] = useState([])
-    const [QRCode, setQRCode] = useState(null)
+    const [QRCode, setQRCode] = useState("")
     const [loading, setLoading] = useState(true)
     const [code, setCode] = useState("")
     const [error, setError] = useState("")
@@ -55,7 +55,11 @@ function Enable2FA({ open, setOpen }) {
                 //error ask to redo
                 setError("Invalid code. Please try again.")
             } else {
-                
+                console.log("SUCCESS validating 2FA!")
+                setQRCode("");
+                setCode("")
+                setError("")
+                setOpen(false);
             }
         } catch (error) {
             console.error("Error validating 2FA:", error)
@@ -97,8 +101,14 @@ function Enable2FA({ open, setOpen }) {
                             placeholder="123456"
                             value={code}
                             onChange={(e) => {
-                                setCode(e.target.value);
-                                if (error) setError("");
+                                const value = e.target.value;
+
+                                // 1. Regex checks if value contains ONLY digits or is empty
+                                // 2. Checks if length is 6 or less
+                                if (/^\d*$/.test(value) && value.length <= 6) {
+                                    setCode(value);
+                                    if (error) setError("");
+                                }
                             }}
                             className={`text-center tracking-widest text-lg ${error ? "border-red-500 focus-visible:ring-red-500" : ""
                                 }`}
@@ -117,8 +127,9 @@ function Enable2FA({ open, setOpen }) {
                         <div>
                             <Button
                                 onClick={() => {
-                                    setQRCode(null);
-                                    setCode(null)
+                                    setQRCode("");
+                                    setCode("")
+                                    setError("")
                                     setOpen(false);
                                 }}
                                 variant="outline">
