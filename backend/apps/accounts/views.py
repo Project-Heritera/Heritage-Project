@@ -828,6 +828,43 @@ def generate_mfa_qr(request):
 
 @extend_schema(
     tags=["2FA"],
+    summary="Verify code",
+    description="Check code if it's valid.",
+    request=inline_serializer(
+        name="VerifyCodeRequest",
+        fields={
+            "code": serializers.IntegerField()
+        }
+    ),
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="VerifyMFA",
+            fields={
+                "success": serializers.BooleanField()
+            }
+        ), description='Successfully checked authentication.')
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_mfa(request):
+    code = request.data.get("code")  # user enters 6-digit number
+    user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "No MFA secret set"}, status=400)
+
+    totp = pyotp.TOTP(user.totp_secret)
+
+    if totp.verify(code):
+        # Mark user as MFA enabled (optional)
+        return Response({"success": True}, status=200)
+    else:
+        return Response({"success": False, "error": "Invalid code"}, status=200)
+
+
+@extend_schema(
+    tags=["2FA"],
     summary="Disable 2FA",
     description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
     request=None,
