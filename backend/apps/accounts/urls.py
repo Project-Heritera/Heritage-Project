@@ -7,6 +7,8 @@ urlpatterns = [
     #2fa
     path("generate_mfa_qr/", generate_mfa_qr),
     path("verify_mfa/", verify_mfa),
+    path("login_step1/", login_step1),
+    path("login_verify_mfa/", login_verify_mfa),
     #account
     path('signup/', signup_user, name='signup'),
     path('delete-account/', delete_account, name='delete_account'),
