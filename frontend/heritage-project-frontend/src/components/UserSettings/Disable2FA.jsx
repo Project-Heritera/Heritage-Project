@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import api from "../../services/api"
 import { AlertCircle } from "lucide-react"
+import { tr } from "date-fns/locale";
 
 function Disable2FA({ open, setOpen, setChecked }) {
     //Store data for whats being edited
@@ -45,6 +46,7 @@ function Disable2FA({ open, setOpen, setChecked }) {
     const verifyCode = async () => {
         if (code.length < 6) {
             setError("Invalid code. Code must be a 6 digit number.")
+            setChecked(true)
             return
         }
         try {
@@ -56,16 +58,19 @@ function Disable2FA({ open, setOpen, setChecked }) {
             if (!data.success) {
                 //error ask to redo
                 setError("Invalid code. Please try again.")
+                setChecked(true)
             } else {
                 console.log("SUCCESS validating 2FA!")
                 setQRCode("");
                 setCode("")
                 setError("")
+                setChecked(false)
                 setOpen(false);
             }
         } catch (error) {
             console.error("Error validating 2FA:", error)
             setError("Server error. Please try again.")
+            setChecked(true)
         }
     }
 
@@ -122,6 +127,7 @@ function Disable2FA({ open, setOpen, setChecked }) {
                                     setQRCode("");
                                     setCode("")
                                     setError("")
+                                    setChecked(true)
                                     setOpen(false);
                                 }}
                                 variant="outline">

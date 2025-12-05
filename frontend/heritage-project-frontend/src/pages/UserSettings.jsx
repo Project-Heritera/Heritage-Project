@@ -58,10 +58,12 @@ function CourseDashboard() {
             <Enable2FA
                 open={enable2FAOpen}
                 setOpen={setEnable2FAOpen}
+                setChecked={setIs2FAEnabled}
             />
             <Disable2FA
                 open={disable2FAOpen}
                 setOpen={setDisable2FAOpen}
+                setChecked={setIs2FAEnabled}
             />
             {/* Header Area */}
             <div className="w-full bg-white border-b px-6 py-4 mb-8">

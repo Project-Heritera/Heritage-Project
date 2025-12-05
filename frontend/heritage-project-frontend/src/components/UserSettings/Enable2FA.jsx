@@ -43,6 +43,7 @@ function Enable2FA({ open, setOpen, setChecked }) {
     const verifyCode = async () => {
         if (code.length < 6) {
             setError("Invalid code. Code must be a 6 digit number.")
+            setChecked(false)
             return
         }
         try {
@@ -54,16 +55,19 @@ function Enable2FA({ open, setOpen, setChecked }) {
             if (!data.success) {
                 //error ask to redo
                 setError("Invalid code. Please try again.")
+                setChecked(false)
             } else {
                 console.log("SUCCESS validating 2FA!")
                 setQRCode("");
                 setCode("")
                 setError("")
+                setChecked(true)
                 setOpen(false);
             }
         } catch (error) {
             console.error("Error validating 2FA:", error)
             setError("Server error. Please try again.")
+            setChecked(false)
         }
     }
 
@@ -130,6 +134,7 @@ function Enable2FA({ open, setOpen, setChecked }) {
                                     setQRCode("");
                                     setCode("")
                                     setError("")
+                                    setChecked(false)
                                     setOpen(false);
                                 }}
                                 variant="outline">
