@@ -55,7 +55,8 @@ const QuestionTaskComponentWrapper = forwardRef(
     const [showHint, setShowHint] = useState(false);
     const questionComponentRef = useRef(null);
 
-    const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext); // states from task
+    const { taskStatus, setTaskStatus, badge_title, badge_image_url } =
+      useContext(TaskGlobalContext); // states from task
     //for badge award
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
     const Navigate = useNavigate();
@@ -190,17 +191,15 @@ const QuestionTaskComponentWrapper = forwardRef(
         <Modal
           isOpen={badgeAwardOpen}
           onClose={() => {
-            Navigate(-1)
+            Navigate(-1);
           }}
         >
           <BadgeAward
-            badge_title={"test badge"}
+            badge_title={badge_title}
             onClose={() => {
-              Navigate(-1)
+              Navigate(-1);
             }}
-            badge_image_url={
-              "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"
-            }
+            badge_image_url={badge_image_url}
           />
         </Modal>
       </Card>

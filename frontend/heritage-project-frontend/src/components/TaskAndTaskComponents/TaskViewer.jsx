@@ -11,6 +11,8 @@ const TaskViewer = forwardRef(
       initialAttempts = 1,
       initialMetadata = {},
       taskID,
+      badge_title,
+      badge_image_url,
     },
     ref
   ) => {
@@ -26,12 +28,15 @@ const TaskViewer = forwardRef(
       // if s is already a key (e.g. 'COMPLE') and exists in statusTypes, return it
       if (Object.prototype.hasOwnProperty.call(statusTypes, s)) return s;
       // if s is a display string (e.g. 'COMPLETE'), map to key
-      if (statusDisplayToKey && statusDisplayToKey[s]) return statusDisplayToKey[s];
+      if (statusDisplayToKey && statusDisplayToKey[s])
+        return statusDisplayToKey[s];
       return null;
     };
 
     // store canonical status key in state (e.g. 'COMPLE')
-    const [taskStatus, setTaskStatusState] = useState(getStatusKey(initialStatus) ?? "NOSTAR");
+    const [taskStatus, setTaskStatusState] = useState(
+      getStatusKey(initialStatus) ?? "NOSTAR"
+    );
 
     // Expose a setter that accepts either display or key and normalizes to the canonical key
     const setTaskStatus = (val) => {
@@ -52,25 +57,62 @@ const TaskViewer = forwardRef(
     const contextValues = {
       taskStatus,
       setTaskStatus,
+      badge_title,
+      badge_image_url
     };
 
+    const renderContent = () => {
+      const questionProgressData = {
+        attempts: attempts,
+        status: taskStatus,
+        metadata: metadata,
+      };
 
-const renderContent = () => {
-  const questionProgressData = {
-    attempts: attempts,
-    status: taskStatus,
-    metadata: metadata,
-  };
+      // CASE 1: Completed
+      if (taskStatus === "COMPLE") {
+        return (
+          <div className="relative pt-10">
+            <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+              <CheckCircle size={32} />
+              Complete
+            </div>
+            <div>
+              <TaskBase
+                components={taskComponents}
+                isEditing={false}
+                contextValues={contextValues}
+                taskID={taskID}
+                questionProgressData={questionProgressData}
+              />
+            </div>
+          </div>
+        );
+      }
 
-  // CASE 1: Completed
-  if (taskStatus === "COMPLE") {
-    return (
-      <div className="relative pt-10">
-        <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
-          <CheckCircle size={32} />
-          Complete
-        </div>
-        <div>
+      // CASE 2: Incomplete
+      if (taskStatus === "INCOMP") {
+        return (
+          <div className="relative pt-10">
+            {/* STATUS BADGE */}
+            <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+              <XCircle size={32} />
+              Incorrect
+            </div>
+            <div>
+              <TaskBase
+                components={taskComponents}
+                isEditing={false}
+                contextValues={contextValues}
+                taskID={taskID}
+                questionProgressData={questionProgressData}
+              />
+            </div>
+          </div>
+        );
+      }
+
+      // CASE 3: Default
+      return (
         <TaskBase
           components={taskComponents}
           isEditing={false}
@@ -78,50 +120,10 @@ const renderContent = () => {
           taskID={taskID}
           questionProgressData={questionProgressData}
         />
-        </div>
-      </div>
-    );
-  }
-
-  // CASE 2: Incomplete
-  if (taskStatus === "INCOMP") {
-    return (
-         <div className="relative pt-10">
-        {/* STATUS BADGE */}
-        <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
-          <XCircle size={32} />
-          Incorrect
-        </div>
-        <div>
-
-        <TaskBase
-          components={taskComponents}
-          isEditing={false}
-          contextValues={contextValues}
-          taskID={taskID}
-          questionProgressData={questionProgressData}
-        />
-        </div>
-      </div>
-    );
-  }
-
-  // CASE 3: Default
-  return (
-    <TaskBase
-      components={taskComponents}
-      isEditing={false}
-      contextValues={contextValues}
-      taskID={taskID}
-      questionProgressData={questionProgressData}
-    />
-  );
-};
-return <div className="task-viewer">{renderContent()}</div>;
-
+      );
+    };
+    return <div className="task-viewer">{renderContent()}</div>;
   }
 );
-
-
 
 export default TaskViewer;

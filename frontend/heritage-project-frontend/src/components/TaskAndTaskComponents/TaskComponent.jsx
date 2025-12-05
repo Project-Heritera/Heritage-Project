@@ -1,7 +1,9 @@
 import PropTypes from "prop-types";
 import { update_task_progress } from "@/services/room";
+import { TaskGlobalContext } from "./TaskBase";
 import {
   useImperativeHandle,
+  useContext,
   forwardRef,
   useEffect,
   useState,
@@ -38,6 +40,8 @@ const TaskComponent = forwardRef(function TaskComponent(
   //for badge award
   const [badgeAwardOpen, setBadgeAwardOpen]= useState(false);
   const Navigate = useNavigate();
+  const { taskStatus, setTaskStatus, badge_title, badge_image_url } =
+      useContext(TaskGlobalContext); // states from task
 
   // Assign default value if newly created
   useEffect(() => {
@@ -138,12 +142,12 @@ const TaskComponent = forwardRef(function TaskComponent(
           }}
         >
           <BadgeAward
-            badge_title={"test badge"}
+            badge_title={badge_title}
             onClose={() => {
               Navigate(-1)
             }}
             badge_image_url={
-              "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"
+              badge_image_url
             }
           />
         </Modal>
