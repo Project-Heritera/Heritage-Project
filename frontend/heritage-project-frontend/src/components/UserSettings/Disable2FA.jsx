@@ -46,7 +46,7 @@ function Enable2FA({ open, setOpen }) {
             return
         }
         try {
-            const response = await api.post(`/accounts/verify_mfa/`,
+            const response = await api.post(`/accounts/login_step2/`,
                 {
                     code: code
                 })
