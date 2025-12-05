@@ -740,7 +740,15 @@ def remove_friend(request, username):
     description="Generates a MFA QR code.",
     request=None,
     responses={
-        200: OpenApiResponse(description='Sent code successfully.')
+        200: OpenApiResponse(inline_serializer(
+            name="SendQRResponse",
+            fields={
+                "qr_code_base64": serializers.ImageField(),
+                "secret": serializers.CharField,
+                "otpauth_uri": serializers.CharField()
+            }
+        ), description='Sent code successfully.'
+    )
     }
 )
 @api_view(["GET"])
@@ -777,7 +785,13 @@ def generate_mfa_qr(request):
     description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
     request=None,
     responses={
-        200: OpenApiResponse(description='2FA removed successfully.')
+        200: OpenApiResponse(inline_serializer(
+            name="Disable2FAResponse",
+            fields={
+                "message": serializers.CharField()
+            }
+        ), 
+                             description='2FA removed successfully.')
     }
 )
 @api_view(["POST"])
@@ -815,7 +829,12 @@ def disable_mfa(request):
         }
     ),
     responses={
-        200: OpenApiResponse(description='Successfully authenticated.'),
+        200: OpenApiResponse(inline_serializer(
+            name="VerifyMFA",
+            fields={
+                "success": serializers.BooleanField()
+            }
+        ), description='Successfully authenticated.'),
         400: OpenApiResponse(description='Invalid code or no MFA secret set.'),
     }
 )
@@ -842,7 +861,25 @@ def verify_mfa(request):
     summary="Login (Step 1)",
     description="Checks username & password. Returns MFA requirement or full JWT tokens.",
     request=LoginSerializer,
-    responses={200: OpenApiResponse(description="Login successful or MFA required.")}
+    responses={
+        201: OpenApiResponse(inline_serializer(
+                name="LoginStep1Response1",
+                fields={
+                    "mfa_required": serializers.BooleanField(),
+                    "access": serializers.CharField(),
+                    "refresh": serializers.CharField()
+                }
+            ), 
+            description="Login successful or MFA required."),
+        200: OpenApiResponse(inline_serializer(
+                name="LoginStep1Response2",
+                fields={
+                    "mfa_required": serializers.BooleanField(),
+                    "temp_token": serializers.CharField()
+                }
+            )
+        )
+    }
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -864,7 +901,7 @@ def login_step1(request):
                 "access": str(refresh.access_token),
                 "refresh": str(refresh)
             },
-            status=200
+            status=201
         )
 
     # MFA enabled → return temp token
@@ -885,7 +922,14 @@ def login_step1(request):
     description="Verify MFA code using the temporary token. Returns full JWT tokens.",
     request=VerifyLoginMFARequest,
     responses={
-        200: OpenApiResponse(description="MFA success and logged in."),
+        200: OpenApiResponse(inline_serializer(
+            name="LoginStep2Response",
+            fields={
+                "mfa_success": serializers.BooleanField(),
+                "access": serializers.CharField(),
+                "refresh": serializers.CharField()
+            }
+        ), description="MFA success and logged in."),
         400: OpenApiResponse(description="Missing temp_token or code."),
         401: OpenApiResponse(description="Code is invalid."),
     },
