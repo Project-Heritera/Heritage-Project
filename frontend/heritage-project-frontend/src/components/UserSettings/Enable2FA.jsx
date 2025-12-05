@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import api from "../../services/api"
 import { AlertCircle } from "lucide-react"
 
-function Enable2FA({ open, setOpen }) {
+function Enable2FA({ open, setOpen, setChecked }) {
     //Store data for whats being edited
     const [users, setUsers] = useState([])
     const [QRCode, setQRCode] = useState("")

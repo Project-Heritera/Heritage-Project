@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import api from "../../services/api"
 import { AlertCircle } from "lucide-react"
 
-function Enable2FA({ open, setOpen }) {
+function Disable2FA({ open, setOpen, setChecked }) {
     //Store data for whats being edited
     const [users, setUsers] = useState([])
     const [QRCode, setQRCode] = useState("")
@@ -27,7 +27,9 @@ function Enable2FA({ open, setOpen }) {
         setLoading(true)
         const getCode = async () => {
             try {
-                const genResponse = await api.get(`/accounts/generate_mfa_qr/`)
+                const genResponse = await api.post(`/accounts/verify_mfa/`, {
+                    code: code
+                })
                 const genData = genResponse.data
                 setQRCode(genData.qr_code_base64);
                 setLoading(false)
@@ -73,9 +75,9 @@ function Enable2FA({ open, setOpen }) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[380px]">
                 <DialogHeader>
-                    <DialogTitle>Enable 2FA</DialogTitle>
+                    <DialogTitle>Disable 2FA</DialogTitle>
                     <DialogDescription>
-                        Use the authenticator app of your choice to scan this QR code. Then enter the code to continue.
+                        Enter your code to disable 2fa - disabling 2fa will make your account vulnerable to brute force attacks.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -128,7 +130,7 @@ function Enable2FA({ open, setOpen }) {
                         </div>
                         <div>
                             <Button onClick={verifyCode}>
-                                Verify & Enable
+                                Verify & Disable
                             </Button>
                         </div>
                     </div>
@@ -138,4 +140,4 @@ function Enable2FA({ open, setOpen }) {
     )
 }
 
-export default Enable2FA;
+export default Disable2FA;

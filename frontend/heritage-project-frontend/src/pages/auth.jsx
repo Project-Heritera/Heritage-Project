@@ -78,7 +78,7 @@ const AuthLogin = () => {
       //set token and navigate home
       if (response.data.mfa_success) {
         //Navigate home
-        console.log("Wraping up login request because success")
+        console.log("Wraping up login")
         login(username, password, response)
         navigate(`/home`)
       } else {
