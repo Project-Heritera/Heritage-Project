@@ -123,7 +123,7 @@ const RoomEditor = () => {
 
   const addNewTask = () => {
     const newTask = {
-      tags: [],
+      tags: ["Easy"],
       task_components: [],
     };
     setRoomTasks((prev) => [...prev, newTask]);
@@ -333,15 +333,12 @@ const RoomEditor = () => {
                   </CardContent>
                 </Card>
               ))}
-
-              {/* Add Task Button */}
               <Button
                 onClick={addNewTask}
-                variant="outline"
                 className="w-full h-12 gap-2 border-dashed"
               >
                 <CirclePlus className="w-5 h-5" />
-                <span>Add New Task</span>
+                Add New Task
               </Button>
             </div>
           </div>

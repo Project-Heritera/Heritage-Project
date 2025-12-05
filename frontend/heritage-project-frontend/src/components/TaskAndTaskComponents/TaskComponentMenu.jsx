@@ -1,34 +1,49 @@
 import { X } from 'lucide-react';
 import { taskComponentTypes } from '../../utils/taskComponentTypes';
+import { Button } from '../ui/button';
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export const TaskComponentMenu = ({ onSelect, onClose }) => {
 const componentKeys = Object.keys(taskComponentTypes);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Select a Task Type</h2>
-          <button onClick={onClose} className="">
-            <X size={24} />
-          </button>
-        </div>
-        <div className="space-y-2">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <Card
+        className="w-full max-w-md mx-4 rounded-2xl border shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CardHeader className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Select a Task Type</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </CardHeader>
+
+        <CardContent className="space-y-2">
           {componentKeys.map((type, index) => (
-            <button
+            <Button
               key={index}
+              variant="ghost"
+              className="flex flex-col items-start justify-start hover:bg-muted"
               onClick={() => {
                 onSelect(type);
                 onClose();
               }}
-              className="w-full text-left p-4"
             >
-              <div className="font-semibold ">{taskComponentTypes[type].label}</div>
-              <div className="text-sm mt-1">{type.description}</div>
-            </button>
+              <span className="font-semibold">{taskComponentTypes[type].label}</span>
+              <span className="text-sm text-muted-foreground mt-1">{taskComponentTypes[type].description}</span>
+            </Button>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

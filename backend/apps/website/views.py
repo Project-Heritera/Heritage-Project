@@ -526,7 +526,7 @@ def get_courses(request):
     qs = (
         Course.objects
         .user_progress_percent(user)
-        .filter(visibility=VisibilityLevel.PUBLIC)
+        .filter(Q(visibility=VisibilityLevel.PUBLIC) | Q(creator=user))
     )
 
     if not qs.exists():
