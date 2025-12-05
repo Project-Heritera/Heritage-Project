@@ -230,18 +230,23 @@ const RoomViewer = () => {
                   <CardTitle>Task #{index + 1}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TaskViewer
-                    ref={(el) => (taskRefs.current[task.task_id] = el)}
-                    initialComponents={
-                      task.task_components || task.components || []
-                    }
-                    initialStatus={task.progress?.status || null}
-                    initialAttempts={task.progress?.attempts ?? 0}
-                    initialMetadata={task.progress?.metadata || {}}
-                    taskID={task.task_id}
-                    badge_title={badge_title}
-                    badge_image_url={badge_image_url}
-                  />
+                  <div
+                    className="relative" // 👈 anchor for modal positioning
+                    id={`task-container-${task.task_id}`}
+                  >
+                    <TaskViewer
+                      ref={(el) => (taskRefs.current[task.task_id] = el)}
+                      initialComponents={
+                        task.task_components || task.components || []
+                      }
+                      initialStatus={task.progress?.status || null}
+                      initialAttempts={task.progress?.attempts ?? 0}
+                      initialMetadata={task.progress?.metadata || {}}
+                      taskID={task.task_id}
+                      badge_title={badge_title}
+                      badge_image_url={badge_image_url}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ))}

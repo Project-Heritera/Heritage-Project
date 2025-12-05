@@ -33,22 +33,7 @@ const TaskComponent = forwardRef(function TaskComponent(
 ) {
   const [jsonData, setJsonData] = useState(taskComponentSpecificData);
   const childRef = useRef(null);
-  //for static task component checkbox
- const [isComplete, setIsComplete] = useState(() => {
-  if (!isEditing) {
-    return questionProgressData.status === "COMPLE";
-  } else {
-    return "INCOMP";
-  }
-});
-  
-  //for badge award
-  const [badgeAwardOpen, setBadgeAwardOpen]= useState(false);
-  const Navigate = useNavigate();
-  const { taskStatus, setTaskStatus, badge_title, badge_image_url } =
-      useContext(TaskGlobalContext); // states from task
-
-  // Assign default value if newly created
+   // Assign default value if newly created
   useEffect(() => {
     if (jsonData === "") {
       setJsonData(JSON.stringify(componentType.defaultValue));
@@ -77,31 +62,7 @@ const TaskComponent = forwardRef(function TaskComponent(
     serialize: serializeInternal,
   }));
 
-  const onStaticTaskComponentComplete = async () => {
-    try {
-      //update task progress
-      const update_task_progress_payload = {
-        status: "COMPLE",
-      };
-      // call the backend and wait for the response
-      const room_completed = await update_task_progress(
-        taskID,
-        update_task_progress_payload
-      );
-      if (room_completed == true) {
-        // display award badge modal
-        setBadgeAwardOpen(true)
-      } else if (room_completed == false) {
-        return;
-      } else {
-        Debug.error("Failed to update task progress", error);
-      }
-    } catch {
-      Debug.log("Failed to update task progress");
-    }
-  };
-
-  // Render the correct component based on type
+   // Render the correct component based on type
   const Component = taskComponentTypes[componentType]?.component;
 
   if (!Component) {
@@ -126,39 +87,7 @@ const TaskComponent = forwardRef(function TaskComponent(
 return (
   <>
     <Component ref={childRef} isEditing={isEditing} jsonData={jsonData} />
-
-    {!isEditing && (
-      <CardContent className="mt-4 flex items-center gap-2">
-        <input
-          type="checkbox"
-          id={`complete-${taskID}`}
-          checked={isComplete}
-          onChange={async (e) => {
-            setIsComplete(e.target.checked);
-            if (e.target.checked) {
-              await onStaticTaskComponentComplete();
-            }
-          }}
-        />
-        <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
-      </CardContent>
-    )}
-
-    <Modal
-      isOpen={badgeAwardOpen}
-      onClose={() => {
-        Navigate(-1);
-      }}
-    >
-      <BadgeAward
-        badge_title={badge_title}
-        onClose={() => {
-          Navigate(-1);
-        }}
-        badge_image_url={badge_image_url}
-      />
-    </Modal>
-  </>
+</>
 );
   }
 });

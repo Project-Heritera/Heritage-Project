@@ -3,10 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
-from simple_history.models import HistoricalRecords
-from heritage_project_backend.models import IPAddressHistoricalModel
 from .utils import censor_json, censor_with_xxxx
-from auditlog.registry import auditlog
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -217,7 +214,6 @@ class Badge(models.Model):
     image = models.ImageField(upload_to="Images/", default=default_badge_image)
     title = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=200, blank=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return self.title
@@ -245,7 +241,6 @@ class UserBadge(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     awarded_at = models.DateTimeField(auto_now_add=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.user}'s {self.badge}"
@@ -279,7 +274,6 @@ class Course(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
     image = models.ImageField(upload_to="Images/", blank=True)  # no default
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return self.title
@@ -323,7 +317,6 @@ class Section(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
     image = models.ImageField(upload_to="Images/", blank=True)  # no default
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -366,7 +359,6 @@ class Room(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
     image = models.ImageField(upload_to="Images/", blank=True)  # no default
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
@@ -381,7 +373,6 @@ class Room(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def save(self, *args, **kwargs):
         self.name = censor_with_xxxx(self.name)
@@ -401,7 +392,6 @@ class Task(OrderedModel):
     order_with_respect_to = (
         "room"  # this creates a 'order' int column in the model table
     )
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.room.title if self.room else 'No Room'} - {self.pk}"
@@ -430,7 +420,6 @@ class TaskComponent(OrderedModel):
     order_with_respect_to = (
         "task"  # this creates a 'order' int column in the model table
     )
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.task} - {self.type}"
@@ -494,7 +483,6 @@ class ProgressOfTask(models.Model):
     status = models.CharField(max_length=50, choices=Status, default=Status.NOSTAR)
     attempts = models.IntegerField(default=0)
     metadata = models.JSONField(default=dict, blank=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         # Safely resolve room title from task if available
@@ -523,7 +511,6 @@ class SavedTask(models.Model):
     status = models.CharField(max_length=50, choices=Status, default=Status.NOSTAR)
     saved_at = models.DateTimeField()
     metadata = models.JSONField(default=dict, blank=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return f"{self.user.username if self.user else 'Unknown'} → {self.task if self.task else 'No Saved Problems'} ({self.status})"
@@ -535,7 +522,6 @@ class Geolocation(models.Model):
     longitude = models.FloatField()
     rating = models.FloatField(null=True, blank=True)
     phone = models.CharField(max_length=50, null=True, blank=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return self.name
@@ -543,20 +529,6 @@ class Geolocation(models.Model):
 class Report(models.Model):
     messege = models.CharField(max_length=1000)
     reported_obj = models.JSONField(default=dict, blank=True)
-    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     def __str__(self):
         return self.messege
-
-
-auditlog.register(Course)
-auditlog.register(Section)
-auditlog.register(Room)
-auditlog.register(Task)
-auditlog.register(TaskComponent)
-auditlog.register(Report)
-auditlog.register(ProgressOfTask)
-auditlog.register(Badge)
-auditlog.register(UserBadge)
-auditlog.register(Tag)
-auditlog.register(SavedTask)
