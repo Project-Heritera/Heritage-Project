@@ -9,7 +9,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.website.models import Course
-from friendship.models import Block, Friend, FriendshipRequest
+from friendship.models import Block, Friend, FriendshipRequest, cache
 from apps.website.serializers import CourseSerializer
 from .serializer import FriendshipRequestSerializer, LoginSerializer, UserSerializer, VerifyLoginMFARequest
 from friendship.models import Friend, Follow, Block, FriendshipRequest
@@ -819,6 +819,25 @@ def disable_mfa(request):
     )
 
 
+def rate_limit(key: str, limit: int, window_seconds: int):
+    """
+    Return True if limit exceeded, else False.
+    Automatically expires after window.
+    """
+    attempts = cache.get(key, 0)
+
+    if attempts >= limit:
+        return True  # limit exceeded
+
+    if attempts == 0:
+        cache.set(key, 1, timeout=window_seconds)
+    else:
+        cache.incr(key)
+
+    return False
+
+
+
 @extend_schema(
     tags=["2FA"],
     summary="Verify code",
@@ -841,45 +860,53 @@ def disable_mfa(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def verify_mfa(request):
-    code = request.data.get("code")  # user enters 6-digit number
+    code = request.data.get("code")
     user = request.user
 
     if not user.totp_secret:
         return Response({"error": "No MFA secret set"}, status=400)
 
+    # ------------------------------
+    # RATE LIMIT: 5 attempts per 15 minutes
+    # ------------------------------
+    cache_key = f"verify_mfa_{user.id}"
+
+    if rate_limit(cache_key, limit=5, window_seconds=900):
+        return Response(
+            {"error": "Too many attempts. Try again in 15 minutes."},
+            status=429
+        )
+    # ------------------------------
+
     totp = pyotp.TOTP(user.totp_secret)
 
     if totp.verify(code):
-        # Mark user as MFA enabled (optional)
         return Response({"success": True}, status=200)
-    else:
-        return Response({"success": False, "error": "Invalid code"}, status=200)
+
+    return Response({"success": False, "error": "Invalid code"}, status=200)
 
 
-@extend_schema(
-    tags=["2FA"],
-    summary="Login (Step 1)",
-    description="Checks username & password. Returns MFA requirement or full JWT tokens.",
-    request=LoginSerializer,
-    responses={
-        201: OpenApiResponse(inline_serializer(
-                name="LoginStep1Response1",
-                fields={
-                    "mfa_required": serializers.BooleanField(),
-                    "access": serializers.CharField(),
-                    "refresh": serializers.CharField()
-                }
-            ), 
-            description="Login successful or MFA required."),
-        200: OpenApiResponse(inline_serializer(
-                name="LoginStep1Response2",
-                fields={
-                    "mfa_required": serializers.BooleanField(),
-                    "ephemeral_token": serializers.CharField()
+@extend_schema( 
+        tags=["2FA"], 
+        summary="Login (Step 1)", 
+        description="Checks username & password. Returns MFA requirement or full JWT tokens.", 
+        request=LoginSerializer, 
+        responses={ 
+            201: OpenApiResponse(inline_serializer( 
+                name="LoginStep1Response1", 
+                fields={ "mfa_required": serializers.BooleanField(), 
+                "access": serializers.CharField(), 
+                "refresh": serializers.CharField() } ), 
+                description="Login successful or MFA required."), 
+            200: OpenApiResponse(inline_serializer( 
+                name="LoginStep1Response2", 
+                fields={ 
+                    "mfa_required": serializers.BooleanField(), 
+                    "ephemeral_token": serializers.CharField() 
                 }
             )
-        )
-    }
+        ) 
+    } 
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -887,12 +914,25 @@ def login_step1(request):
     username = request.data.get("username")
     password = request.data.get("password")
 
+    # --------------------------
+    # RATE LIMIT: 10 tries / 15 min
+    # --------------------------
+    client_ip = request.META.get("REMOTE_ADDR", "unknown")
+    key = f"login1_{username}_{client_ip}"
+
+    if rate_limit(key, limit=10, window_seconds=900):
+        return Response(
+            {"error": "Too many login attempts. Try again in 15 minutes."},
+            status=429
+        )
+    # --------------------------
+
     user = authenticate(username=username, password=password)
 
     if user is None:
         return Response({"error": "Invalid username or password."}, status=400)
 
-    # If user has no MFA, issue tokens immediately
+    # User has no MFA
     if not user.totp_secret:
         refresh = RefreshToken.for_user(user)
         return Response(
@@ -904,14 +944,13 @@ def login_step1(request):
             status=201
         )
 
-    # 2. MFA Enabled? Issue a signed "ephemeral" token
-    # This signer uses your SECRET_KEY, so it's secure.
-    signer = TimestampSigner() 
+    # MFA required → create ephemeral token
+    signer = TimestampSigner()
     ephemeral_token = signer.sign(user.id)
 
     return Response({
         "mfa_required": True,
-        "ephemeral_token": ephemeral_token 
+        "ephemeral_token": ephemeral_token
     }, status=200)
 
 
@@ -936,33 +975,36 @@ def login_step1(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_step2(request):
-    # 1. Get the data
-    # IMPORTANT: Ensure your Frontend sends "ephemeral_token" matching this key
-    # If your serializer expects "temp_token", use that key here instead.
-    token = request.data.get("ephemeral_token") 
+    token = request.data.get("ephemeral_token")
     otp = request.data.get("otp")
 
-    # 2. Safety Check (Prevents 500 error if keys are missing)
     if not token or not otp:
         return Response({"error": "Missing ephemeral_token or otp"}, status=400)
 
     signer = TimestampSigner()
-    User = get_user_model() # Move this UP, before usage
+    User = get_user_model()
 
     try:
-        # 3. Unsign the token
-        # This extracts the user_id safely
         user_id = signer.unsign(token, max_age=300)
-        
-        # 4. Get the User
         user = User.objects.get(id=user_id)
-        
     except (BadSignature, SignatureExpired):
         return Response({"error": "Invalid or expired login session."}, status=400)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=404)
 
-    # 5. Verify MFA
+    # --------------------------
+    # RATE LIMIT: 5 MFA tries / 15 min
+    # --------------------------
+    key = f"login2_mfa_{user.id}"
+
+    if rate_limit(key, limit=5, window_seconds=900):
+        return Response(
+            {"error": "Too many MFA attempts. Try again in 15 minutes."},
+            status=429
+        )
+    # --------------------------
+
+    # Verify MFA
     if not user.totp_secret:
         return Response({"error": "User does not have MFA enabled"}, status=400)
 
@@ -971,7 +1013,10 @@ def login_step2(request):
     if not totp.verify(otp):
         return Response({"error": "Invalid MFA code"}, status=401)
 
-    # 6. Issue Real Tokens
+    # Success → reset attempt counter
+    cache.delete(key)
+
+    # Issue real tokens
     refresh = RefreshToken.for_user(user)
     return Response({
         "mfa_success": True,
