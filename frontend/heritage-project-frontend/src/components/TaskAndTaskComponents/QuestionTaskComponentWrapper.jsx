@@ -7,6 +7,7 @@ import {
   useRef,
 } from "react";
 import statusTypes from "../../utils/statusTypes";
+import { Checkbox } from "@radix-ui/react-checkbox";
 import BadgeAward from "../RoomsPage/BadgeAward";
 import { useNavigate } from "react-router-dom";
 import Modal from "../Modal";
@@ -57,6 +58,7 @@ const QuestionTaskComponentWrapper = forwardRef(
 
     const { taskStatus, setTaskStatus, badge_title, badge_image_url } =
       useContext(TaskGlobalContext); // states from task
+
     //for badge award
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
     const Navigate = useNavigate();
