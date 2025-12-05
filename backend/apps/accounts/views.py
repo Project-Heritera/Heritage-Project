@@ -127,18 +127,18 @@ def delete_account(request):
     tags=["Users"],
     summary="Update the user's info",
     description="Update the profile picture and the description of the currently logged in user.",
-    request=UserSerializer(),
+    request=inline_serializer(
+        name="UpdateUserInfoRequest",
+        fields={
+            "username": serializers.CharField(),
+            "profile_pic": serializers.ImageField(),
+            "description": serializers.CharField()
+        }
+    ),
     responses={
-        200: inline_serializer(
-            name="UpdateUserInfoResponse",
-            fields={
-                "user_id": serializers.IntegerField(),
-                "username": serializers.CharField(),
-                "profile_pic": serializers.ImageField(),
-                "description": serializers.CharField()
-            }
-        ),
-        403: OpenApiResponse(description="Cannot update email or password using this view.")
+        200: UserSerializer,
+        403: OpenApiResponse(description="Cannot update email or password using this view."),
+        400: OpenApiResponse(description="Serializer failed.")
     }
 )
 @api_view(['PUT'])
@@ -168,17 +168,8 @@ def update_user_info(request):
     description="Update the password or email of the currently logged in user.",
     request=UserSerializer(),
     responses={
-        200: inline_serializer(
-            name="UpdateUserImportantInfoResponse",
-            fields={
-                "user_id": serializers.IntegerField(),
-                "username": serializers.CharField(),
-                "email": serializers.EmailField(),
-                "password": serializers.CharField(),
-                "profile_pic": serializers.ImageField(),
-                "description": serializers.CharField()
-            }
-        )
+        200: UserSerializer,
+        400: OpenApiResponse(description="Serializer failed.")
     }
 )
 @api_view(['PUT'])

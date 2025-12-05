@@ -25,6 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(read_only=True)
     profile_pic = serializers.ImageField()
     description = serializers.CharField()
+    streak = serializers.IntegerField()
+    longest_streak = serializers.IntegerField()
+    date_joined = serializers.DateTimeField()
 
     class Meta:
         model = User
