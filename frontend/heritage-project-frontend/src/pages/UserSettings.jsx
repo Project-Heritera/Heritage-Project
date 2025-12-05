@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import Enable2FA from "@/components/UserSettings/Enable2FA";
 import Disable2FA from "@/components/UserSettings/Disable2FA";
+import ChangePassword from "../components/UserSettings/ChangePassword"
+import ChangeEmail from "@/components/UserSettings/ChangeEmail";
 
 
 //Displays a list of cours given a room
@@ -103,7 +105,7 @@ function CourseDashboard() {
                                 <div className="space-y-3 text-base ">
                                     <div className="flex justify-between ">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-gray-900 w-24">Name:</span>
+                                            <span className="font-bold text-gray-900 w-24">Username:</span>
                                             <span className="text-gray-700">{currentUser?.username || "claytakilerImperius"}</span>
                                         </div>
                                         <Button variant="outline">Change Username</Button>
@@ -114,7 +116,7 @@ function CourseDashboard() {
                                             <span className="font-bold text-gray-900 w-24">Email:</span>
                                             <span className="text-gray-700">{currentUser?.email}</span>
                                         </div>
-                                        <Button variant="outline">Update Email</Button>
+                                        <ChangeEmail/>
                                     </div>
 
                                     <div className="flex justify-between">
@@ -123,7 +125,7 @@ function CourseDashboard() {
                                             {/* Use static dots with wide tracking for a secure "masked" look */}
                                             <span className="text-gray-700 text-xl tracking-widest mt-1">••••••••••••</span>
                                         </div>
-                                        <Button variant="outline">Change password</Button>
+                                        <ChangePassword/>
                                     </div>
 
                                 </div>
