@@ -14,8 +14,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 class VerifyLoginMFARequest(serializers.Serializer):
-    temp_token = serializers.CharField()
-    code = serializers.CharField()
+    ephemeral_token = serializers.CharField(source="temp_token")
+    otp = serializers.CharField(source="code")
 
 # -------------------------------
 # User Serializer
