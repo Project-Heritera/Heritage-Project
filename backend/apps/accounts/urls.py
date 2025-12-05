@@ -7,7 +7,6 @@ urlpatterns = [
     #2fa
     path("generate_mfa_qr/", generate_mfa_qr),
     path("disable_mfa/", disable_mfa),
-    path("verify_mfa/", verify_mfa),
     path("login_step1/", login_step1),
     path("login_step2/", login_step2),
     path("check_mfa_enabled/", check_mfa_enabled),
@@ -21,6 +20,7 @@ urlpatterns = [
     # user info
     path("user_info/", get_user_info),
     path("update_user_info/", update_user_info),
+    path("update_vital_user_info/", update_user_important_info),
     path("another_user_info/<str:user_username>", get_another_user_info),
     path("all_users", all_users),
     # user courses info

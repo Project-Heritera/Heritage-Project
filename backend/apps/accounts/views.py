@@ -138,11 +138,52 @@ def delete_account(request):
                 "description": serializers.CharField()
             }
         ),
+        403: OpenApiResponse(description="Cannot update email or password using this view.")
     }
 )
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user_info(request):
+    user = request.user
+
+    if "email" in request.data or "password" in request.data:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    serializer = UserSerializer(
+        user,
+        data=request.data,
+        partial=True  # allows updating only provided fields
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["Users"],
+    summary="Update the user's password or email info",
+    description="Update the password or email of the currently logged in user.",
+    request=UserSerializer(),
+    responses={
+        200: inline_serializer(
+            name="UpdateUserImportantInfoResponse",
+            fields={
+                "user_id": serializers.IntegerField(),
+                "username": serializers.CharField(),
+                "email": serializers.EmailField(),
+                "password": serializers.CharField(),
+                "profile_pic": serializers.ImageField(),
+                "description": serializers.CharField()
+            }
+        )
+    }
+)
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_important_info(request):
     user = request.user
 
     serializer = UserSerializer(
@@ -835,55 +876,6 @@ def rate_limit(key: str, limit: int, window_seconds: int):
         cache.incr(key)
 
     return False
-
-
-
-@extend_schema(
-    tags=["2FA"],
-    summary="Verify code",
-    description="Check code if it's valid.",
-    request=inline_serializer(
-        name="VerifyCodeRequest",
-        fields={
-            "code": serializers.IntegerField()
-        }
-    ),
-    responses={
-        200: OpenApiResponse(inline_serializer(
-            name="VerifyMFA",
-            fields={
-                "success": serializers.BooleanField()
-            }
-        ), description='Successfully checked authentication.')
-    }
-)
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def verify_mfa(request):
-    code = request.data.get("code")
-    user = request.user
-
-    if not user.totp_secret:
-        return Response({"error": "No MFA secret set"}, status=400)
-
-    # ------------------------------
-    # RATE LIMIT: 5 attempts per 15 minutes
-    # ------------------------------
-    cache_key = f"verify_mfa_{user.id}"
-
-    if rate_limit(cache_key, limit=5, window_seconds=900):
-        return Response(
-            {"error": "Too many attempts. Try again in 15 minutes."},
-            status=429
-        )
-    # ------------------------------
-
-    totp = pyotp.TOTP(user.totp_secret)
-
-    if totp.verify(code):
-        return Response({"success": True}, status=200)
-
-    return Response({"success": False, "error": "Invalid code"}, status=200)
 
 
 @extend_schema( 
