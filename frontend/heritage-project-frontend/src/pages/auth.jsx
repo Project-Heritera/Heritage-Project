@@ -75,7 +75,7 @@ const AuthLogin = () => {
       //set token and navigate home
       if (response.mfa_success) {
         //Navigate home
-
+        login(username, password, response)
         navigate(`/home`)
       } else {
         setError("Invalid code. Please try again.")

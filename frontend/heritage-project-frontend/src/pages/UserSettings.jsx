@@ -36,6 +36,9 @@ function CourseDashboard() {
                 const currentUserData = currentUserResponse.data
                 console.log("Current user data is:", currentUserData)
                 setCurrentUser(currentUserData)
+                //Get if 2FA is enabled
+                const isEnabledResponse = await api.get(`/accounts/check_mfa_enabled/`)
+                setIs2FAEnabled(isEnabledResponse.data.mfa_enabled)
             } catch (error) {
                 console.error("Error retrieving user info: ", error)
             } finally {
