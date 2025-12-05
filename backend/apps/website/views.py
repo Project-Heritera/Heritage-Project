@@ -12,6 +12,9 @@ from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParam
 from rest_framework import serializers
 import json
 
+# Import the utility function to generate the serializer
+from .serializers import get_historical_serializer
+
 from .permissions import user_has_access
 from .serializers import (
     ProgressOfTaskSerializer,
@@ -1733,3 +1736,107 @@ def delete_report(request, report_id):
     report = get_object_or_404(Report, id=report_id)
     report.delete()
     return Response({"messege": "Report deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+from django.apps import apps
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
+
+# Import the utility function to generate the serializer
+from .serializers import get_historical_serializer
+
+# Define the schema for a SINGLE historical record object using standard OpenAPI dictionary structure.
+# This structure fixes the TypeError: 'OpenApiTypes' object is not callable.
+SINGLE_LOG_ENTRY_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'integer', 'description': 'Primary key of the historical record.'},
+        'history_date': {'type': 'string', 'format': 'date-time', 'description': 'Timestamp of the change.'},
+        'history_type': {'type': 'string', 'description': 'Type of change: "+" (create), "~" (update), "-" (delete).'},
+        'history_user': {'type': 'string', 'description': 'Username of the user who made the change.'},
+        'ip_address': {'type': 'string', 'description': 'IP address from which the change was made.'},
+        # NOTE: The actual original model fields (like 'name', 'price', etc.) 
+        # will also be included dynamically here.
+    }
+}
+
+class ModelHistoryLogView(APIView):
+    """
+    API view to return all historical records for a specific model instance.
+    
+    URL: /api/history/{app_label}/{model_name}/{object_id}/
+    
+    This view dynamically retrieves the correct HistoricalModel class generated 
+    by django-simple-history and uses a factory function to create a serializer 
+    that includes all base model fields and history metadata (like ip_address).
+    """
+
+    @extend_schema(
+        tags=["Audit"],
+        summary="Retrieve Historical Logs for Model Instance",
+        description=(
+            "Retrieves a JSON array of all historical records (changes) "
+            "for a specific model instance identified by its application label, "
+            "model name, and primary key (ID). Requires the model to use "
+            "django-simple-history for tracking."
+        ),
+        parameters=[
+            OpenApiParameter(name='app_label', type=OpenApiTypes.STR, location=OpenApiParameter.PATH, description='The Django application name (e.g., "blog").'),
+            OpenApiParameter(name='model_name', type=OpenApiTypes.STR, location=OpenApiParameter.PATH, description='The name of the model (e.g., "Post").'),
+            OpenApiParameter(name='object_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH, description='The primary key (ID) of the specific object.'),
+        ],
+        responses={
+            # Define the 200 response as an OpenApiResponse object containing the array structure
+            200: OpenApiResponse(
+                response={
+                    'type': 'array',
+                    'items': SINGLE_LOG_ENTRY_SCHEMA,
+                },
+                description="List of historical records retrieved successfully."
+            ),
+            404: OpenApiTypes.OBJECT,
+            400: OpenApiTypes.OBJECT,
+        }
+    )
+    def get(self, request, app_label, model_name, object_id, format=None):
+        try:
+            # 1. Dynamically find the base model (e.g., 'blog.Post')
+            Model = apps.get_model(app_label, model_name)
+        except LookupError:
+            # Handle case where app_label or model_name is invalid
+            return Response(
+                {"detail": f"Model '{app_label}.{model_name}' not found. Check app_label and model_name."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            # 2. Get the specific object using its primary key (ID)
+            obj = Model.objects.get(pk=object_id)
+        except Model.DoesNotExist:
+            # Handle case where the object ID is invalid for the given model
+            raise Http404(f"Object with ID {object_id} not found in {model_name}.")
+
+        # Check if the model has the history manager (i.e., if django-simple-history is used)
+        if not hasattr(Model, 'history'):
+            return Response(
+                {"detail": f"Model '{model_name}' does not appear to have historical tracking enabled."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # 3. Access the history manager and get the underlying historical model class
+        HistoricalModel = Model.history.model
+        
+        # 4. Dynamically generate the correct serializer for this HistoricalModel
+        HistoricalRecordSerializer = get_historical_serializer(HistoricalModel)
+
+        # 5. Access the history queryset, ordered descending (newest first)
+        history_queryset = obj.history.all().order_by('-history_date')
+
+        # 6. Serialize the data using the dynamically created serializer
+        serializer = HistoricalRecordSerializer(history_queryset, many=True)
+        
+        # 7. Return the JSON response
+        return Response(serializer.data)
