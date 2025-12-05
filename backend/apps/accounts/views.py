@@ -973,3 +973,29 @@ def login_verify_mfa(request):
         },
         status=200
     )
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Check MFA enabled",
+    description="Check if the user has MFA enabled or not.",
+    request=None,
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="CheckMFAResponse",
+            fields={
+                "mfa_enabled": serializers.BooleanField(),
+            }
+        ), description="Got enabled bool."),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_mfa_enabled(request):
+    user = request.user
+    enabled = False
+    if user.totp_secret:
+        enabled = True
+    
+    return Response({"mfa_enabled": enabled}, status=200)
+    
