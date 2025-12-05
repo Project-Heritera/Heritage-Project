@@ -24,7 +24,11 @@ const RoomViewer = () => {
   const { course_id, section_id, room_id } = useParams();
   const navigate = useNavigate();
   const showError = useErrorStore((state) => state.showError);
-  const [backgroundImage, setBackgroundImage] = useState(get_random_image_from_list())
+  const [backgroundImage, setBackgroundImage] = useState(
+    get_random_image_from_list()
+  );
+  const [badge_title, set_badge_title] = useState("");
+  const [badge_image_url, set_badge_image_url] = useState("");
 
   const [roomData, setRoomData] = useState({});
   const [roomTitle, setRoomTitle] = useState("Question Bank");
@@ -63,7 +67,13 @@ const RoomViewer = () => {
           setRoomTitle(room_data.title);
         }
         if (room_data.image) {
-          setBackgroundImage(room_data.image)
+          setBackgroundImage(room_data.image);
+        }
+        if (room_data.badge.image) {
+          set_badge_image_url(room_data.badge.image);
+        }
+        if (room_data.badge.title) {
+          set_badge_title(room_data.badge.title);
         }
         if (room_data.description) {
           setRoomDesc(room_data.description);
@@ -170,7 +180,7 @@ const RoomViewer = () => {
     // TODO: Show success message or navigate
   };
   return (
-  <div className="relative min-h-screen w-full">
+    <div className="relative min-h-screen w-full">
       {/* Background layer */}
       <div
         className="fixed inset-0 -z-10"
@@ -184,65 +194,68 @@ const RoomViewer = () => {
 
       {/* Foreground content */}
       <div className="room-editor flex flex-col px-8 py-6 relative z-10">
-    <Card className="mb-6">
-  <CardHeader className="pb-4">
-    <div className="flex items-center justify-between">
-      <Button
-        variant="ghost"
-        onClick={() => navigate(-1)}
-        className="text-blue-600 hover:text-blue-800 font-medium"
-      >
-        ← RETURN
-      </Button>
-    </div>
-    <div className="mt-2 space-y-3">
-      <CardTitle className="text-3xl font-bold">
-        Viewer for Room: {roomTitle}
-      </CardTitle>
-      <CardDescription className="text-base">{roomDesc}</CardDescription>
-      <p className="text-sm italic text-muted-foreground">
-        Created by: {roomCreator}
-      </p>
-    </div>
-  </CardHeader>
-</Card>
+        <Card className="mb-6">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                ← RETURN
+              </Button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <CardTitle className="text-3xl font-bold">
+                Viewer for Room: {roomTitle}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {roomDesc}
+              </CardDescription>
+              <p className="text-sm italic text-muted-foreground">
+                Created by: {roomCreator}
+              </p>
+            </div>
+          </CardHeader>
+        </Card>
 
-      <div className="room-editor-body">
-   <div className="task-editor flex flex-col gap-6 items-center">
-  {roomTasks.map((task, index) => (
-    <Card
-      key={task.task_id}
-      className="w-full max-w-6xl shadow-lg border-gray-200 hover:shadow-xl transition-shadow duration-300"
->
-      <CardHeader>
-        <CardTitle>Task #{index+1}</CardTitle>
-        {task.title && <CardDescription>{task.title}</CardDescription>}
-      </CardHeader>
-      <CardContent>
-        <TaskViewer
-          ref={(el) => (taskRefs.current[task.task_id] = el)}
-          initialComponents={task.task_components || task.components || []}
-          intialStatus={task.progress?.status || null}
-          initialAttempts={task.progress?.attempts ?? 0}
-          initialMetadata={task.progress?.metadata || {}}
-          taskId={task.task_id}
-        />
-      </CardContent>
-    </Card>
-  ))}
-</div>
+        <div className="room-editor-body">
+          <div className="task-editor flex flex-col gap-6 items-center">
+            {roomTasks.map((task, index) => (
+              <Card
+                key={task.task_id}
+                className="w-full max-w-6xl shadow-lg border-gray-200 hover:shadow-xl transition-shadow duration-300"
+              >
+                <CardHeader>
+                  <CardTitle>Task #{index + 1}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TaskViewer
+                    ref={(el) => (taskRefs.current[task.task_id] = el)}
+                    initialComponents={
+                      task.task_components || task.components || []
+                    }
+                    initialStatus={task.progress?.status || null}
+                    initialAttempts={task.progress?.attempts ?? 0}
+                    initialMetadata={task.progress?.metadata || {}}
+                    taskID={task.task_id}
+                    badge_title={badge_title}
+                    badge_image_url={badge_image_url}
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
 
+        <Card className="mt-6 bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
+          <CardContent className="flex flex-col gap-2">
+            <p>Created On: {roomCreationDate}</p>
+            <p>Last Modified On: {roomLastEdited}</p>
+          </CardContent>
+        </Card>
       </div>
-
-<Card className="mt-6 bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-sm p-4">
-  <CardContent className="flex flex-col gap-2">
-    <p>Created On: {roomCreationDate}</p>
-    <p>Last Modified On: {roomLastEdited}</p>
-  </CardContent>
-</Card>
-
-   </div>
-   </div>
+    </div>
   );
 };
 
