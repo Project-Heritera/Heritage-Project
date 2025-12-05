@@ -6,10 +6,14 @@ import { ACCESS_TOKEN, REFRESH_TOKEN, USER_NAME } from '../services/LocalStorage
 export async function login(username, password) {
 	try {
 		//Attempt to request tokens from backend
-		const response = await api.post(`/accounts/token/`, {
+		const response = await api.post(`/accounts/login_step1/`, {
 			 username,
 			 password
 		});
+
+		if (response.data.mfa_required) {
+			return response.data
+		}
 
 		//Check and store access token and refresh token
 		if (response.data && response.data.access && response.data.refresh) {

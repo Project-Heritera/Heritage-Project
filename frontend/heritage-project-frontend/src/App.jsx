@@ -17,6 +17,7 @@ import CreatePage from './pages/CreatePage'
 import Signup from './pages/Signup'
 import About from './pages/contact.jsx'
 import UserSettings from "./pages/UserSettings"
+import Login2FA from "./pages/Login2FA"
 
 function App() {
   return (
