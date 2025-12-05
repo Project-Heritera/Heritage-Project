@@ -9,7 +9,7 @@ urlpatterns = [
     path("disable_mfa/", disable_mfa),
     path("verify_mfa/", verify_mfa),
     path("login_step1/", login_step1),
-    path("login_verify_mfa/", login_verify_mfa),
+    path("login_step2/", login_step2),
     path("check_mfa_enabled/", check_mfa_enabled),
     #account
     path('signup/', signup_user, name='signup'),
