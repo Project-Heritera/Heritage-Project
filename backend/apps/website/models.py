@@ -4,6 +4,7 @@ from django.conf import settings
 from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
 from .utils import censor_json, censor_with_xxxx
+from auditlog.registry import auditlog
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -532,3 +533,16 @@ class Report(models.Model):
 
     def __str__(self):
         return self.messege
+
+
+auditlog.register(Course)
+auditlog.register(Section)
+auditlog.register(Room)
+auditlog.register(Task)
+auditlog.register(TaskComponent)
+auditlog.register(Report)
+auditlog.register(ProgressOfTask)
+auditlog.register(Badge)
+auditlog.register(UserBadge)
+auditlog.register(Tag)
+auditlog.register(SavedTask)

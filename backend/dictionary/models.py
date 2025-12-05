@@ -1,3 +1,4 @@
+from auditlog.registry import auditlog
 from django.db import models
 
 class Entry(models.Model):
@@ -66,3 +67,10 @@ class POS(models.Model):
 
     def __str__(self):
         return f"{self.entry.headword} ({self.part_of_speech})"
+
+
+auditlog.register(Entry)
+auditlog.register(Source)
+auditlog.register(Definition)
+auditlog.register(Variant)
+auditlog.register(POS)

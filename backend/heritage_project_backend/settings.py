@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_unused_media',
     'dictionary',
+    'auditlog',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    'heritage_project_backend.ip_middleware.RealIPMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
 ]
 
 ROOT_URLCONF = "heritage_project_backend.urls"
