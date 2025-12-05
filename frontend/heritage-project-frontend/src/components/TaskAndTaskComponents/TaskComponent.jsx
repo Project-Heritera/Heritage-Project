@@ -34,9 +34,14 @@ const TaskComponent = forwardRef(function TaskComponent(
   const [jsonData, setJsonData] = useState(taskComponentSpecificData);
   const childRef = useRef(null);
   //for static task component checkbox
-  const [isComplete, setIsComplete] = useState(
-    questionProgressData.status == "COMPLE"
-  ); 
+ const [isComplete, setIsComplete] = useState(() => {
+  if (!isEditing) {
+    return questionProgressData.status === "COMPLE";
+  } else {
+    return "INCOMP";
+  }
+});
+  
   //for badge award
   const [badgeAwardOpen, setBadgeAwardOpen]= useState(false);
   const Navigate = useNavigate();
@@ -118,41 +123,43 @@ const TaskComponent = forwardRef(function TaskComponent(
       />
     );
   } else {
-    return (
-      <>
-        <Component ref={childRef} isEditing={isEditing} jsonData={jsonData} />
-        <CardContent className="mt-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id={`complete-${taskID}`}
-            checked={isComplete}
-            onChange={async (e) => {
-              setIsComplete(e.target.checked);
-              if (e.target.checked) {
-                await onStaticTaskComponentComplete();
-              }
-            }}
-          />
-          <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
-        </CardContent>
-        <Modal
-          isOpen={badgeAwardOpen}
-          onClose={() => {
-            Navigate(-1)
-          }}
-        >
-          <BadgeAward
-            badge_title={badge_title}
-            onClose={() => {
-              Navigate(-1)
-            }}
-            badge_image_url={
-              badge_image_url
+return (
+  <>
+    <Component ref={childRef} isEditing={isEditing} jsonData={jsonData} />
+
+    {!isEditing && (
+      <CardContent className="mt-4 flex items-center gap-2">
+        <input
+          type="checkbox"
+          id={`complete-${taskID}`}
+          checked={isComplete}
+          onChange={async (e) => {
+            setIsComplete(e.target.checked);
+            if (e.target.checked) {
+              await onStaticTaskComponentComplete();
             }
-          />
-        </Modal>
-      </>
-    );
+          }}
+        />
+        <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
+      </CardContent>
+    )}
+
+    <Modal
+      isOpen={badgeAwardOpen}
+      onClose={() => {
+        Navigate(-1);
+      }}
+    >
+      <BadgeAward
+        badge_title={badge_title}
+        onClose={() => {
+          Navigate(-1);
+        }}
+        badge_image_url={badge_image_url}
+      />
+    </Modal>
+  </>
+);
   }
 });
 
