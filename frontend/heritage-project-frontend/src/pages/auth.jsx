@@ -76,8 +76,9 @@ const AuthLogin = () => {
       })
       console.log("Response from 2ndlogin is:", response)
       //set token and navigate home
-      if (response.mfa_success) {
+      if (response.data.mfa_success) {
         //Navigate home
+        console.log("Wraping up login request because success")
         login(username, password, response)
         navigate(`/home`)
       } else {

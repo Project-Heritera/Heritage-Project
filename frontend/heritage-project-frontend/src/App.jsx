@@ -40,10 +40,11 @@ function App() {
                 <Route path='/c/:courseId' element={<CourseDashboard />}></Route>
                 <Route path='/r/:course_id/:section_id/:room_id' element={<RoomViewer />}></Route>
                 <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
-                <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
-                <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
+                <Route path='/s/:courseId' element={<CourseSettings />}></Route>
+                <Route path='/ce/:courseId' element={<CreationDashboard />}></Route>
                 <Route path='/settings' element={<UserSettings />} />
-        </Route>
+                <Route path='/create' element={<CreatePage />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>
