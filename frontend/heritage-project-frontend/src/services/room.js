@@ -143,14 +143,22 @@ export async function get_task_progress_for_room(course_id, section_id, room_id)
 	}
 }
 export async function update_task_progress(task_id, updated_task_progress_data){
-	try{
-		console.log(updated_task_progress_data)
+ try {
+        console.log(
+          "update task progress payload",
+          updated_task_progress_data
+        );
+        // call the backend and wait for the response
 		const response = await api.put(`website/tasks/${task_id}/update_progress/`, updated_task_progress_data)
-		return response.data
-	}
-	catch(error) {
-		throw(error);
-	}
+        // check if all tasks in the room are completed
+        console.log("response",response.data)
+        if (response.data?.room_completed) {
+			return true
+        }
+		return false
+      } catch(error) {
+		Debug.error("Failed to update task progress", error);
+      }
 }
 
 export async function get_test_room(){

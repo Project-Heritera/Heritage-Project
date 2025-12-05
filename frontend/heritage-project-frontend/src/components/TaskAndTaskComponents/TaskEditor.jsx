@@ -13,7 +13,7 @@ const TaskEditor = forwardRef(
     const [taskComponents, setTaskComponents] = useState(initialComponents);
     const [taskComponentMenu, setTaskComponentMenu] = useState(false);
     //for tags
-    const [tags, setTags] = useState(initialTags?? []);
+    const [tags, setTags] = useState(initialTags ?? []);
     const [availableTags, setAvailableTags] = useState([
       "Easy",
       "Medium",
@@ -22,33 +22,32 @@ const TaskEditor = forwardRef(
     const [tagSelectionMenu, setTagSelectionMenu] = useState(false);
     const taskBaseRef = useRef(null);
 
-  useImperativeHandle(ref, () => ({
-serialize: () => {
-    if (!taskBaseRef.current?.serialize) {
-      console.warn("TaskBase ref not ready or serialize not defined");
-      return {
-        task_id: taskID,
-        tags,
-        components: []
-      };
-    }
+    useImperativeHandle(ref, () => ({
+      serialize: () => {
+        if (!taskBaseRef.current?.serialize) {
+          console.warn("TaskBase ref not ready or serialize not defined");
+          return {
+            task_id: taskID,
+            tags,
+            components: [],
+          };
+        }
 
-    // Call TaskBase's serialize() which returns an array of components
-    const components = taskBaseRef.current.serialize();
+        // Call TaskBase's serialize() which returns an array of components
+        const components = taskBaseRef.current.serialize();
 
-    const t = {
-      task_id: taskID,
-      tags: Array.isArray(tags) ? tags : [],
-      components: Array.isArray(components) ? components : []
-    };
+        const t = {
+          task_id: taskID,
+          tags: Array.isArray(tags) ? tags : [],
+          components: Array.isArray(components) ? components : [],
+        };
 
-    console.log("inside TaskEditor.serialize()", t);
+        console.log("inside TaskEditor.serialize()", t);
 
-    return t;
-  }
-  }));
+        return t;
+      },
+    }));
 
-      
     const addNewTaskComponent = (type) => {
       const jsonData = taskComponentTypes[type].defaultValue;
       const newComponent = {
@@ -90,16 +89,6 @@ serialize: () => {
             <CirclePlus className="w-4 h-4" />
             Add Tag
           </Button>
- <TagSelectionMenu
-              onSelect={(selectedTag) => {
-                if (!tags.includes(selectedTag)) {
-                  setTags([...tags, selectedTag]);
-                }
-                setTagSelectionMenu(false);
-              }}
-              onClose={() => setTagSelectionMenu(false)}
-              tagCatalogue={availableTags}
-            />
           <Modal
             isOpen={tagSelectionMenu}
             onClose={() => setTagSelectionMenu(false)}
@@ -122,7 +111,11 @@ serialize: () => {
           <h3 className="text-lg font-bold">Task Components</h3>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <TaskBase components={taskComponents} isEditing={true} ref={(el) => (taskBaseRef.current = el)} />
+          <TaskBase
+            components={taskComponents}
+            isEditing={true}
+            ref={(el) => (taskBaseRef.current = el)}
+          />
 
           <Button
             onClick={() => setTaskComponentMenu(true)}
