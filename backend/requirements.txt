@@ -9,3 +9,6 @@ django-nested-admin==4.1.6
 django-friendship==1.9.6
 drf-spectacular
 django_unused_media
+django-otp
+qrcode[pil]
+pyotp

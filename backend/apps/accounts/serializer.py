@@ -5,6 +5,18 @@ from django.contrib.auth.models import User
 
 User = get_user_model()
 
+
+# -------------------------------
+# 2FA Serializers
+# -------------------------------
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+class VerifyLoginMFARequest(serializers.Serializer):
+    temp_token = serializers.CharField()
+    code = serializers.CharField()
+
 # -------------------------------
 # User Serializer
 # -------------------------------
