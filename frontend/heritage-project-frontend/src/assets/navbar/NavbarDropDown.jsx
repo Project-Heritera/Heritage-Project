@@ -41,7 +41,7 @@ function NavbarDropDown() {
             }
         }
         getUserData();
-    }, [user, useLocation])
+    }, [user, location])
 
     return (
         <Sheet>
