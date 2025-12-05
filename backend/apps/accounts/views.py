@@ -165,17 +165,27 @@ def update_user_info(request):
 @extend_schema(
     tags=["Users"],
     summary="Update the user's password or email info",
-    description="Update the password or email of the currently logged in user.",
-    request=UserSerializer(),
+    description="Update the password or email of the currently logged in user. Must have MFA enabled to use.",
+    request=inline_serializer(
+        name="UpdateVitalUserInfoResponse",
+        fields={
+            "password": serializers.CharField(),
+            "email": serializers.EmailField()
+        }
+    ),
     responses={
         200: UserSerializer,
-        400: OpenApiResponse(description="Serializer failed.")
+        400: OpenApiResponse(description="Serializer failed."),
+        403: OpenApiResponse(description="You must have MFA enabled to change your email or password.")
     }
 )
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user_important_info(request):
     user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "You must have MFA enabled."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = UserSerializer(
         user,
