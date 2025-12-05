@@ -68,11 +68,13 @@ const AuthLogin = () => {
       return
     }
     console.log("Sending 2nd login 2fa:", authData)
+    console.log("Code sent was:", code)
     try {
       const response = await api.post(`/accounts/login_step2/`, {
         ephemeral_token: authData.ephemeral_token,
-        code: code
+        otp: code
       })
+      console.log("Response from 2ndlogin is:", response)
       //set token and navigate home
       if (response.mfa_success) {
         //Navigate home
