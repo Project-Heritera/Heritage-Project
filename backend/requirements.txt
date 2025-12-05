@@ -14,3 +14,4 @@ qrcode[pil]
 pyotp
 better_profanity
 django-auditlog
+django-simple-history
