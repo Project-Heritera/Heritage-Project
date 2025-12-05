@@ -773,6 +773,39 @@ def generate_mfa_qr(request):
 
 @extend_schema(
     tags=["2FA"],
+    summary="Disable 2FA",
+    description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
+    request=None,
+    responses={
+        200: OpenApiResponse(description='2FA removed successfully.')
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def disable_mfa(request):
+    user = request.user
+
+    # Remove TOTP secret
+    user.totp_secret = None
+
+    # Optional: if your User model has a flag for 2FA
+    if hasattr(user, "is_mfa_enabled"):
+        user.is_mfa_enabled = False
+
+    # Optional: if you store backup or recovery codes
+    if hasattr(user, "backup_codes"):
+        user.backup_codes = None  # or [] depending on your field definition
+
+    user.save()
+
+    return Response(
+        {"message": "Two-factor authentication disabled and all MFA data has been removed."},
+        status=200
+    )
+
+
+@extend_schema(
+    tags=["2FA"],
     summary="Verify code",
     description="Check code if it's valid.",
     request=inline_serializer(

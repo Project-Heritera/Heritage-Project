@@ -6,6 +6,7 @@ from .views import *
 urlpatterns = [
     #2fa
     path("generate_mfa_qr/", generate_mfa_qr),
+    path("disable_mfa/", disable_mfa),
     path("verify_mfa/", verify_mfa),
     path("login_step1/", login_step1),
     path("login_verify_mfa/", login_verify_mfa),
