@@ -17,6 +17,15 @@ export default function Signup() {
     const [prompt2FA, setPromp2FA] = useState(false)
     const [open2FA, setOpen2FA] = useState(false)
 
+    const handle2FAOpenChange = (isOpen) => {
+        setOpen2FA(isOpen); // Update the visual state
+        
+        // If isOpen is false, it means the modal is closing
+        if (isOpen === false) {
+            navigate("/home");
+        }
+    }
+
     // 2. Handle the Signup Logic
     const handleSignup = async () => {
         console.log("Signing up with:", { username, email, password });
@@ -49,7 +58,7 @@ export default function Signup() {
 
     return (
         <div className="flex items-center justify-center p-6">
-            <Enable2FA open={open2FA} setOpen={setOpen2FA} />
+            <Enable2FA open={open2FA} setOpen={handle2FAOpenChange} />
             <Card className="w-full max-w-md">
                 {!prompt2FA && (
                     <div>
