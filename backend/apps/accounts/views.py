@@ -795,13 +795,17 @@ def remove_friend(request, username):
                 "otpauth_uri": serializers.CharField()
             }
         ), description='Sent code successfully.'
-    )
+        ),
+        400: OpenApiResponse(description="Cannot generate new MFA if already have one.")
     }
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def generate_mfa_qr(request):
     user = request.user
+
+    if user.totp_secret:
+        return Response({"error": "Cannot generate new MFA if already have one."}, status=400)
 
     totp_secret = pyotp.random_base32()
 
