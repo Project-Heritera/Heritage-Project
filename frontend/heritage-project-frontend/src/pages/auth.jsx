@@ -67,9 +67,10 @@ const AuthLogin = () => {
       setError("Invalid code. Code must be a 6 digit number.")
       return
     }
+    console.log("Sending 2nd login 2fa:", authData)
     try {
       const response = await api.post(`/accounts/login_step2/`, {
-        temp_token: authData.temp_token,
+        ephemeral_token: authData.ephemeral_token,
         code: code
       })
       //set token and navigate home
