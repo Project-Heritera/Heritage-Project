@@ -838,13 +838,17 @@ def generate_mfa_qr(request):
                 "message": serializers.CharField()
             }
         ), 
-                             description='2FA removed successfully.')
+        description='2FA removed successfully.'),
+        400: OpenApiResponse(description="You must have MFA enabled to disable it.")
     }
 )
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def disable_mfa(request):
     user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "You must have MFA enabled to disable it."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Remove TOTP secret
     user.totp_secret = None
