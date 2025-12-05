@@ -22,6 +22,7 @@ function Enable2FA({ open, setOpen, setChecked }) {
     const [loading, setLoading] = useState(true)
     const [code, setCode] = useState("")
     const [error, setError] = useState("")
+    const [secret, setSecret] = useState("")
 
     useEffect(() => {
         setLoading(true)
@@ -29,6 +30,9 @@ function Enable2FA({ open, setOpen, setChecked }) {
             try {
                 const genResponse = await api.get(`/accounts/generate_mfa_qr/`)
                 const genData = genResponse.data
+                setSecret(genData.secret)
+                console.log("Recieved secret:", genData.secret)
+                console.log("QR data is:", genResponse)
                 setQRCode(genData.qr_code_base64);
                 setLoading(false)
             } catch (error) {
@@ -46,10 +50,12 @@ function Enable2FA({ open, setOpen, setChecked }) {
             if (setChecked) setChecked(false)
             return
         }
+        console.log("Sending secret:", secret)
         try {
             const response = await api.post(`/accounts/verify_mfa/`,
                 {
-                    code: code
+                    code: code,
+                    secret: secret
                 })
             const data = response.data
             if (!data.success) {
