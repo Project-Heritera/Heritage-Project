@@ -6,13 +6,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer, OpenApiParameter
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.website.models import Course
 from friendship.models import Block, Friend, FriendshipRequest
 from apps.website.serializers import CourseSerializer
-from .serializer import FriendshipRequestSerializer, UserSerializer
+from .serializer import FriendshipRequestSerializer, LoginSerializer, UserSerializer, VerifyLoginMFARequest
 from friendship.models import Friend, Follow, Block, FriendshipRequest
 from friendship.exceptions import AlreadyExistsError
+
+import pyotp
+import qrcode
+import base64
+from io import BytesIO
 
 User = get_user_model()
 
@@ -723,3 +729,273 @@ def remove_friend(request, username):
         return Response({"message": "Friend removed successfully"}, status=200)
     else:
         return Response({"message": "You are not friends with this user"}, status=400)
+
+
+# -------------------------------
+# 2FA-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["2FA"],
+    summary="Send QR",
+    description="Generates a MFA QR code.",
+    request=None,
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="SendQRResponse",
+            fields={
+                "qr_code_base64": serializers.ImageField(),
+                "secret": serializers.CharField,
+                "otpauth_uri": serializers.CharField()
+            }
+        ), description='Sent code successfully.'
+    )
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def generate_mfa_qr(request):
+    user = request.user
+
+    # Create a secret if user doesn't have one
+    if not user.totp_secret:
+        user.totp_secret = pyotp.random_base32()
+        user.save()
+
+    totp_uri = pyotp.totp.TOTP(user.totp_secret).provisioning_uri(
+        name=user.email,
+        issuer_name="Vivan"
+    )
+
+    # Generate QR code
+    qr = qrcode.make(totp_uri)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    return Response({
+        "qr_code_base64": qr_base64,
+        "secret": user.totp_secret,  # optional
+        "otpauth_uri": totp_uri
+    }, status=200)
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Disable 2FA",
+    description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
+    request=None,
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="Disable2FAResponse",
+            fields={
+                "message": serializers.CharField()
+            }
+        ), 
+                             description='2FA removed successfully.')
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def disable_mfa(request):
+    user = request.user
+
+    # Remove TOTP secret
+    user.totp_secret = None
+
+    # Optional: if your User model has a flag for 2FA
+    if hasattr(user, "is_mfa_enabled"):
+        user.is_mfa_enabled = False
+
+    # Optional: if you store backup or recovery codes
+    if hasattr(user, "backup_codes"):
+        user.backup_codes = None  # or [] depending on your field definition
+
+    user.save()
+
+    return Response(
+        {"message": "Two-factor authentication disabled and all MFA data has been removed."},
+        status=200
+    )
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Verify code",
+    description="Check code if it's valid.",
+    request=inline_serializer(
+        name="VerifyCodeRequest",
+        fields={
+            "code": serializers.IntegerField()
+        }
+    ),
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="VerifyMFA",
+            fields={
+                "success": serializers.BooleanField()
+            }
+        ), description='Successfully authenticated.'),
+        400: OpenApiResponse(description='Invalid code or no MFA secret set.'),
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_mfa(request):
+    code = request.data.get("code")  # user enters 6-digit number
+    user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "No MFA secret set"}, status=400)
+
+    totp = pyotp.TOTP(user.totp_secret)
+
+    if totp.verify(code):
+        # Mark user as MFA enabled (optional)
+        return Response({"success": True}, status=200)
+    else:
+        return Response({"success": False, "error": "Invalid code"}, status=400)
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Login (Step 1)",
+    description="Checks username & password. Returns MFA requirement or full JWT tokens.",
+    request=LoginSerializer,
+    responses={
+        201: OpenApiResponse(inline_serializer(
+                name="LoginStep1Response1",
+                fields={
+                    "mfa_required": serializers.BooleanField(),
+                    "access": serializers.CharField(),
+                    "refresh": serializers.CharField()
+                }
+            ), 
+            description="Login successful or MFA required."),
+        200: OpenApiResponse(inline_serializer(
+                name="LoginStep1Response2",
+                fields={
+                    "mfa_required": serializers.BooleanField(),
+                    "temp_token": serializers.CharField()
+                }
+            )
+        )
+    }
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login_step1(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    user = authenticate(username=username, password=password)
+
+    if user is None:
+        return Response({"error": "Invalid username or password."}, status=400)
+
+    # If user has no MFA, issue tokens immediately
+    if not user.totp_secret:
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "mfa_required": False,
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)
+            },
+            status=201
+        )
+
+    # MFA enabled → return temp token
+    refresh = RefreshToken.for_user(user)
+
+    return Response(
+        {
+            "mfa_required": True,
+            "temp_token": str(refresh.access_token),  # short-lived
+        },
+        status=200
+    )
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Login (Step 2)",
+    description="Verify MFA code using the temporary token. Returns full JWT tokens.",
+    request=VerifyLoginMFARequest,
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="LoginStep2Response",
+            fields={
+                "mfa_success": serializers.BooleanField(),
+                "access": serializers.CharField(),
+                "refresh": serializers.CharField()
+            }
+        ), description="MFA success and logged in."),
+        400: OpenApiResponse(description="Missing temp_token or code."),
+        401: OpenApiResponse(description="Code is invalid."),
+    },
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login_verify_mfa(request):
+    from rest_framework_simplejwt.tokens import AccessToken
+
+    temp_token = request.data.get("temp_token")
+    code = request.data.get("code")
+
+    if not temp_token or not code:
+        return Response({"error": "Missing temp_token or code"}, status=400)
+
+    try:
+        access = AccessToken(temp_token)  # decode token
+        user_id = access["user_id"]
+    except Exception:
+        return Response({"error": "Invalid or expired temp_token"}, status=401)
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    user = User.objects.get(id=user_id)
+
+    if not user.totp_secret:
+        return Response({"error": "User does not have MFA enabled"}, status=400)
+
+    totp = pyotp.TOTP(user.totp_secret)
+
+    if not totp.verify(code):
+        return Response({"error": "Invalid MFA code"}, status=401)
+
+    # Issue final real tokens
+    refresh = RefreshToken.for_user(user)
+    return Response(
+        {
+            "mfa_success": True,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        },
+        status=200
+    )
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Check MFA enabled",
+    description="Check if the user has MFA enabled or not.",
+    request=None,
+    responses={
+        200: OpenApiResponse(inline_serializer(
+            name="CheckMFAResponse",
+            fields={
+                "mfa_enabled": serializers.BooleanField(),
+            }
+        ), description="Got enabled bool."),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_mfa_enabled(request):
+    user = request.user
+    enabled = False
+    if user.totp_secret:
+        enabled = True
+    
+    return Response({"mfa_enabled": enabled}, status=200)
+    

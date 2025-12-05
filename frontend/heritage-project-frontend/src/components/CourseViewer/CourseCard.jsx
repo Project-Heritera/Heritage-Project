@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom"
+import { AspectRatio } from "../ui/aspect-ratio";
 function getProgressColor(progress) {
   if (progress < 30) return "bg-red-300";
   if (progress < 60) return "bg-yellow-300";
@@ -17,12 +18,15 @@ export default function CourseCard({ title, description, href, progress, imageLi
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
           {imageLink && (
-            <div className="w-full h-48 mt-3 overflow-hidden rounded-md bg-gray-100">
+            <div className="w-full mx-auto  mt-3 overflow-hidden rounded-md bg-gray-100">
+              <AspectRatio ratio={16/11}>
               <img
                 src={imageLink}
                 alt={title}
                 className="w-full h-full object-cover"
               />
+              </AspectRatio>
+
             </div>
           )}
           <ScrollArea className="h-18">
