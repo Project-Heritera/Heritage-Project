@@ -803,9 +803,7 @@ def remove_friend(request, username):
 def generate_mfa_qr(request):
     user = request.user
 
-    # Create a secret if user doesn't have one
-    if not user.totp_secret:
-        totp_secret = pyotp.random_base32()
+    totp_secret = pyotp.random_base32()
 
     totp_uri = pyotp.totp.TOTP(user.totp_secret).provisioning_uri(
         name=user.email,
@@ -833,7 +831,8 @@ def generate_mfa_qr(request):
     request=inline_serializer(
         name="VerifyCodeRequest",
         fields={
-            "code": serializers.IntegerField()
+            "code": serializers.IntegerField(),
+            "secret": serializers.CharField()
         }
     ),
     responses={
