@@ -18,7 +18,7 @@ function BadgeContainer({username}) {
     };
 
     fetchBadges();
-  }, []);
+  }, [username]);
 
   if (!badges) {
       return (

@@ -53,7 +53,7 @@ function ProfileDisplay({ profImage, name, description, isOwner, viewUser }) {
               <ProfileDescription description={currentBio}></ProfileDescription>
             </div>
           </div>
-          <ProfileSummary></ProfileSummary>
+          <ProfileSummary username={name}></ProfileSummary>
         </div>
         <div className="self-start flex">
         </div>

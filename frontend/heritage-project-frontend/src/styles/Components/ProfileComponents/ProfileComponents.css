@@ -23,7 +23,7 @@
 }
 
 .summaryTitle {
-    @apply text-sm text-gray-500 mb-0
+    @apply text-sm text-muted-foreground mb-0
 }
 
 .summaryTextDiv {

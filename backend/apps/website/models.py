@@ -6,6 +6,7 @@ from django.db.models import Q, Case, Value, When
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
+# | PUBLIC      | EDITOR       | ✅        | ✅        |
 # | PRIVATE     | none         | ❌        | ❌        |
 # | PRIVATE     | VISITOR      | ✅        | ❌        |
 # | PRIVATE     | EDITOR       | ✅        | ✅        |
@@ -20,9 +21,7 @@ class AccessLevel(models.TextChoices):
 
 
 class VisibilityLevel(models.TextChoices):
-    PUBLIC = "PUB", _(
-        "PUBLIC"
-    )  # rn basically completely the same as is_published in functionality
+    PUBLIC = "PUB", _("PUBLIC")  # rn basically completely the same as is_published in functionality
     PRIVATE = "PRI", _("PRIVATE")
 
 
@@ -501,3 +500,10 @@ class Geolocation(models.Model):
 
     def __str__(self):
         return self.name
+
+class Report(models.Model):
+    messege = models.CharField(max_length=1000)
+    reported_obj = models.JSONField(default=dict, blank=True)
+
+    def __str__(self):
+        return self.messege

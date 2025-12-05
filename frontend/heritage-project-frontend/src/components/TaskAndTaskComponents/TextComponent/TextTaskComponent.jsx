@@ -1,5 +1,6 @@
 import React, { useState, useEffect, ref,forwardRef, useImperativeHandle } from 'react';
 import Edit from "./EditTextComponet"
+import { Card, CardContent } from '@/components/ui/card';
 import Read from "./ReadTextComponent"
 import "../../../styles/Components/TaskComponents/TextComponent.css"
 import PropTypes from 'prop-types';
@@ -37,7 +38,7 @@ const TextTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
     
 
     return (
-        <div className='text-componet'>
+        <CardContent className='text-componet'>
             {isEditing ? (
                 //Edit is true
                 <Edit text={text} setText={setText} areaApi={areaApi} setAreaApi={setAreaApi} />
@@ -45,7 +46,7 @@ const TextTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
                 //Edit is false
                 <Read text={text} />
             )}
-        </div>
+            </CardContent>
     );
 }
 );

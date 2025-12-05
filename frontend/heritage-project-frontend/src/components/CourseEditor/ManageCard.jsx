@@ -3,8 +3,11 @@ import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom"
 import { Button } from "../ui/button";
+import PublishCourse from "./PublishCourse";
+import { useState } from "react";
 
-export default function ManageCard({ courseId }) {
+export default function ManageCard({ courseId, isPublished }) {
+    const [published, setPublished] = useState(isPublished)
     return (
         <Card>
             <CardHeader>
@@ -14,6 +17,8 @@ export default function ManageCard({ courseId }) {
                         Course Settings
                     </Button>
                 </Link>
+                <CardTitle className="text-lg font-semibold">Manage access: </CardTitle>
+                <PublishCourse isPublished={isPublished} courseId={courseId}/>
             </CardHeader>
         </Card>
 

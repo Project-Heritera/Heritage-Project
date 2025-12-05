@@ -31,7 +31,7 @@ export default function Navbar() {
     <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
 <div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
 
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/home" className="flex items-center gap-2">
                     {/* <LuScrollText className = "text-2xl" /> */}
 
           <h1 className="text-3xl font-bold tracking-tight text-primary " style={{ fontFamily: "'Lobster Two', cursive" }}>

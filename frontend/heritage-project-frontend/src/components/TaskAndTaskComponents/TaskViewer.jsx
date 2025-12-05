@@ -3,7 +3,6 @@ import { taskComponentTypes } from "../../utils/taskComponentTypes";
 import { CheckCircle, XCircle } from "lucide-react";
 import TaskBase from "./TaskBase";
 import statusTypes, { statusDisplayToKey } from "../../utils/statusTypes";
-import confetti from "canvas-confetti";
 const TaskViewer = forwardRef(
   (
     {
@@ -55,17 +54,6 @@ const TaskViewer = forwardRef(
       setTaskStatus,
     };
 
-
-    useEffect(() => {
-      if (taskStatus === "COMPLE") {
-        confetti({
-          particleCount: 20,
-          spread: 60,
-          origin: { y: 1 }
-        });
-      }
-    }, [taskStatus]);
-    // Render different content based on taskStatus
 
 const renderContent = () => {
   const questionProgressData = {

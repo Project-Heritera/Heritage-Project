@@ -18,9 +18,11 @@ function CourseDashboard() {
     const [loading, setLoading] = useState(true)
     const [users, setUsers] = useState([])
     const [filterQuery, setFilterQuery] = useState("")
+    const [owner, setOwner] = useState(null)
 
     const [sections, setSections] = useState([])
     const [courseInfo, setCourseInfo] = useState(null)
+    const [currentUser, setCurrentUser] = useState(null);
     useEffect(() => {
         setLoading(true)
 
@@ -29,6 +31,11 @@ function CourseDashboard() {
                 //Get course data
                 const courseResponse = await api.get(`/website/course/${courseId}/`)
                 const courseData = courseResponse.data
+                //get owner
+                const ownerName = courseData.creator
+                const courseOwner = await api.get(`/accounts/another_user_info/${ownerName}`)
+                setOwner(courseOwner.data)
+                console.log("Course owner is:", courseOwner)
                 console.log("Retrieved course data:", courseData)
                 setCourseInfo(courseData)
                 //Get sections
@@ -41,6 +48,11 @@ function CourseDashboard() {
                 const usersData = usersResponse.data
                 console.log("Retrieved users:", usersData)
                 setUsers(usersData)
+                //Get currently logged in user
+                const currentUserResponse = await api.get('/accounts/user_info/')
+                const currentUserData = currentUserResponse.data
+                console.log("Current user data is:", currentUserData)
+                setCurrentUser(currentUserData)
             } catch (error) {
                 console.error("Error retrieving course sections: ", error)
             } finally {
@@ -77,6 +89,12 @@ function CourseDashboard() {
 
         return usernameString.toLowerCase().includes(filterQuery.toLowerCase());
     });
+
+    const isOwner = currentUser && owner && (currentUser.user || currentUser.username === owner.user || owner.username);
+    if (currentUser && owner) {
+        console.log("Current user is:", currentUser.username || currentUser.user)
+        console.log("Owner is set as:", owner.username || owner.user)
+    }
 
     return (
 
@@ -142,8 +160,11 @@ function CourseDashboard() {
                             </div>
 
                             <div className="divide-y">
+                                {owner && (
+                                    <ContributorCard key={owner.user || owner.username} username={owner.user || owner.username} description={"Owner"} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
+                                )}
                                 {filteredUsers.map((user) => (
-                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={() => removeUser(user.user || user.username)} />
+                                    <ContributorCard key={user.user || user.username} username={user.user || user.username} description={"Collaborator"} onTrash={isOwner ? () => removeUser(user.user || user.username) : undefined} imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${owner.profile_pic}`} />
                                 ))}
                             </div>
                         </CardContent>

@@ -73,7 +73,7 @@ function CreationDashboard() {
           {/* Side div*/}
           <div className="flex-1 flex flex-col gap-6">
             <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
-            <ManageCard courseId={courseId} />
+            <ManageCard courseId={courseId} isPublished={courseInfo.is_published}/>
           </div>
         </div>
       </div>

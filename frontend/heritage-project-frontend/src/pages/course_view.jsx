@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import CreationForm from "@/components/CourseView/CreationForm";
 import { useParams } from "react-router-dom";
 import Modal from "@/components/Modal";
+import LocalSearchBar from "@/components/CourseEditDashboard/ContributorSearchBar";
 // Helper to generate a random progress value (0–1)
 const rand = () => Math.random().toFixed(2);
 
 const CourseView = () => {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [filterQuery, setFilterQuery] = useState("")
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true);
@@ -37,61 +39,48 @@ const CourseView = () => {
     getCourses();
   }, []);
 
-  return (
-    <>
-      <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
-        <div className="courses-view-header flex-col  ">
-          <div
-            className="flex items-center justify-between m-4 "
-            style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
-          >
-            <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-              Course List
-            </h1>
-          </div>
-          <div className="flex flex-row justify-between items-center w-full">
-            <div className="w-[20%] min-w-[300px]">
-              <SearchBar
-                includeCourses={true}
-                courseAction={(course) => {
-                  console.log("Navigating to course");
-                  navigate(`/c/${course.course_id || "#"}`);
-                }}
-                searchFiller={"Search courses"}
-              />
-            </div>
-            <div className="create-course">
-              <CreationForm FormType={"Course"} />
-            </div>
-          </div>
+  const filteredCourses = courses.filter((course) => {
+    // safely get the string, checking both possible keys
+    const courseString = course.title || "";
+
+    return courseString.toLowerCase().includes(filterQuery.toLowerCase());
+  });
+return (
+  <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
+    <div className="courses-view-header flex-col">
+      <div
+        className="flex items-center justify-between m-4"
+        style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
+      >
+        <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+          Course List
+        </h1>
+      </div>
+      <div className="flex flex-row justify-between items-center w-full">
+        <div className="w-[20%] min-w-[300px]">
+          <LocalSearchBar onSearchChange={setFilterQuery} />
         </div>
-
-        <div className="course-view-body-body grid grid-cols-3 gap-4">
-          {!loading &&
-            courses.map((course) => (
-              <div key={course.course_id} className="relative">
-                {course.visibility=="PRI" && (
-                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
-                    Private
-                  </div>
-                )}
-
-                <CourseCard
-                  link=""
-                  title={course.title}
-                  description={course.description}
-                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
-                    course.image
-                  }`}
-                  courseId={course.course_id}
-                  progress={course.progress_percent}
-                />
-              </div>
-            ))}
+        <div className="create-course">
+          <CreationForm FormType={"Course"} />
         </div>
       </div>
-    </>
-  );
-};
+    </div>
 
+    <div className="course-view-body-body grid grid-cols-3 gap-4">
+      {!loading &&
+        filteredCourses.map((course) => (
+          <CourseCard
+            key={course.title}
+            link=""
+            title={course.title}
+            description={course.description}
+            imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`}
+            courseId={course.course_id}
+            progress={course.progress_percent}
+          />
+        ))}
+    </div>
+  </div>
+);
+};
 export default CourseView;

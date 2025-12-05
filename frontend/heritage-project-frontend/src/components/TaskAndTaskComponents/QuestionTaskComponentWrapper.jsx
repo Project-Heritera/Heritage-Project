@@ -7,6 +7,9 @@ import {
   useRef,
 } from "react";
 import statusTypes from "../../utils/statusTypes";
+import BadgeAward from "../RoomsPage/BadgeAward";
+import { useNavigate } from "react-router-dom";
+import Modal from "../Modal";
 import {
   Card,
   CardContent,
@@ -17,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { TaskGlobalContext } from "./TaskBase";
 import { Button } from "@/components/ui/button";
+import { update_task_progress } from "@/services/room";
 
 const QuestionTaskComponentWrapper = forwardRef(
   (
@@ -26,6 +30,7 @@ const QuestionTaskComponentWrapper = forwardRef(
       isEditing,
       initialAttemptsLeft,
       initialIsCorrect,
+      taskID,
     },
     ref
   ) => {
@@ -51,8 +56,11 @@ const QuestionTaskComponentWrapper = forwardRef(
     const questionComponentRef = useRef(null);
 
     const { taskStatus, setTaskStatus } = useContext(TaskGlobalContext); // states from task
+    //for badge award
+    const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
+    const Navigate = useNavigate();
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       if (
         !questionComponentRef.current ||
         !questionComponentRef.current.checkIfCorrect
@@ -73,7 +81,30 @@ const QuestionTaskComponentWrapper = forwardRef(
           setAttemptsLeft((prev) => prev - 1);
         }
       }
+      try {
+        //update task progress
+        const update_task_progress_payload = {
+          status: taskStatus,
+          attempts: attemptsLeft,
+        };
+        // call the backend and wait for the response
+        const room_completed = await update_task_progress(
+          taskID,
+          update_task_progress_payload
+        );
+        if (room_completed == true) {
+          // display award badge modal
+          setBadgeAwardOpen(true);
+        } else if (room_completed == false) {
+          return;
+        } else {
+          Debug.error("Failed to update task progress", error);
+        }
+      } catch (error) {
+        Debug.error("Failed to update task progress", error);
+      }
     };
+
     const handleSerialize = () => {
       if (!questionComponentRef.current?.serialize) {
         console.warn("Child component has no serialize method");
@@ -98,7 +129,6 @@ const QuestionTaskComponentWrapper = forwardRef(
 
     return (
       <Card className="w-full shadow-none border-none">
-        {/* Card Header: Meta Editor or Display */}
         <CardHeader className="space-y-2">
           {isEditing ? (
             <div className="flex flex-col md:flex-row gap-4">
@@ -115,11 +145,15 @@ const QuestionTaskComponentWrapper = forwardRef(
               </div>
               <div className="flex flex-col w-full md:w-1/2">
                 <label className="text-sm font-medium mb-1">Hint</label>
-                <Input
-                  type="text"
-                  value={hint}
-                  placeholder="Enter hint"
-                  onChange={(e) => setHint(e.target.value)}
+                <Checkbox
+                  id={`complete-${taskID}`}
+                  checked={isComplete}
+                  onCheckedChange={async (checked) => {
+                    setIsComplete(checked);
+                    if (checked) {
+                      await onStaticTaskComponentComplete(); // call your async function
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -129,8 +163,6 @@ const QuestionTaskComponentWrapper = forwardRef(
             </div>
           )}
         </CardHeader>
-
-        {/* Card Content: Question Component */}
         <CardContent>
           <QuestionTaskComponent
             jsonData={parsedJsonData}
@@ -138,8 +170,6 @@ const QuestionTaskComponentWrapper = forwardRef(
             ref={questionComponentRef}
           />
         </CardContent>
-
-        {/* Card Footer: Actions and Hints */}
         {!isEditing && (
           <CardFooter className="flex flex-col md:flex-row justify-between items-center gap-2">
             <Button
@@ -157,6 +187,22 @@ const QuestionTaskComponentWrapper = forwardRef(
             )}
           </CardFooter>
         )}
+        <Modal
+          isOpen={badgeAwardOpen}
+          onClose={() => {
+            Navigate(-1)
+          }}
+        >
+          <BadgeAward
+            badge_title={"test badge"}
+            onClose={() => {
+              Navigate(-1)
+            }}
+            badge_image_url={
+              "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"
+            }
+          />
+        </Modal>
       </Card>
     );
   }

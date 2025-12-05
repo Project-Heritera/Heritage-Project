@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { login } from "../services/auth";
 import { useErrorStore } from "../stores/ErrorStore";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import BadgeAward from "@/components/RoomsPage/BadgeAward";
 //Define AuthLogin component
 const AuthLogin = () => {
   const [username, setUsername] = useState("");
@@ -14,33 +21,35 @@ const AuthLogin = () => {
   const showError = useErrorStore((state) => state.showError);
   const navigate = useNavigate();
 
-  // Function to handle sign in
   async function handleLogin() {
-    //Check if username and password are not empty
     if (username && password) {
       try {
-        const data = await login(username, password);//Wait for external login function reply
+        const data = await login(username, password); //Wait for external login function reply
         showError("Login success", "success");
         Debug.log("Login success:", data);
         setUsername("");
         setPassword("");
 
-        navigate('/home');
+        navigate("/home");
       } catch (error) {
         //If somthing in try failed, default to here
-        if (error.status == 404){
-          showError("Invalid login. Incorrect password provided or account doesn't exist.", "error");
+        if (error.status == 404) {
+          showError(
+            "Invalid login. Incorrect password provided or account doesn't exist.",
+            "error"
+          );
+        } else {
+          showError(
+            "Something went wrong when logging in. Please try again later",
+            "error"
+          );
         }
-        else {
-          showError("Something went wrong when logging in. Please try again later", "error");
-        }
-        console.error(error);//log error
+        console.error(error); //log error
       }
-    }
-    else {
+    } else {
       showError("Enter Username and Password", "warning");
     }
-  };
+  }
 
   // Function to handle sign out
   const handleSignOut = async () => {
@@ -56,9 +65,11 @@ const AuthLogin = () => {
   return (
     <div className="flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
-        <CardHeader>
+       <CardHeader>
           <CardTitle>Sign in</CardTitle>
-          <CardDescription>Welcome back — please sign in to your account</CardDescription>
+          <CardDescription>
+            Welcome back — please sign in to your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -72,8 +83,7 @@ const AuthLogin = () => {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div>
-            </div>
+            <div></div>
 
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -85,7 +95,6 @@ const AuthLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
             <div className="flex items-center justify-between gap-2">
               <Button onClick={handleLogin}>Sign In</Button>
               <Link to={`/signup`}>

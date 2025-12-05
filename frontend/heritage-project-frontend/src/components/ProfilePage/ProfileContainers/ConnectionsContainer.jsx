@@ -18,7 +18,7 @@ function ConnectionsContainer({username}) {
     };
 
     fetchConnections();
-  }, []);
+  }, [username]);
 
   if (!connections) {
       return (

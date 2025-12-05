@@ -14,6 +14,7 @@ import CreatePageCard from "@/components/CreatePage/CreatePageCard";
 //Displays a list of cours given a room
 function CreatePage() {
   const [loading, setLoading] = useState(true)
+  const [filterQuery, setFilterQuery] = useState("")
 
   const [courses, setCourses] = useState([]);
   useEffect(() => {
@@ -39,14 +40,21 @@ function CreatePage() {
     return (<div>Loading...</div>)
   }
 
+  const filteredCourses = courses.filter((course) => {
+    // safely get the string, checking both possible keys
+    const courseString = course.title || "";
+
+    return courseString.toLowerCase().includes(filterQuery.toLowerCase());
+  });
+
   return (
     <div className="flex flex-col items-center w-full min-h-screen p-8 ">
       <div className="w-full max-w-[95%]">
         <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
-              <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-                Navigate editable courses
-              </h1>
-            </div>
+          <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+            Navigate editable courses
+          </h1>
+        </div>
 
         <div className="flex gap-6 items-start">
           {/* Main div*/}
@@ -55,7 +63,7 @@ function CreatePage() {
             {/* --- HEADER ROW (Search + Create Button) --- */}
             <div className="flex flex-row justify-between items-center w-full mb-6">
               <div className="w-[20%] min-w-[300px]">
-                <LocalSearchBar />
+                <LocalSearchBar onSearchChange={setFilterQuery} />
               </div>
               <div className="create-course">
                 <CreationForm FormType={"Course"} />
@@ -66,7 +74,7 @@ function CreatePage() {
             {/* --- GRID ROW (Moved OUTSIDE the header flex row) --- */}
             <div className="course-view-body-body grid grid-cols-3 gap-4">
               {!loading &&
-                courses.map((course) => (
+                filteredCourses.map((course) => (
                   <CourseCard
                     key={course.title}
                     link=""
@@ -84,7 +92,7 @@ function CreatePage() {
 
           {/* Side div*/}
           <div className="flex-1 flex flex-col gap-6">
-            <CreatePageCard/>
+            <CreatePageCard />
           </div>
         </div>
       </div>

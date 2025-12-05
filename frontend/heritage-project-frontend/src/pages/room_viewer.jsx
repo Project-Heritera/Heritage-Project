@@ -224,7 +224,7 @@ const RoomViewer = () => {
           initialStatus={task.progress?.status || null}
           initialAttempts={task.progress?.attempts ?? 0}
           initialMetadata={task.progress?.metadata || {}}
-          taskId={task.task_id}
+          taskID={task.task_id}
         />
       </CardContent>
     </Card>
