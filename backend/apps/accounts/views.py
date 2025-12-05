@@ -14,6 +14,11 @@ from .serializer import FriendshipRequestSerializer, UserSerializer
 from friendship.models import Friend, Follow, Block, FriendshipRequest
 from friendship.exceptions import AlreadyExistsError
 
+import pyotp
+import qrcode
+import base64
+from io import BytesIO
+
 User = get_user_model()
 
 # -------------------------------
@@ -723,3 +728,76 @@ def remove_friend(request, username):
         return Response({"message": "Friend removed successfully"}, status=200)
     else:
         return Response({"message": "You are not friends with this user"}, status=400)
+
+
+# -------------------------------
+# 2FA-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["2FA"],
+    summary="Send QR",
+    description="Generates a MFA QR code.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description='Sent code successfully.')
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def generate_mfa_qr(request):
+    user = request.user
+
+    # Create a secret if user doesn't have one
+    if not user.totp_secret:
+        user.totp_secret = pyotp.random_base32()
+        user.save()
+
+    totp_uri = pyotp.totp.TOTP(user.totp_secret).provisioning_uri(
+        name=user.email,
+        issuer_name="Vivan"
+    )
+
+    # Generate QR code
+    qr = qrcode.make(totp_uri)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    return Response({
+        "qr_code_base64": qr_base64,
+        "secret": user.totp_secret,  # optional
+        "otpauth_uri": totp_uri
+    }, status=200)
+
+
+@extend_schema(
+    tags=["2FA"],
+    summary="Verify code",
+    description="Check code if it's valid.",
+    request=inline_serializer(
+        name="VerifyCodeRequest",
+        fields={
+            "code": serializers.IntegerField()
+        }
+    ),
+    responses={
+        200: OpenApiResponse(description='Successfully authenticated.'),
+        400: OpenApiResponse(description='Invalid code or no MFA secret set.'),
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_mfa(request):
+    code = request.data.get("code")  # user enters 6-digit number
+    user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "No MFA secret set"}, status=400)
+
+    totp = pyotp.TOTP(user.totp_secret)
+
+    if totp.verify(code):
+        # Mark user as MFA enabled (optional)
+        return Response({"success": True}, status=200)
+    else:
+        return Response({"success": False, "error": "Invalid code"}, status=400)
