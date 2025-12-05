@@ -47,6 +47,16 @@ We utilized React, Tailwind and ShadCN to create our frontend, while backend is 
 Link to backend API documentations:
 http://127.0.0.1:8000/api/docs/
 
+## security features
+
+Password Hashing
+
+Two-Factor Authentication
+
+Security logs for auditing
+
+Data backups for recovery
+
 ## Acknowledgements
 
 The information for Louisiana Creole was gathered from the following sources:
