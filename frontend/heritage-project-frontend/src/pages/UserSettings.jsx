@@ -15,6 +15,7 @@ import ContributorSearchBar from "../components/CourseEditDashboard/ContributorS
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import Enable2FA from "@/components/UserSettings/Enable2FA";
+import Disable2FA from "@/components/UserSettings/Disable2FA";
 
 
 //Displays a list of cours given a room
@@ -54,6 +55,10 @@ function CourseDashboard() {
             <Enable2FA
                 open={enable2FAOpen}
                 setOpen={setEnable2FAOpen}
+            />
+            <Disable2FA
+                open={disable2FAOpen}
+                setOpen={setDisable2FAOpen}
             />
             {/* Header Area */}
             <div className="w-full bg-white border-b px-6 py-4 mb-8">
@@ -150,7 +155,7 @@ function CourseDashboard() {
                                         checked={is2FAEnabled}
                                         onCheckedChange={(checked) => {
                                             setIs2FAEnabled(checked);
-                                            checked ? setEnable2FAOpen(true)  : setDisable2FAOpen(true)
+                                            checked ? setEnable2FAOpen(true) : setDisable2FAOpen(true)
                                         }}
                                     />
                                 </div>
