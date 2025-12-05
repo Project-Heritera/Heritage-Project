@@ -13,4 +13,4 @@ django-otp
 qrcode[pil]
 pyotp
 better_profanity
-openai
+google-cloud-vision
