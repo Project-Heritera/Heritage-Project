@@ -853,7 +853,7 @@ def verify_mfa(request):
         # Mark user as MFA enabled (optional)
         return Response({"success": True}, status=200)
     else:
-        return Response({"success": False, "error": "Invalid code"}, status=400)
+        return Response({"success": False, "error": "Invalid code"}, status=200)
 
 
 @extend_schema(
