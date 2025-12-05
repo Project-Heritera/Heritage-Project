@@ -997,4 +997,3 @@ def check_mfa_enabled(request):
         enabled = True
     
     return Response({"mfa_enabled": enabled}, status=200)
-    

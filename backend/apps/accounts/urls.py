@@ -10,6 +10,7 @@ urlpatterns = [
     path("verify_mfa/", verify_mfa),
     path("login_step1/", login_step1),
     path("login_verify_mfa/", login_verify_mfa),
+    path("check_mfa_enabled/", check_mfa_enabled),
     #account
     path('signup/', signup_user, name='signup'),
     path('delete-account/', delete_account, name='delete_account'),
