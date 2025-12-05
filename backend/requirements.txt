@@ -12,3 +12,4 @@ django_unused_media
 django-otp
 qrcode[pil]
 pyotp
+better_profanity

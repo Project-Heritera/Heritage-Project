@@ -1330,7 +1330,7 @@ def get_room(request, room_id):
     tags=["Rooms"],
     summary="Save a room",
     description="Overwrites an existing room (and its nested components) with new data. Validation and save are atomic. Removed components are cascade-deleted.",
-    request=None,
+    request=RoomSerializer,
     responses={
         200: OpenApiResponse(description="Room saved successfully."),
         400: OpenApiResponse(description="Serializer Failed."),
