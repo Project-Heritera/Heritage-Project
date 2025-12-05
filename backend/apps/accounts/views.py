@@ -834,8 +834,7 @@ def disable_mfa(request):
             fields={
                 "success": serializers.BooleanField()
             }
-        ), description='Successfully authenticated.'),
-        400: OpenApiResponse(description='Invalid code or no MFA secret set.'),
+        ), description='Successfully checked authentication.')
     }
 )
 @api_view(["POST"])
@@ -998,4 +997,3 @@ def check_mfa_enabled(request):
         enabled = True
     
     return Response({"mfa_enabled": enabled}, status=200)
-    

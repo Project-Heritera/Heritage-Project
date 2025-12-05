@@ -58,7 +58,7 @@ const TaskViewer = forwardRef(
       taskStatus,
       setTaskStatus,
       badge_title,
-      badge_image_url
+      badge_image_url,
     };
 
     const renderContent = () => {
@@ -113,13 +113,21 @@ const TaskViewer = forwardRef(
 
       // CASE 3: Default
       return (
-        <TaskBase
-          components={taskComponents}
-          isEditing={false}
-          contextValues={contextValues}
-          taskID={taskID}
-          questionProgressData={questionProgressData}
-        />
+        <div className="relative pt-10">
+          <div className="absolute top-2 right-2 flex items-center gap-2 bg-gray-400 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+            Not Completed 
+            
+          </div>
+          <div>
+            <TaskBase
+              components={taskComponents}
+              isEditing={false}
+              contextValues={contextValues}
+              taskID={taskID}
+              questionProgressData={questionProgressData}
+            />
+          </div>
+        </div>
       );
     };
     return <div className="task-viewer">{renderContent()}</div>;
