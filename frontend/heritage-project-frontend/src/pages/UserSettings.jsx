@@ -14,6 +14,7 @@ import ManageUser from "@/components/CourseEditDashboard/ManageUser";
 import ContributorSearchBar from "../components/CourseEditDashboard/ContributorSearchBar"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import Enable2FA from "@/components/UserSettings/Enable2FA";
 
 
 //Displays a list of cours given a room
@@ -22,6 +23,8 @@ function CourseDashboard() {
     const [currentUser, setCurrentUser] = useState(null);
     const [is2FAEnabled, setIs2FAEnabled] = useState(false)
     const [tab, setTab] = useState("Security")
+    const [enable2FAOpen, setEnable2FAOpen] = useState(false)
+    const [disable2FAOpen, setDisable2FAOpen] = useState(false)
     useEffect(() => {
         setLoading(true)
 
@@ -41,18 +44,6 @@ function CourseDashboard() {
         getData();
     }, [])
 
-    const enable2FA = async () => {
-        const response = await api.get(``)
-    }
-
-    const disable2FA = async () => {
-
-    }
-
-    const handle2FA = async () => {
-
-    }
-
     if (loading) {
         return (<div>Loading...</div>)
     }
@@ -60,6 +51,10 @@ function CourseDashboard() {
     return (
 
         <div className="flex flex-col w-full min-h-screen bg-gray-50">
+            <Enable2FA
+                open={enable2FAOpen}
+                setOpen={setEnable2FAOpen}
+            />
             {/* Header Area */}
             <div className="w-full bg-white border-b px-6 py-4 mb-8">
                 <div className="max-w-[60%] mx-auto">
@@ -75,8 +70,8 @@ function CourseDashboard() {
                 {/* 1. SIDEBAR: Fixed width (e.g., w-64) */}
                 <nav className="w-50 flex flex-col gap-2 text-sm text-muted-foreground">
                     <h3 className="font-semibold text-foreground mb-2 px-2">Account Managment</h3>
-                    <Button variant={tab === "Account Settings" ? "default" : "ghost"} className="justify-start" onClick={()=> {setTab("Account Settings")}}>Account Settings</Button>
-                    <Button variant={tab === "Security" ? "default" : "ghost"} className="justify-start" onClick={()=> {setTab("Security")}}>Security</Button>
+                    <Button variant={tab === "Account Settings" ? "default" : "ghost"} className="justify-start" onClick={() => { setTab("Account Settings") }}>Account Settings</Button>
+                    <Button variant={tab === "Security" ? "default" : "ghost"} className="justify-start" onClick={() => { setTab("Security") }}>Security</Button>
                 </nav>
 
                 {/* 2. MAIN CONTENT: Flex-1 (Takes remaining space) */}
@@ -153,7 +148,10 @@ function CourseDashboard() {
                                     <Switch
                                         id="2fa-mode"
                                         checked={is2FAEnabled}
-                                        onCheckedChange={(checked) => setIs2FAEnabled(checked)}
+                                        onCheckedChange={(checked) => {
+                                            setIs2FAEnabled(checked);
+                                            checked ? setEnable2FAOpen(true)  : setDisable2FAOpen(true)
+                                        }}
                                     />
                                 </div>
                             </CardContent>
