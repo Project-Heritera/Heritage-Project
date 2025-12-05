@@ -805,8 +805,7 @@ def generate_mfa_qr(request):
 
     # Create a secret if user doesn't have one
     if not user.totp_secret:
-        user.totp_secret = pyotp.random_base32()
-        user.save()
+        totp_secret = pyotp.random_base32()
 
     totp_uri = pyotp.totp.TOTP(user.totp_secret).provisioning_uri(
         name=user.email,
@@ -820,6 +819,7 @@ def generate_mfa_qr(request):
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
 
     return Response({
+        "secret": totp_secret,
         "qr_code_base64": qr_base64,
         "secret": user.totp_secret,  # optional
         "otpauth_uri": totp_uri
@@ -849,14 +849,13 @@ def generate_mfa_qr(request):
 @permission_classes([IsAuthenticated])
 def verify_mfa(request):
     code = request.data.get("code")  # user enters 6-digit number
+    secret = request.data.get("secret")
     user = request.user
 
-    if not user.totp_secret:
-        return Response({"error": "No MFA secret set"}, status=400)
-
-    totp = pyotp.TOTP(user.totp_secret)
+    totp = pyotp.TOTP(secret)
 
     if totp.verify(code):
+        user.totp_secret = secret
         # Mark user as MFA enabled (optional)
         return Response({"success": True}, status=200)
     else:
