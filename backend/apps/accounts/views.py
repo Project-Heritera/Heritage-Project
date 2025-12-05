@@ -919,7 +919,7 @@ def login_step1(request):
     tags=["2FA"],
     summary="Login (Step 2)",
     description="Verify MFA code using the temporary token. Returns full JWT tokens.",
-    request=VerifyLoginMFARequest,
+    request=VerifyLoginMFARequest, # Ensure this matches your serializer from the previous step
     responses={
         200: OpenApiResponse(inline_serializer(
             name="LoginStep2Response",
@@ -928,30 +928,40 @@ def login_step1(request):
                 "refresh": serializers.CharField()
             }
         ), description="MFA success and logged in."),
-        400: OpenApiResponse(description="Missing temp_token or code."),
-        401: OpenApiResponse(description="Code is invalid."),
+        400: OpenApiResponse(description="Invalid session or missing data."),
+        401: OpenApiResponse(description="Invalid MFA Code."),
     },
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_step2(request):
-    token = request.data.get("ephemeral_token")
+    # 1. Get the data
+    # IMPORTANT: Ensure your Frontend sends "ephemeral_token" matching this key
+    # If your serializer expects "temp_token", use that key here instead.
+    token = request.data.get("ephemeral_token") 
     otp = request.data.get("otp")
 
+    # 2. Safety Check (Prevents 500 error if keys are missing)
+    if not token or not otp:
+        return Response({"error": "Missing ephemeral_token or otp"}, status=400)
+
     signer = TimestampSigner()
+    User = get_user_model() # Move this UP, before usage
 
     try:
-        # Unsign the token to get the user ID.
-        # max_age ensures they must enter the OTP within 5 minutes (300 seconds)
+        # 3. Unsign the token
+        # This extracts the user_id safely
         user_id = signer.unsign(token, max_age=300)
+        
+        # 4. Get the User
         user = User.objects.get(id=user_id)
+        
     except (BadSignature, SignatureExpired):
         return Response({"error": "Invalid or expired login session."}, status=400)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=404)
 
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    user = User.objects.get(id=user_id)
-
+    # 5. Verify MFA
     if not user.totp_secret:
         return Response({"error": "User does not have MFA enabled"}, status=400)
 
@@ -960,7 +970,7 @@ def login_step2(request):
     if not totp.verify(otp):
         return Response({"error": "Invalid MFA code"}, status=401)
 
-    # Success! NOW issue the real tokens
+    # 6. Issue Real Tokens
     refresh = RefreshToken.for_user(user)
     return Response({
         "access": str(refresh.access_token),
