@@ -616,15 +616,15 @@ def get_courses_progressed(request):
             name="GetAllCourseContributedResponse",
             many=True,
             fields={
-                "course_id": serializers.IntegerField,
-                "title": serializers.CharField,
-                "description": serializers.CharField,
-                "metadata": serializers.JSONField,
-                "visibility": serializers.CharField,
-                "is_published": serializers.BooleanField,
-                "creator": serializers.StringRelatedField,
-                "created_on": serializers.DateTimeField,
-                "image": serializers.ImageField,
+                "course_id": serializers.IntegerField(),
+                "title": serializers.CharField(),
+                "description": serializers.CharField(),
+                "metadata": serializers.JSONField(),
+                "visibility": serializers.CharField(),
+                "is_published": serializers.BooleanField(),
+                "creator": serializers.StringRelatedField(),
+                "created_on": serializers.DateTimeField(),
+                "image": serializers.ImageField(),
                 "badge": BadgeSerializer,
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
@@ -644,6 +644,7 @@ def get_courses_contributed(request):
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
     qs = qs.filter(
+        Q(creator=user) |
         Q(usercourseaccesslevel__user=user, usercourseaccesslevel__access_level="EDITOR")
     ).distinct()
 
