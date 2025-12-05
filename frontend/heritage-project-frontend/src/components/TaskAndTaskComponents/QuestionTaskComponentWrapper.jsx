@@ -75,6 +75,8 @@ const QuestionTaskComponentWrapper = forwardRef(
       }
       const result = questionComponentRef.current.checkIfCorrect();
       setTaskStatus(result);
+      console.log("result is ", result)
+      console.log("jfieljf ", statusTypes.COMPLE)
 
       if (result === statusTypes.COMPLE) {
         setIsCorrect(true);
@@ -87,7 +89,7 @@ const QuestionTaskComponentWrapper = forwardRef(
       try {
         //update task progress
         const update_task_progress_payload = {
-          status: taskStatus,
+          status: result,
           attempts: attemptsLeft,
         };
         // call the backend and wait for the response
@@ -103,8 +105,8 @@ const QuestionTaskComponentWrapper = forwardRef(
         } else {
           Debug.error("Failed to update task progress", error);
         }
-      } catch (error) {
-        Debug.error("Failed to update task progress", error);
+      } catch {
+        Debug.error("Failed to update task progress");
       }
     };
 
