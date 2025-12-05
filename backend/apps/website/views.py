@@ -609,22 +609,22 @@ def get_courses_progressed(request):
 
 @extend_schema(
     tags=["Courses"],
-    summary="Get all accessable courses",
-    description="Returns course and progress information for all courses the user can access.",
+    summary="Get all editable courses",
+    description="Returns course and progress information for all courses the user can edit.",
     responses={
         200: inline_serializer(
             name="GetAllCourseContributedResponse",
             many=True,
             fields={
-                "course_id": serializers.IntegerField,
-                "title": serializers.CharField,
-                "description": serializers.CharField,
-                "metadata": serializers.JSONField,
-                "visibility": serializers.CharField,
-                "is_published": serializers.BooleanField,
-                "creator": serializers.StringRelatedField,
-                "created_on": serializers.DateTimeField,
-                "image": serializers.ImageField,
+                "course_id": serializers.IntegerField(),
+                "title": serializers.CharField(),
+                "description": serializers.CharField(),
+                "metadata": serializers.JSONField(),
+                "visibility": serializers.CharField(),
+                "is_published": serializers.BooleanField(),
+                "creator": serializers.StringRelatedField(),
+                "created_on": serializers.DateTimeField(),
+                "image": serializers.ImageField(),
                 "badge": BadgeSerializer,
                 "progress_percent": serializers.FloatField(),
                 "completed_tasks": serializers.IntegerField(),
@@ -643,6 +643,10 @@ def get_courses_contributed(request):
 
     # Only courses the user can access
     qs = Course.objects.filter_by_user_access(user).user_progress_percent(user)
+    qs = qs.filter(
+        Q(creator=user) |
+        Q(usercourseaccesslevel__user=user, usercourseaccesslevel__access_level="EDITOR")
+    ).distinct()
 
     if not qs.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -1327,7 +1331,7 @@ def get_room(request, room_id):
     tags=["Rooms"],
     summary="Save a room",
     description="Overwrites an existing room (and its nested components) with new data. Validation and save are atomic. Removed components are cascade-deleted.",
-    request=None,
+    request=RoomSerializer,
     responses={
         200: OpenApiResponse(description="Room saved successfully."),
         400: OpenApiResponse(description="Serializer Failed."),

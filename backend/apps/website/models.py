@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
+from .utils import censor_json, censor_with_xxxx
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -229,6 +230,8 @@ class Badge(models.Model):
 
         if not has_image:
             self.image = default_badge_image()
+        
+        self.title = censor_with_xxxx(self.title)
 
         super().save(*args, **kwargs)
 
@@ -275,6 +278,10 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        self.title = censor_with_xxxx(self.title)
+        self.description = censor_with_xxxx(self.description)
+        super().save(*args, **kwargs)
 
     objects = CourseQuerySet.as_manager()
 
@@ -313,6 +320,11 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
+    
+    def save(self, *args, **kwargs):
+        self.title = censor_with_xxxx(self.title)
+        self.description = censor_with_xxxx(self.description)
+        super().save(*args, **kwargs)
 
     objects = SectionQuerySet.as_manager()
 
@@ -350,12 +362,21 @@ class Room(models.Model):
 
     def __str__(self):
         return f"{self.course.title if self.course else 'No Course'} - {self.title}"
+    
+    def save(self, *args, **kwargs):
+        self.title = censor_with_xxxx(self.title)
+        self.description = censor_with_xxxx(self.description)
+        super().save(*args, **kwargs)
 
     objects = RoomQuerySet.as_manager()
 
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
+
+    def save(self, *args, **kwargs):
+        self.name = censor_with_xxxx(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -391,7 +412,6 @@ class TaskComponent(OrderedModel):
         Task, on_delete=models.CASCADE, null=True, related_name="components"
     )
     type = models.CharField(max_length=50, choices=TaskComponentType)
-    # TODO: make it a image field if content is an image
     content = models.JSONField(
         default=dict, blank=True
     )  # the format of this JSON will depend on the TaskComponent.type
@@ -403,6 +423,11 @@ class TaskComponent(OrderedModel):
 
     def __str__(self):
         return f"{self.task} - {self.type}"
+    
+    def save(self, *args, **kwargs):
+        # Censor all string values inside the JSON
+        self.content = censor_json(self.content)
+        super().save(*args, **kwargs)
 
 
 class UserCourseAccessLevel(models.Model):
