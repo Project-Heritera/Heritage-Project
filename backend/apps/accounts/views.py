@@ -803,11 +803,9 @@ def remove_friend(request, username):
 def generate_mfa_qr(request):
     user = request.user
 
-    # Create a secret if user doesn't have one
-    if not user.totp_secret:
-        totp_secret = pyotp.random_base32()
+    totp_secret = pyotp.random_base32()
 
-    totp_uri = pyotp.totp.TOTP(user.totp_secret).provisioning_uri(
+    totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(
         name=user.email,
         issuer_name="Vivan"
     )
@@ -821,7 +819,6 @@ def generate_mfa_qr(request):
     return Response({
         "secret": totp_secret,
         "qr_code_base64": qr_base64,
-        "secret": user.totp_secret,  # optional
         "otpauth_uri": totp_uri
     }, status=200)
 
@@ -833,7 +830,8 @@ def generate_mfa_qr(request):
     request=inline_serializer(
         name="VerifyCodeRequest",
         fields={
-            "code": serializers.IntegerField()
+            "code": serializers.IntegerField(),
+            "secret": serializers.CharField()
         }
     ),
     responses={
