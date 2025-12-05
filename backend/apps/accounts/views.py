@@ -924,6 +924,7 @@ def login_step1(request):
         200: OpenApiResponse(inline_serializer(
             name="LoginStep2Response",
             fields={
+                "mfa_success": serializers.BooleanField(), 
                 "access": serializers.CharField(),
                 "refresh": serializers.CharField()
             }
