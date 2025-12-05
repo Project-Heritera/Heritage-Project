@@ -53,4 +53,11 @@ urlpatterns = [
     path("report/", views.report),
     path("all_reports/", views.get_reports),
     path("delete_report/<int:report_id>/", views.delete_report),
+
+    # history api
+    path(
+        "api/history/<str:app_label>/<str:model_name>/<int:object_id>/", 
+        views.ModelHistoryLogView.as_view(), 
+        name="model-history-log"
+    ),
 ]
