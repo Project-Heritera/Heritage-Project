@@ -973,6 +973,7 @@ def login_step2(request):
     # 6. Issue Real Tokens
     refresh = RefreshToken.for_user(user)
     return Response({
+        "mfa_success": True,
         "access": str(refresh.access_token),
         "refresh": str(refresh)
     }, status=200)
