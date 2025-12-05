@@ -68,7 +68,7 @@ const AuthLogin = () => {
       return
     }
     try {
-      const response = await api.post(`/accounts/login_verify_mfa/`, {
+      const response = await api.post(`/accounts/login_step2/`, {
         temp_token: authData.temp_token,
         code: code
       })
