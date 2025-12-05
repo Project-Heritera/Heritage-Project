@@ -165,12 +165,13 @@ def update_user_info(request):
 @extend_schema(
     tags=["Users"],
     summary="Update the user's password or email info",
-    description="Update the password or email of the currently logged in user. Must have MFA enabled to use.",
+    description="Update the password or email of the currently logged in user. Only send 'code' if the user has MFA enabled.",
     request=inline_serializer(
         name="UpdateVitalUserInfoResponse",
         fields={
             "password": serializers.CharField(),
-            "email": serializers.EmailField()
+            "email": serializers.EmailField(),
+            "code": serializers.IntegerField()
         }
     ),
     responses={
@@ -184,8 +185,11 @@ def update_user_info(request):
 def update_user_important_info(request):
     user = request.user
 
-    if not user.totp_secret:
-        return Response({"error": "You must have MFA enabled."}, status=status.HTTP_403_FORBIDDEN)
+    if user.totp_secret: # mfa enabled
+        totp = pyotp.TOTP(user.totp_secret) # get users secret
+
+        if not totp.verify(request.data.get("code")): # get request code
+            return Response({"error": "Invalid MFA code"}, status=401)
 
     serializer = UserSerializer(
         user,
