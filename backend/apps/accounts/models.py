@@ -13,6 +13,7 @@ class CustomUser(AbstractUser):
     last_activity = models.DateField(null=True, blank=True)
     longest_streak = models.IntegerField(default=0)
     totp_secret = models.CharField(max_length=32, blank=True, null=True)
+    backup_codes = models.JSONField(null=True, blank=True, default=list)
 
     def update_streak(self):
         """Call this whenever the user completes a streak-qualifying action."""
