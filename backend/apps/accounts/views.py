@@ -14,6 +14,7 @@ from apps.website.serializers import CourseSerializer
 from .serializer import FriendshipRequestSerializer, LoginSerializer, UserSerializer, VerifyLoginMFARequest
 from friendship.models import Friend, Follow, Block, FriendshipRequest
 from friendship.exceptions import AlreadyExistsError
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 
 import pyotp
 import qrcode
@@ -874,7 +875,7 @@ def verify_mfa(request):
                 name="LoginStep1Response2",
                 fields={
                     "mfa_required": serializers.BooleanField(),
-                    "temp_token": serializers.CharField()
+                    "ephemeral_token": serializers.CharField()
                 }
             )
         )
@@ -903,16 +904,15 @@ def login_step1(request):
             status=201
         )
 
-    # MFA enabled → return temp token
-    refresh = RefreshToken.for_user(user)
+    # 2. MFA Enabled? Issue a signed "ephemeral" token
+    # This signer uses your SECRET_KEY, so it's secure.
+    signer = TimestampSigner() 
+    ephemeral_token = signer.sign(user.id)
 
-    return Response(
-        {
-            "mfa_required": True,
-            "temp_token": str(refresh.access_token),  # short-lived
-        },
-        status=200
-    )
+    return Response({
+        "mfa_required": True,
+        "ephemeral_token": ephemeral_token 
+    }, status=200)
 
 
 @extend_schema(
@@ -924,7 +924,6 @@ def login_step1(request):
         200: OpenApiResponse(inline_serializer(
             name="LoginStep2Response",
             fields={
-                "mfa_success": serializers.BooleanField(),
                 "access": serializers.CharField(),
                 "refresh": serializers.CharField()
             }
@@ -935,20 +934,19 @@ def login_step1(request):
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login_verify_mfa(request):
-    from rest_framework_simplejwt.tokens import AccessToken
+def login_step2(request):
+    token = request.data.get("ephemeral_token")
+    otp = request.data.get("otp")
 
-    temp_token = request.data.get("temp_token")
-    code = request.data.get("code")
-
-    if not temp_token or not code:
-        return Response({"error": "Missing temp_token or code"}, status=400)
+    signer = TimestampSigner()
 
     try:
-        access = AccessToken(temp_token)  # decode token
-        user_id = access["user_id"]
-    except Exception:
-        return Response({"error": "Invalid or expired temp_token"}, status=401)
+        # Unsign the token to get the user ID.
+        # max_age ensures they must enter the OTP within 5 minutes (300 seconds)
+        user_id = signer.unsign(token, max_age=300)
+        user = User.objects.get(id=user_id)
+    except (BadSignature, SignatureExpired):
+        return Response({"error": "Invalid or expired login session."}, status=400)
 
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -959,19 +957,15 @@ def login_verify_mfa(request):
 
     totp = pyotp.TOTP(user.totp_secret)
 
-    if not totp.verify(code):
+    if not totp.verify(otp):
         return Response({"error": "Invalid MFA code"}, status=401)
 
-    # Issue final real tokens
+    # Success! NOW issue the real tokens
     refresh = RefreshToken.for_user(user)
-    return Response(
-        {
-            "mfa_success": True,
-            "access": str(refresh.access_token),
-            "refresh": str(refresh)
-        },
-        status=200
-    )
+    return Response({
+        "access": str(refresh.access_token),
+        "refresh": str(refresh)
+    }, status=200)
 
 
 @extend_schema(
