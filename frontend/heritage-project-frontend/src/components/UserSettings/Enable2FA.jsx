@@ -38,12 +38,12 @@ function Enable2FA({ open, setOpen, setChecked }) {
         }
 
         getCode()
-    }, [])
+    }, [open])
 
     const verifyCode = async () => {
         if (code.length < 6) {
             setError("Invalid code. Code must be a 6 digit number.")
-            setChecked(false)
+            if (setChecked) setChecked(false)
             return
         }
         try {
@@ -55,19 +55,19 @@ function Enable2FA({ open, setOpen, setChecked }) {
             if (!data.success) {
                 //error ask to redo
                 setError("Invalid code. Please try again.")
-                setChecked(false)
+                if (setChecked) setChecked(false)
             } else {
                 console.log("SUCCESS validating 2FA!")
                 setQRCode("");
                 setCode("")
                 setError("")
-                setChecked(true)
+                 if (setChecked) setChecked(true)
                 setOpen(false);
             }
         } catch (error) {
             console.error("Error validating 2FA:", error)
             setError("Server error. Please try again.")
-            setChecked(false)
+            if (setChecked) setChecked(false)
         }
     }
 
@@ -134,7 +134,7 @@ function Enable2FA({ open, setOpen, setChecked }) {
                                     setQRCode("");
                                     setCode("")
                                     setError("")
-                                    setChecked(false)
+                                    if (setChecked) setChecked(false)
                                     setOpen(false);
                                 }}
                                 variant="outline">
