@@ -26,23 +26,19 @@ We are a team of LSU Computer Science undergraduate students, and are establishi
 
 ## How to run
 
-After installing this repository, within a Terminal, navigate to the project location and run these lines of codes to initiate the frontend:
+After installing this repository, in a terminal, if you use Windows, run this command (or double click the file):
 
 ```bash
-cd frontend\heritage-project-frontend\
-npm install
-npm run dev
+start_project.bat
 ```
 
-Open up another Terminal, navigate to the project location and run these lines of codes to initiate the backend:
+If you use Linux or Mac, in the terminal, run this command instead (or double click it):
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python manage.py runserver
+start_project.sh
 ```
 
-After that, log in with username: testuser | password: heritera and explore our platform at your own pace! You can start learning or creating courses at this point.
+After that, signup as a new user, and explore our courses!
 
 ## Tech Stack and APIs
 

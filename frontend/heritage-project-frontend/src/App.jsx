@@ -16,6 +16,8 @@ import CreationDashboard from './pages/CourseEditor'
 import CreatePage from './pages/CreatePage'
 import Signup from './pages/Signup'
 import About from './pages/contact.jsx'
+import UserSettings from "./pages/UserSettings"
+import Login2FA from "./pages/Login2FA"
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
               <Route index element={<AuthLogin />} />
               <Route path='/login' element={<AuthLogin />} />
               <Route path='/signup' element={<Signup />} />
+              {<Route path='/about' element={<About />} />}
               {/*Protected Routes*/}
               <Route element={<ProtectedRoute />}>
                 <Route path='/home' element={<Home />} />
@@ -37,11 +40,11 @@ function App() {
                 <Route path='/c/:courseId' element={<CourseDashboard />}></Route>
                 <Route path='/r/:course_id/:section_id/:room_id' element={<RoomViewer />}></Route>
                 <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
-                <Route path ='/s/:courseId' element={<CourseSettings/>}></Route>
-                <Route path ='/ce/:courseId' element={<CreationDashboard/>}></Route>
+                <Route path='/s/:courseId' element={<CourseSettings />}></Route>
+                <Route path='/ce/:courseId' element={<CreationDashboard />}></Route>
+                <Route path='/settings' element={<UserSettings />} />
                 <Route path='/create' element={<CreatePage />} />
-                {<Route path='/about' element={<About />} />}
-        </Route>
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

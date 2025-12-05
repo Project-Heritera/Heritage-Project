@@ -63,7 +63,7 @@ export default function Navbar() {
 
         
 
-        <div className="">
+        <div className="hover:cursor-pointer">
           <NavbarDropDown/>
         </div>
       </div>

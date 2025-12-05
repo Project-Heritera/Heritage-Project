@@ -14,8 +14,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 class VerifyLoginMFARequest(serializers.Serializer):
-    temp_token = serializers.CharField()
-    code = serializers.CharField()
+    ephemeral_token = serializers.CharField(source="temp_token")
+    otp = serializers.CharField(source="code")
 
 # -------------------------------
 # User Serializer
@@ -25,6 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(read_only=True)
     profile_pic = serializers.ImageField()
     description = serializers.CharField()
+    streak = serializers.IntegerField()
+    longest_streak = serializers.IntegerField()
+    date_joined = serializers.DateTimeField()
 
     class Meta:
         model = User

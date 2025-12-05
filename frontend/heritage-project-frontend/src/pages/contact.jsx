@@ -31,7 +31,7 @@ export default function About() {
               style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
               >Core Objective</h2>
               <p className="text-lg">
-                Make learning easy, intuitive, and accessile for everyone, everywhere.
+                Provide the tools to save your dieing heritage and foster learning.
               </p>
             </div>
           </div>

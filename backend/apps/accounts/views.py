@@ -9,11 +9,12 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.website.models import Course
-from friendship.models import Block, Friend, FriendshipRequest
+from friendship.models import Block, Friend, FriendshipRequest, cache
 from apps.website.serializers import CourseSerializer
 from .serializer import FriendshipRequestSerializer, LoginSerializer, UserSerializer, VerifyLoginMFARequest
 from friendship.models import Friend, Follow, Block, FriendshipRequest
 from friendship.exceptions import AlreadyExistsError
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 
 import pyotp
 import qrcode
@@ -126,23 +127,69 @@ def delete_account(request):
     tags=["Users"],
     summary="Update the user's info",
     description="Update the profile picture and the description of the currently logged in user.",
-    request=UserSerializer(),
+    request=inline_serializer(
+        name="UpdateUserInfoRequest",
+        fields={
+            "username": serializers.CharField(),
+            "profile_pic": serializers.ImageField(),
+            "description": serializers.CharField()
+        }
+    ),
     responses={
-        200: inline_serializer(
-            name="UpdateUserInfoResponse",
-            fields={
-                "user_id": serializers.IntegerField(),
-                "username": serializers.CharField(),
-                "profile_pic": serializers.ImageField(),
-                "description": serializers.CharField()
-            }
-        ),
+        200: UserSerializer,
+        403: OpenApiResponse(description="Cannot update email or password using this view."),
+        400: OpenApiResponse(description="Serializer failed.")
     }
 )
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user_info(request):
     user = request.user
+
+    if "email" in request.data or "password" in request.data:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    serializer = UserSerializer(
+        user,
+        data=request.data,
+        partial=True  # allows updating only provided fields
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["Users"],
+    summary="Update the user's password or email info",
+    description="Update the password or email of the currently logged in user. Only send 'code' if the user has MFA enabled.",
+    request=inline_serializer(
+        name="UpdateVitalUserInfoResponse",
+        fields={
+            "password": serializers.CharField(),
+            "email": serializers.EmailField(),
+            "code": serializers.IntegerField()
+        }
+    ),
+    responses={
+        200: UserSerializer,
+        400: OpenApiResponse(description="Serializer failed."),
+        403: OpenApiResponse(description="You must have MFA enabled to change your email or password.")
+    }
+)
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_important_info(request):
+    user = request.user
+
+    if user.totp_secret: # mfa enabled
+        totp = pyotp.TOTP(user.totp_secret) # get users secret
+
+        if not totp.verify(request.data.get("code")): # get request code
+            return Response({"error": "Invalid MFA code"}, status=401)
 
     serializer = UserSerializer(
         user,
@@ -781,45 +828,6 @@ def generate_mfa_qr(request):
 
 @extend_schema(
     tags=["2FA"],
-    summary="Disable 2FA",
-    description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
-    request=None,
-    responses={
-        200: OpenApiResponse(inline_serializer(
-            name="Disable2FAResponse",
-            fields={
-                "message": serializers.CharField()
-            }
-        ), 
-                             description='2FA removed successfully.')
-    }
-)
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def disable_mfa(request):
-    user = request.user
-
-    # Remove TOTP secret
-    user.totp_secret = None
-
-    # Optional: if your User model has a flag for 2FA
-    if hasattr(user, "is_mfa_enabled"):
-        user.is_mfa_enabled = False
-
-    # Optional: if you store backup or recovery codes
-    if hasattr(user, "backup_codes"):
-        user.backup_codes = None  # or [] depending on your field definition
-
-    user.save()
-
-    return Response(
-        {"message": "Two-factor authentication disabled and all MFA data has been removed."},
-        status=200
-    )
-
-
-@extend_schema(
-    tags=["2FA"],
     summary="Verify code",
     description="Check code if it's valid.",
     request=inline_serializer(
@@ -857,28 +865,86 @@ def verify_mfa(request):
 
 @extend_schema(
     tags=["2FA"],
-    summary="Login (Step 1)",
-    description="Checks username & password. Returns MFA requirement or full JWT tokens.",
-    request=LoginSerializer,
+    summary="Disable 2FA",
+    description="Completely deletes all MFA data (TOTP secret, flags, backup codes).",
+    request=None,
     responses={
-        201: OpenApiResponse(inline_serializer(
-                name="LoginStep1Response1",
-                fields={
-                    "mfa_required": serializers.BooleanField(),
-                    "access": serializers.CharField(),
-                    "refresh": serializers.CharField()
-                }
-            ), 
-            description="Login successful or MFA required."),
         200: OpenApiResponse(inline_serializer(
-                name="LoginStep1Response2",
-                fields={
-                    "mfa_required": serializers.BooleanField(),
-                    "temp_token": serializers.CharField()
+            name="Disable2FAResponse",
+            fields={
+                "message": serializers.CharField()
+            }
+        ), 
+        description='2FA removed successfully.'),
+        400: OpenApiResponse(description="You must have MFA enabled to disable it.")
+    }
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def disable_mfa(request):
+    user = request.user
+
+    if not user.totp_secret:
+        return Response({"error": "You must have MFA enabled to disable it."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Remove TOTP secret
+    user.totp_secret = None
+
+    # Optional: if your User model has a flag for 2FA
+    if hasattr(user, "is_mfa_enabled"):
+        user.is_mfa_enabled = False
+
+    # Optional: if you store backup or recovery codes
+    if hasattr(user, "backup_codes"):
+        user.backup_codes = None  # or [] depending on your field definition
+
+    user.save()
+
+    return Response(
+        {"message": "Two-factor authentication disabled and all MFA data has been removed."},
+        status=200
+    )
+
+
+def rate_limit(key: str, limit: int, window_seconds: int):
+    """
+    Return True if limit exceeded, else False.
+    Automatically expires after window.
+    """
+    attempts = cache.get(key, 0)
+
+    if attempts >= limit:
+        return True  # limit exceeded
+
+    if attempts == 0:
+        cache.set(key, 1, timeout=window_seconds)
+    else:
+        cache.incr(key)
+
+    return False
+
+
+@extend_schema( 
+        tags=["2FA"], 
+        summary="Login (Step 1)", 
+        description="Checks username & password. Returns MFA requirement or full JWT tokens.", 
+        request=LoginSerializer, 
+        responses={ 
+            201: OpenApiResponse(inline_serializer( 
+                name="LoginStep1Response1", 
+                fields={ "mfa_required": serializers.BooleanField(), 
+                "access": serializers.CharField(), 
+                "refresh": serializers.CharField() } ), 
+                description="Login successful or MFA required."), 
+            200: OpenApiResponse(inline_serializer( 
+                name="LoginStep1Response2", 
+                fields={ 
+                    "mfa_required": serializers.BooleanField(), 
+                    "ephemeral_token": serializers.CharField() 
                 }
             )
-        )
-    }
+        ) 
+    } 
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -886,12 +952,25 @@ def login_step1(request):
     username = request.data.get("username")
     password = request.data.get("password")
 
+    # --------------------------
+    # RATE LIMIT: 10 tries / 15 min
+    # --------------------------
+    client_ip = request.META.get("REMOTE_ADDR", "unknown")
+    key = f"login1_{username}_{client_ip}"
+
+    if rate_limit(key, limit=10, window_seconds=900):
+        return Response(
+            {"error": "Too many login attempts. Try again in 15 minutes."},
+            status=429
+        )
+    # --------------------------
+
     user = authenticate(username=username, password=password)
 
     if user is None:
         return Response({"error": "Invalid username or password."}, status=400)
 
-    # If user has no MFA, issue tokens immediately
+    # User has no MFA
     if not user.totp_secret:
         refresh = RefreshToken.for_user(user)
         return Response(
@@ -903,75 +982,85 @@ def login_step1(request):
             status=201
         )
 
-    # MFA enabled → return temp token
-    refresh = RefreshToken.for_user(user)
+    # MFA required → create ephemeral token
+    signer = TimestampSigner()
+    ephemeral_token = signer.sign(user.id)
 
-    return Response(
-        {
-            "mfa_required": True,
-            "temp_token": str(refresh.access_token),  # short-lived
-        },
-        status=200
-    )
+    return Response({
+        "mfa_required": True,
+        "ephemeral_token": ephemeral_token
+    }, status=200)
 
 
 @extend_schema(
     tags=["2FA"],
     summary="Login (Step 2)",
     description="Verify MFA code using the temporary token. Returns full JWT tokens.",
-    request=VerifyLoginMFARequest,
+    request=VerifyLoginMFARequest, # Ensure this matches your serializer from the previous step
     responses={
         200: OpenApiResponse(inline_serializer(
             name="LoginStep2Response",
             fields={
-                "mfa_success": serializers.BooleanField(),
+                "mfa_success": serializers.BooleanField(), 
                 "access": serializers.CharField(),
                 "refresh": serializers.CharField()
             }
         ), description="MFA success and logged in."),
-        400: OpenApiResponse(description="Missing temp_token or code."),
-        401: OpenApiResponse(description="Code is invalid."),
+        400: OpenApiResponse(description="Invalid session or missing data."),
+        401: OpenApiResponse(description="Invalid MFA Code."),
     },
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login_verify_mfa(request):
-    from rest_framework_simplejwt.tokens import AccessToken
+def login_step2(request):
+    token = request.data.get("ephemeral_token")
+    otp = request.data.get("otp")
 
-    temp_token = request.data.get("temp_token")
-    code = request.data.get("code")
+    if not token or not otp:
+        return Response({"error": "Missing ephemeral_token or otp"}, status=400)
 
-    if not temp_token or not code:
-        return Response({"error": "Missing temp_token or code"}, status=400)
+    signer = TimestampSigner()
+    User = get_user_model()
 
     try:
-        access = AccessToken(temp_token)  # decode token
-        user_id = access["user_id"]
-    except Exception:
-        return Response({"error": "Invalid or expired temp_token"}, status=401)
+        user_id = signer.unsign(token, max_age=300)
+        user = User.objects.get(id=user_id)
+    except (BadSignature, SignatureExpired):
+        return Response({"error": "Invalid or expired login session."}, status=400)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=404)
 
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    user = User.objects.get(id=user_id)
+    # --------------------------
+    # RATE LIMIT: 5 MFA tries / 15 min
+    # --------------------------
+    key = f"login2_mfa_{user.id}"
 
+    if rate_limit(key, limit=5, window_seconds=900):
+        return Response(
+            {"error": "Too many MFA attempts. Try again in 15 minutes."},
+            status=429
+        )
+    # --------------------------
+
+    # Verify MFA
     if not user.totp_secret:
         return Response({"error": "User does not have MFA enabled"}, status=400)
 
     totp = pyotp.TOTP(user.totp_secret)
 
-    if not totp.verify(code):
+    if not totp.verify(otp):
         return Response({"error": "Invalid MFA code"}, status=401)
 
-    # Issue final real tokens
+    # Success → reset attempt counter
+    cache.delete(key)
+
+    # Issue real tokens
     refresh = RefreshToken.for_user(user)
-    return Response(
-        {
-            "mfa_success": True,
-            "access": str(refresh.access_token),
-            "refresh": str(refresh)
-        },
-        status=200
-    )
+    return Response({
+        "mfa_success": True,
+        "access": str(refresh.access_token),
+        "refresh": str(refresh)
+    }, status=200)
 
 
 @extend_schema(
@@ -997,4 +1086,3 @@ def check_mfa_enabled(request):
         enabled = True
     
     return Response({"mfa_enabled": enabled}, status=200)
-    

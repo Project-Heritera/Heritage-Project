@@ -444,3 +444,37 @@ def update(self, instance, validated_data):
         instance.badge = badge
     instance.save()
     return instance
+
+
+from rest_framework import serializers
+
+def get_historical_serializer(historical_model_class):
+    """
+    Dynamically creates a ModelSerializer for the given historical model class.
+    
+    This ensures all fields (including the base model fields and the history 
+    fields like 'history_date', 'history_user', and 'ip_address') are included.
+    
+    :param historical_model_class: The model class automatically created by 
+                                   django-simple-history (e.g., HistoricalProduct).
+    :return: A ready-to-use ModelSerializer class.
+    """
+
+    class HistoricalRecordSerializer(serializers.ModelSerializer):
+        # Override history_user to return a string (username) instead of a PK/Object
+        history_user = serializers.SerializerMethodField()
+
+        class Meta:
+            model = historical_model_class
+            # Use '__all__' to automatically include all fields from the historical model,
+            # which includes all original model fields + all history-specific fields.
+            fields = '__all__'
+            
+        def get_history_user(self, obj):
+            """Returns the username or a default string."""
+            if obj.history_user:
+                # Assuming history_user is a standard User model instance
+                return obj.history_user.username
+            return "System"
+
+    return HistoricalRecordSerializer

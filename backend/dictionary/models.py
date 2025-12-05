@@ -1,7 +1,11 @@
+from auditlog.registry import auditlog
 from django.db import models
+from simple_history.models import HistoricalRecords
+from heritage_project_backend.models import IPAddressHistoricalModel
 
 class Entry(models.Model):
     headword = models.CharField(max_length=255)
+    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
@@ -14,6 +18,7 @@ class Entry(models.Model):
 class Variant(models.Model):
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="variants")
     text = models.TextField()
+    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
@@ -29,6 +34,7 @@ class Source(models.Model):
         Variant, on_delete=models.CASCADE, related_name="sources", null=True, blank=True
     )
     text = models.TextField()
+    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
@@ -47,6 +53,7 @@ class Definition(models.Model):
     def_number = models.PositiveIntegerField()
     gloss = models.TextField()
     examples = models.TextField(blank=True)
+    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
@@ -59,6 +66,7 @@ class Definition(models.Model):
 class POS(models.Model):
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="parts_of_speech")
     part_of_speech = models.TextField()
+    history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
@@ -66,3 +74,10 @@ class POS(models.Model):
 
     def __str__(self):
         return f"{self.entry.headword} ({self.part_of_speech})"
+
+
+auditlog.register(Entry)
+auditlog.register(Source)
+auditlog.register(Definition)
+auditlog.register(Variant)
+auditlog.register(POS)
