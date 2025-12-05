@@ -3,7 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from ordered_model.models import F, OrderedModel
 from django.db.models import Q, Case, Value, When
-from .utils import censor_json, censor_with_xxxx
+from rest_framework.response import Response
+from .utils import censor_json, censor_with_xxxx, check_image_safety_google
 
 # | Visibility  | AccessLevel  | can_view  | can_edit   |
 # | PUBLIC      | (anyone)     | ✅        | ❌        |
@@ -427,6 +428,8 @@ class TaskComponent(OrderedModel):
     def save(self, *args, **kwargs):
         # Censor all string values inside the JSON
         self.content = censor_json(self.content)
+        if check_image_safety_google(self.content).safe == False:
+            return Response()
         super().save(*args, **kwargs)
 
 

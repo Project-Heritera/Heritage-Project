@@ -2,7 +2,7 @@ from better_profanity import profanity
 import base64
 from io import BytesIO
 from PIL import Image
-import openai
+from google.cloud import vision
 profanity.load_censor_words()
 
 # Make the censor method replace with XXXX instead of ****
@@ -21,19 +21,44 @@ def censor_json(value):
 
     return value  # ints, bool, None, etc.
 
-def censor_image(base64_image):
-    img_data = base64.b64decode(base64_image)
-    img = Image.open(BytesIO(img_data))
+def check_image_safety_google(data_json):
+    """
+    Checks if a base64 image in a JSON field is safe using Google Vision SafeSearch.
+    Expects: {"src": "BASE64STRING", ...}
+    Returns: dict {"safe": True/False, "message": "..."}
+    """
+    base64_img = data_json.get("src")
+    if not base64_img:
+        return {"safe": False, "message": "No 'src' field provided."}
 
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_bytes = buffered.getvalue()
+    # Convert base64 to bytes
+    try:
+        img_data = base64.b64decode(base64_img)
+        img = Image.open(BytesIO(img_data))
+    except Exception:
+        return {"safe": False, "message": "Invalid base64 image."}
 
-    response = openai.moderations.create(
-        model="omni-moderation-latest",
-        input=img_bytes
-    )
+    try:
+        client = vision.ImageAnnotatorClient()
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        content = buffered.getvalue()
 
-    # Check the response categories
-    results = response["results"][0]
-    return results["categories"]["sexual"] == False and results["categories"]["violence"] == False
+        image = vision.Image(content=content)
+        response = client.safe_search_detection(image=image)
+        safe = response.safe_search_annotation
+
+        # Likelihood values: 0=UNKNOWN, 1=VERY_UNLIKELY, 2=UNLIKELY, 3=LIKELY, 4=VERY_LIKELY
+        unsafe = (
+            safe.adult in [3, 4] or
+            safe.violence in [3, 4] or
+            safe.racy in [3, 4]
+        )
+
+        if unsafe:
+            return {"safe": False, "message": "Image contains inappropriate content."}
+        else:
+            return {"safe": True, "message": "Image is safe."}
+
+    except Exception as e:
+        return {"safe": False, "message": f"Error checking image: {str(e)}"}
