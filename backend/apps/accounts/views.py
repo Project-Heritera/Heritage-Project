@@ -858,6 +858,7 @@ def verify_mfa(request):
 
     if totp.verify(code):
         user.totp_secret = secret
+        user.save()
         # Mark user as MFA enabled (optional)
         return Response({"success": True}, status=200)
     else:
