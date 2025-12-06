@@ -34,8 +34,9 @@ function Disable2FA({ open, setOpen, setChecked }) {
             setChecked(true)
             return
         }
+        console.log("Sending code:", code)
         try {
-            const response = await api.post(`/accounts/login_step2/`,
+            const response = await api.post(`/accounts/disable_mfa/`,
                 {
                     code: code
                 })
