@@ -260,18 +260,14 @@ def get_badges(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_badge(request):
-    data = {
-        "title": request.data.get("title", ""),
-        "image": request.data.get("icon", ""),
-        "description": request.data.get("description", ""),
-    }
+    print(request.data  )
+    serializer = BadgeSerializer(data=request.data)
 
-    serializer = BadgeSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # -------------------------------
 # Course-related API calls
@@ -397,7 +393,6 @@ def create_course(request):
     if serializer.is_valid():
         serializer.save(
             creator=request.user,
-            metadata={},  # empty for now
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1217,7 +1212,6 @@ def create_room(request, course_id, section_id):
             course=course,
             section=section,
             creator=request.user,
-            metadata={},
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1241,6 +1235,7 @@ def create_room(request, course_id, section_id):
         400: OpenApiResponse(description="Serializer Failed."),
     },
 )
+
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_room(request, room_id):

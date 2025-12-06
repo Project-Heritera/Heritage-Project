@@ -203,7 +203,9 @@ class RoomSerializer(serializers.ModelSerializer):
     created_on = serializers.DateTimeField(read_only=True)
     last_updated = serializers.DateTimeField(required=False)
     image = serializers.ImageField(required=False, allow_null=True)
-    badge = BadgeSerializer(many=False, required=False)
+    badge = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = Room
@@ -255,8 +257,12 @@ class RoomSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        badge = validated_data.pop("badge", None)  # this will be a Badge instance from PK
         tasks_data = validated_data.pop("tasks", [])
         room = Room.objects.create(**validated_data)
+        if badge:
+            room.badge = badge
+            room.save(update_fields=["badge"])
 
         for task_data in tasks_data:
             TaskSerializer(context=self.context).create({**task_data, "room": room})
@@ -265,8 +271,11 @@ class RoomSerializer(serializers.ModelSerializer):
 
     # this also means the frontend must send *all* the data back, not just the stuff thats changed
     def update(self, instance, validated_data):
+        badge = validated_data.pop("badge", None)
         tasks_data = validated_data.pop("tasks", [])
 
+        if badge:
+            instance.badge = badge
         # update main fields, ensures we only del/replace *after* the db has been updated with most recent changes
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
