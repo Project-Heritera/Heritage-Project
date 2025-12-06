@@ -1,6 +1,19 @@
-import { useState,useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { update_task_progress } from "@/services/room";
+import {
+  Dialog,
+  DialogContent,
+  DialogPortal,
+  DialogOverlay,
+  DialogTitle,
+} from "@radix-ui/react-dialog";
 import Modal from "../Modal";
 import BadgeAward from "../RoomsPage/BadgeAward";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";
@@ -29,7 +42,7 @@ const TaskViewer = forwardRef(
     const [noQuestionComponent, setNoQuestionComponent] = useState(false);
     // BADGE MODAL
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
 
     // Normalize incoming status (accept either key like 'COMPLE' or display like 'COMPLETE')
     const getStatusKey = (s) => {
@@ -84,94 +97,99 @@ const TaskViewer = forwardRef(
       badge_image_url,
     };
 
-      const questionProgressData = {
-        attempts: attempts,
-        status: taskStatus,
-        metadata: metadata,
-      };
+    const questionProgressData = {
+      attempts: attempts,
+      status: taskStatus,
+      metadata: metadata,
+    };
 
-      const renderContent = () => {
-        const common = (
-          <>
-            <TaskBase
-              components={taskComponents}
-              isEditing={false}
-              contextValues={contextValues}
-              taskID={taskID}
-              questionProgressData={questionProgressData}
-            />
+    const renderContent = () => {
+      const common = (
+        <>
+          <TaskBase
+            components={taskComponents}
+            isEditing={false}
+            contextValues={contextValues}
+            taskID={taskID}
+            questionProgressData={questionProgressData}
+          />
 
-            {/* NEW CHECKBOX + MODAL */}
-            {noQuestionComponent && (
-              <>
-                <div className="mt-4 flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id={`complete-${taskID}`}
-                    onChange={async (e) => {
-                      if (e.target.checked) {
-                        await onStaticTaskComponentComplete();
-                      }
-                    }}
-                  />
-                  <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
-                </div>
-
-                <Modal
-                  isOpen={badgeAwardOpen}
-                  onClose={() => {
-                    Navigate(-1);
+          {/* NEW CHECKBOX + MODAL */}
+          {noQuestionComponent && (
+            <>
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={`complete-${taskID}`}
+                  onChange={async (e) => {
+                    if (e.target.checked) {
+                      await onStaticTaskComponentComplete();
+                    }
                   }}
-                >
-                  <BadgeAward
-                    badge_title={badge_title}
-                    badge_image_url={badge_image_url}
-                    onClose={() => {
-                      Navigate(-1);
-                    }}
-                  />
-                </Modal>
-              </>
-            )}
-          </>
-        );
-
-        if (taskStatus === "COMPLE") {
-          return (
-            <div className="relative pt-10">
-              <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
-                <CheckCircle size={32} />
-                Complete
+                />
+                <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
               </div>
-              {common}
-            </div>
-          );
-        }
+              <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
+                <DialogPortal>
+                  <DialogOverlay className="fixed inset-0 bg-black/50 z-[1000]" />
+                  <DialogContent className="fixed top-1/2 left-1/2 z-[1001] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white dark:bg-gray-800">
+                    <DialogTitle></DialogTitle>
 
-        if (taskStatus === "INCOMP") {
-          return (
-            <div className="relative pt-10">
-              <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
-                <XCircle size={32} />
-                Incorrect
-              </div>
-              {common}
-            </div>
-          );
-        }
+                    <BadgeAward
+                      badge_title={badge_title}
+                      badge_image_url={badge_image_url}
+                      onClose={() => {
+                        setBadgeAwardOpen(false);
+                        if (window.history.length > 1) {
+                          navigate(-1);
+                        } else {
+                          navigate("/courses"); 
+                        }
+                      }}
+                    />
+                  </DialogContent>
+                </DialogPortal>
+              </Dialog>
+            </>
+          )}
+        </>
+      );
 
+      if (taskStatus === "COMPLE") {
         return (
           <div className="relative pt-10">
-            <div className="absolute top-2 right-2 flex items-center gap-2 bg-gray-400 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
-              Not Completed
+            <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+              <CheckCircle size={32} />
+              Complete
             </div>
             {common}
           </div>
         );
       }
-        return <div className="task-viewer">{renderContent()}</div>;
-    }
+
+      if (taskStatus === "INCOMP") {
+        return (
+          <div className="relative pt-10">
+            <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+              <XCircle size={32} />
+              Incorrect
+            </div>
+            {common}
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative pt-10">
+          <div className="absolute top-2 right-2 flex items-center gap-2 bg-gray-400 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
+            Not Completed
+          </div>
+          {common}
+        </div>
+      );
+    };
+    return <div className="task-viewer">{renderContent()}</div>;
+  }
 );
 
 export default TaskViewer;
-

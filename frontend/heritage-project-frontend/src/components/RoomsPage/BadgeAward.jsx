@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import confetti from "canvas-confetti";
 import {
   Card,
   CardHeader,
@@ -26,14 +25,7 @@ BadgeAward.propTypes = {
 function BadgeAward({ badge_title, badge_image_url, onClose }) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    confetti({
-      particleCount: 20,
-      spread: 60,
-      origin: { y: 1 },
-    });
-  }, []);
-  // Render different content based on taskStatus
+ 
 
   return (
     <div className="p-6 text-center shadow-lg">

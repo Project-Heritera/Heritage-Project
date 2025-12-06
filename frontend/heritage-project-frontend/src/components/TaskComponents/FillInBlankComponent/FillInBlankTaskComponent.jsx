@@ -61,6 +61,7 @@ const FillInBlankTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
           <div className="flex-1">
             <label className="block mb-1 text-sm font-medium">Text</label>
             <Input
+            className="bg-background"
               placeholder='Enter text with "___" as blank'
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -69,6 +70,7 @@ const FillInBlankTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
           <div className="flex-1">
             <label className="block mb-1 text-sm font-medium">Answer</label>
             <Input
+            className="bg-background"
               placeholder="Correct answer"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
