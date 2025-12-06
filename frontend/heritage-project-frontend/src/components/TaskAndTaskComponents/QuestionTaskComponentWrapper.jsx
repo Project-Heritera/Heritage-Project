@@ -6,6 +6,13 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
+import {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogTitle,
+} from "@radix-ui/react-dialog";
 import statusTypes from "../../utils/statusTypes";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import BadgeAward from "../RoomsPage/BadgeAward";
@@ -75,8 +82,8 @@ const QuestionTaskComponentWrapper = forwardRef(
       }
       const result = questionComponentRef.current.checkIfCorrect();
       setTaskStatus(result);
-      console.log("result is ", result)
-      console.log("jfieljf ", statusTypes.COMPLE)
+      console.log("result is ", result);
+      console.log("jfieljf ", statusTypes.COMPLE);
 
       if (result === statusTypes.COMPLE) {
         setIsCorrect(true);
@@ -149,16 +156,11 @@ const QuestionTaskComponentWrapper = forwardRef(
                 />
               </div>
               <div className="flex flex-col w-full md:w-1/2">
-                <label className="text-sm font-medium mb-1">Hint</label>
-                <Checkbox
-                  id={`complete-${taskID}`}
-                  checked={isComplete}
-                  onCheckedChange={async (checked) => {
-                    setIsComplete(checked);
-                    if (checked) {
-                      await onStaticTaskComponentComplete(); // call your async function
-                    }
-                  }}
+                <label className="text-sm font-medium mb-1">Hints</label>
+                <Input
+                  type="text"
+                  value={hint}
+                  onChange={(e) => setHint(e.target.value)}
                 />
               </div>
             </div>
@@ -192,20 +194,27 @@ const QuestionTaskComponentWrapper = forwardRef(
             )}
           </CardFooter>
         )}
-        <Modal
-          isOpen={badgeAwardOpen}
-          onClose={() => {
-            Navigate(-1);
-          }}
-        >
-          <BadgeAward
-            badge_title={badge_title}
-            onClose={() => {
-              Navigate(-1);
-            }}
-            badge_image_url={badge_image_url}
-          />
-        </Modal>
+        <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
+          <DialogPortal>
+            <DialogOverlay className="fixed inset-0 bg-black/50 z-[1000]" />
+            <DialogContent className="fixed top-1/2 left-1/2 z-[1001] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white dark:bg-gray-800">
+              <DialogTitle></DialogTitle>
+
+              <BadgeAward
+                badge_title={badge_title}
+                badge_image_url={badge_image_url}
+                onClose={() => {
+                  setBadgeAwardOpen(false);
+                  if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate("/courses");
+                  }
+                }}
+              />
+            </DialogContent>
+          </DialogPortal>
+        </Dialog>
       </Card>
     );
   }
