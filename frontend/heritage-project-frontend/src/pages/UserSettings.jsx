@@ -60,8 +60,8 @@ function UserSettings() {
     }
 
     return (
-
-        <div className="flex flex-col w-full min-h-screen bg-gray-50">
+        // changed bg-gray-50 to bg-muted/40 or bg-background
+        <div className="flex flex-col w-full min-h-screen bg-muted/40">
             <Enable2FA
                 open={enable2FAOpen}
                 setOpen={setEnable2FAOpen}
@@ -72,30 +72,32 @@ function UserSettings() {
                 setOpen={setDisable2FAOpen}
                 setChecked={setIs2FAEnabled}
             />
-            {/* Header Area */}
-            <div className="w-full bg-white border-b px-6 py-4 mb-8">
+            {/* Header Area: Changed bg-white to bg-background */}
+            <div className="w-full bg-background border-b px-6 py-4 mb-8">
                 <div className="max-w-[60%] mx-auto">
-                    <h2 className="text-2xl font-bold tracking-tight">
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">
                         Manage Your User Settings
                     </h2>
                 </div>
             </div>
 
-            {/* Main Content Area - Centered with max-width */}
+            {/* Main Content Area */}
             <div className="flex w-full max-w-[60%] mx-auto px-6 gap-10 items-start">
 
-                {/* 1. SIDEBAR: Fixed width (e.g., w-64) */}
+                {/* SIDEBAR */}
                 <nav className="w-50 flex flex-col gap-2 text-sm text-muted-foreground">
-                    <h3 className="font-semibold text-foreground mb-2 px-2">Account Managment</h3>
+                    {/* Changed text-foreground */}
+                    <h3 className="font-semibold text-foreground mb-2 px-2">Account Management</h3>
                     <Button variant={tab === "Account Settings" ? "default" : "ghost"} className="justify-start" onClick={() => { setTab("Account Settings") }}>Account Settings</Button>
                     <Button variant={tab === "Security" ? "default" : "ghost"} className="justify-start" onClick={() => { setTab("Security") }}>Security</Button>
                 </nav>
 
-                {/* 2. MAIN CONTENT: Flex-1 (Takes remaining space) */}
+                {/* MAIN CONTENT */}
                 <div className="flex-1">
                     {(tab === "Account Settings") && (
                         <Card className="w-full shadow-sm">
-                            <CardHeader className="bg-gray-50/50 border-b pb-4">
+                            {/* Changed bg-gray-50/50 to bg-muted/50 */}
+                            <CardHeader className="bg-muted/50 border-b pb-4">
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <CardTitle>Account Info</CardTitle>
@@ -107,74 +109,75 @@ function UserSettings() {
                             </CardHeader>
 
                             <CardContent>
-                                <div className="space-y-3 text-base ">
+                                <div className="space-y-3 text-base pt-4">
                                     <div className="flex justify-between ">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-gray-900 w-24">Username:</span>
-                                            <span className="text-gray-700">{username && username}</span>
+                                            {/* Changed text-gray-900 to text-foreground */}
+                                            <span className="font-bold text-foreground w-24">Username:</span>
+                                            {/* Changed text-gray-700 to text-muted-foreground or text-foreground */}
+                                            <span className="text-muted-foreground">{username && username}</span>
                                         </div>
-                                        <ChangeUsername updateUser={setUsername}/>
+                                        <ChangeUsername updateUser={setUsername} />
                                     </div>
 
                                     <div className="flex justify-between ">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-gray-900 w-24">Email:</span>
-                                            <span className="text-gray-700">{email && email}</span>
+                                            <span className="font-bold text-foreground w-24">Email:</span>
+                                            <span className="text-muted-foreground">{email && email}</span>
                                         </div>
-                                        <ChangeEmail updateEmail={setEmail}/>
+                                        <ChangeEmail updateEmail={setEmail} />
                                     </div>
 
                                     <div className="flex justify-between">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-gray-900 w-24">Password:</span>
-                                            {/* Use static dots with wide tracking for a secure "masked" look */}
-                                            <span className="text-gray-700 text-xl tracking-widest mt-1">••••••••••••</span>
+                                            <span className="font-bold text-foreground w-24">Password:</span>
+                                            <span className="text-muted-foreground text-xl tracking-widest mt-1">••••••••••••</span>
                                         </div>
-                                        <ChangePassword/>
+                                        <ChangePassword />
                                     </div>
 
                                 </div>
                             </CardContent>
                         </Card>
                     )}
-
                     {/* Security */}
-                    {(tab === "Security") && (
-                        <Card className="w-full shadow-sm">
-                            <CardHeader className="bg-gray-50/50 border-b pb-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <CardTitle>Security</CardTitle>
-                                        <CardDescription>
-                                            Make changes to the security of your account.
-                                        </CardDescription>
+                    {
+                        (tab === "Security") && (
+                            <Card className="w-full shadow-sm">
+                                <CardHeader className="bg-muted/50 border-b pb-4">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <CardTitle>Security</CardTitle>
+                                            <CardDescription>
+                                                Make changes to the security of your account.
+                                            </CardDescription>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardHeader>
+                                </CardHeader>
 
-                            <CardContent>
-                                <div className="flex items-center justify-between space-x-2">
-                                    <div className="flex flex-col space-y-1">
-                                        <Label htmlFor="2fa-mode" className="text-base font-medium">
-                                            Two-Factor Authentication
-                                        </Label>
-                                        <span className="text-sm text-muted-foreground">
-                                            Add an extra layer of security to your account.
-                                        </span>
+                                <CardContent>
+                                    <div className="flex items-center justify-between space-x-2">
+                                        <div className="flex flex-col space-y-1">
+                                            <Label htmlFor="2fa-mode" className="text-base font-medium">
+                                                Two-Factor Authentication
+                                            </Label>
+                                            <span className="text-sm text-muted-foreground">
+                                                Add an extra layer of security to your account.
+                                            </span>
+                                        </div>
+                                        <Switch
+                                            id="2fa-mode"
+                                            checked={is2FAEnabled}
+                                            onCheckedChange={(checked) => {
+                                                setIs2FAEnabled(checked);
+                                                checked ? setEnable2FAOpen(true) : setDisable2FAOpen(true)
+                                            }}
+                                        />
                                     </div>
-                                    <Switch
-                                        id="2fa-mode"
-                                        checked={is2FAEnabled}
-                                        onCheckedChange={(checked) => {
-                                            setIs2FAEnabled(checked);
-                                            checked ? setEnable2FAOpen(true) : setDisable2FAOpen(true)
-                                        }}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
+                                </CardContent>
+                            </Card>
+                        )
+                    }
                 </div>
             </div>
         </div>
@@ -182,3 +185,4 @@ function UserSettings() {
 }
 
 export default UserSettings;
+
