@@ -22,7 +22,7 @@ class VerifyLoginMFARequest(serializers.Serializer):
 # -------------------------------
 class UserSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(source="id", read_only=True)
-    username = serializers.CharField(read_only=True)
+    username = serializers.CharField()
     profile_pic = serializers.ImageField()
     description = serializers.CharField()
     streak = serializers.IntegerField()

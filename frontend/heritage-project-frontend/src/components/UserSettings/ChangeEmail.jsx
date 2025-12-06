@@ -16,7 +16,7 @@ import api from "../../services/api"
 import { AlertCircle } from "lucide-react"
 import { tr } from "date-fns/locale";
 
-function ChangeEmail({ }) {
+function ChangeEmail({updateEmail }) {
     //Store data for whats being edited
     const [users, setUsers] = useState([])
     const [QRCode, setQRCode] = useState("")
@@ -83,6 +83,7 @@ function ChangeEmail({ }) {
                 setCode("")
                 setError("")
                 setVerified(true)
+                if (updateEmail) updateEmail(email)
                 setOpen(false) // Close the dialog on success
             }
         } catch (error) {

@@ -18,16 +18,19 @@ import Enable2FA from "@/components/UserSettings/Enable2FA";
 import Disable2FA from "@/components/UserSettings/Disable2FA";
 import ChangePassword from "../components/UserSettings/ChangePassword"
 import ChangeEmail from "@/components/UserSettings/ChangeEmail";
+import ChangeUsername from "@/components/UserSettings/ChangeUsername";
 
 
 //Displays a list of cours given a room
-function CourseDashboard() {
+function UserSettings() {
     const [loading, setLoading] = useState(true)
     const [currentUser, setCurrentUser] = useState(null);
     const [is2FAEnabled, setIs2FAEnabled] = useState(false)
     const [tab, setTab] = useState("Security")
     const [enable2FAOpen, setEnable2FAOpen] = useState(false)
     const [disable2FAOpen, setDisable2FAOpen] = useState(false)
+    const [username, setUsername] = useState("")
+    const [email, setEmail] = useState("")
     useEffect(() => {
         setLoading(true)
 
@@ -38,6 +41,8 @@ function CourseDashboard() {
                 const currentUserData = currentUserResponse.data
                 console.log("Current user data is:", currentUserData)
                 setCurrentUser(currentUserData)
+                setUsername(currentUserData.username)
+                setEmail(currentUserData.email)
                 //Get if 2FA is enabled
                 const isEnabledResponse = await api.get(`/accounts/check_mfa_enabled/`)
                 setIs2FAEnabled(isEnabledResponse.data.mfa_enabled)
@@ -106,17 +111,17 @@ function CourseDashboard() {
                                     <div className="flex justify-between ">
                                         <div className="flex items-center">
                                             <span className="font-bold text-gray-900 w-24">Username:</span>
-                                            <span className="text-gray-700">{currentUser?.username || "claytakilerImperius"}</span>
+                                            <span className="text-gray-700">{username && username}</span>
                                         </div>
-                                        <Button variant="outline">Change Username</Button>
+                                        <ChangeUsername updateUser={setUsername}/>
                                     </div>
 
                                     <div className="flex justify-between ">
                                         <div className="flex items-center">
                                             <span className="font-bold text-gray-900 w-24">Email:</span>
-                                            <span className="text-gray-700">{currentUser?.email}</span>
+                                            <span className="text-gray-700">{email && email}</span>
                                         </div>
-                                        <ChangeEmail/>
+                                        <ChangeEmail updateEmail={setEmail}/>
                                     </div>
 
                                     <div className="flex justify-between">
@@ -176,4 +181,4 @@ function CourseDashboard() {
     )
 }
 
-export default CourseDashboard;
+export default UserSettings;
