@@ -194,21 +194,25 @@ def update_user_info(request):
 @extend_schema(
     tags=["Users"],
     summary="Update the user's password or email info",
-    description="Update the password or email of the currently logged in user. Only send 'code' if the user has MFA enabled.",
+    description="Update the password or email. Returns success=False if MFA fails, but keeps status 200.",
     request=inline_serializer(
-        name="UpdateVitalUserInfoResponse",
+        name="UpdateVitalUserInfoRequest",
         fields={
-            "password": serializers.CharField(),
-            "email": serializers.EmailField(),
-            "code": serializers.IntegerField(),
+            "password": serializers.CharField(required=False),
+            "email": serializers.EmailField(required=False),
+            "code": serializers.IntegerField(required=False),
         },
     ),
     responses={
-        200: UserSerializer,
-        400: OpenApiResponse(description="Serializer failed."),
-        403: OpenApiResponse(
-            description="You must have MFA enabled to change your email or password."
+        200: inline_serializer(
+            name="UpdateVitalUserInfoResponse",
+            fields={
+                "success": serializers.BooleanField(),
+                "message": serializers.CharField(default=""),
+                "data": UserSerializer(required=False),
+            },
         ),
+        400: OpenApiResponse(description="Serializer validation failed."),
     },
 )
 @api_view(["PUT"])
@@ -216,19 +220,37 @@ def update_user_info(request):
 def update_user_important_info(request):
     user = request.user
 
-    if user.totp_secret:  # mfa enabled
-        totp = pyotp.TOTP(user.totp_secret)  # get users secret
+    # 1. Check MFA if enabled
+    if user.totp_secret:
+        totp = pyotp.TOTP(user.totp_secret)
+        if not totp.verify(request.data.get("code")):
+            return Response(
+                {"success": False, "message": "Invalid MFA code"},
+                status=status.HTTP_200_OK,
+            )
 
-        if not totp.verify(request.data.get("code")):  # get request code
-            return Response({"error": "Invalid MFA code"}, status=401)
+    # 2. Decouple Data
+    # Create a mutable copy of the data so we can modify it
+    mutable_data = request.data.copy()
 
-    serializer = UserSerializer(
-        user, data=request.data, partial=True  # allows updating only provided fields
-    )
+    # Extract password and REMOVE it from the data passed to the serializer
+    # This ensures the serializer doesn't try to save the raw password
+    new_password = mutable_data.pop("password", None)
+
+    # 3. Validate & Save Non-Password Fields (Email, etc.)
+    serializer = UserSerializer(user, data=mutable_data, partial=True)
 
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = serializer.save()
+
+        # 4. Handle Password Hashing Explicitly
+        if new_password:
+            user.set_password(new_password)
+            user.save()
+
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
