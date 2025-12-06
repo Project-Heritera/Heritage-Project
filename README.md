@@ -38,7 +38,7 @@ If you use Linux or Mac, in the terminal, run this command instead (or double cl
 start_project.sh
 ```
 
-After that, signup as a new user, and explore our courses!
+After that, signup as a new user at /login or /signup, and explore our courses!
 
 ## Tech Stack and APIs
 
