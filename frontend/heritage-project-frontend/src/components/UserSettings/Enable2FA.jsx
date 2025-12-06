@@ -22,13 +22,23 @@ function Enable2FA({ open, setOpen, setChecked }) {
     const [loading, setLoading] = useState(true)
     const [code, setCode] = useState("")
     const [error, setError] = useState("")
+    const [secret, setSecret] = useState("")
+    const [is2FAEnabled, setIs2FAEnabled] = useState(false)
 
     useEffect(() => {
         setLoading(true)
         const getCode = async () => {
             try {
+                const isEnabledResponse = await api.get(`/accounts/check_mfa_enabled/`)
+                setIs2FAEnabled(isEnabledResponse.data.mfa_enabled)
+                if (isEnabledResponse.data.mfa_enabled) {
+                    return
+                }
                 const genResponse = await api.get(`/accounts/generate_mfa_qr/`)
                 const genData = genResponse.data
+                setSecret(genData.secret)
+                console.log("Recieved secret:", genData.secret)
+                console.log("QR data is:", genResponse)
                 setQRCode(genData.qr_code_base64);
                 setLoading(false)
             } catch (error) {
@@ -46,10 +56,12 @@ function Enable2FA({ open, setOpen, setChecked }) {
             if (setChecked) setChecked(false)
             return
         }
+        console.log("Sending secret:", secret)
         try {
             const response = await api.post(`/accounts/verify_mfa/`,
                 {
-                    code: code
+                    code: code,
+                    secret: secret
                 })
             const data = response.data
             if (!data.success) {
@@ -61,7 +73,7 @@ function Enable2FA({ open, setOpen, setChecked }) {
                 setQRCode("");
                 setCode("")
                 setError("")
-                 if (setChecked) setChecked(true)
+                if (setChecked) setChecked(true)
                 setOpen(false);
             }
         } catch (error) {

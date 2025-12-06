@@ -45,7 +45,7 @@ function ChangePassword({ }) {
     }, [])
 
     const makeChange = async () => {
-        if (code.length < 6) {
+        if (is2FAEnabled && code.length < 6) {
             setError("Invalid code. Code must be a 6 digit number.")
             return
         }
@@ -77,6 +77,7 @@ function ChangePassword({ }) {
                 setCode("")
                 setError("")
                 setVerified(true)
+                setOpen(false)
             }
         } catch (error) {
             console.error("Error validating 2FA or password:", error)

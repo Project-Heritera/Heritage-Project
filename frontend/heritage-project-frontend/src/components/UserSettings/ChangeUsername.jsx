@@ -16,59 +16,51 @@ import api from "../../services/api"
 import { AlertCircle } from "lucide-react"
 import { tr } from "date-fns/locale";
 
-function Disable2FA({ open, setOpen, setChecked }) {
+function ChangeUsername({ updateUser}) {
     //Store data for whats being edited
     const [users, setUsers] = useState([])
-    const [QRCode, setQRCode] = useState("")
     const [loading, setLoading] = useState(true)
-    const [code, setCode] = useState("")
     const [error, setError] = useState("")
+    const [open, setOpen] = useState(false)
+    const [username, setUsername] = useState("")
 
     useEffect(() => {
-        setLoading(true)
+        
     }, [])
 
-    const verifyCode = async () => {
-        if (code.length < 6) {
-            setError("Invalid code. Code must be a 6 digit number.")
-            setChecked(true)
+    const makeChange = async () => {
+        if (username.length === 0) {
+            setError("username may not be empty.")
             return
         }
-        console.log("Sending code:", code)
+
         try {
-            const response = await api.post(`/accounts/disable_mfa/`,
+            const response = await api.put(`/accounts/update_user_info/`,
                 {
-                    code: code
+                    username: username
                 })
             const data = response.data
-            if (!data.success) {
-                //error ask to redo
-                setError("Invalid code. Please try again.")
-                setChecked(true)
-            } else {
-                console.log("SUCCESS validating 2FA!")
-                setQRCode("");
-                setCode("")
-                setError("")
-                setChecked(false)
-                setOpen(false);
-            }
+            console.log("username Change response was:", response)
+            if (updateUser) updateUser(username)
+            setOpen(close)
         } catch (error) {
-            console.error("Error validating 2FA:", error)
+            console.error("Error adding username:", error)
             setError("Server error. Please try again.")
-            setChecked(true)
         }
     }
 
 
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
+
+            <DialogTrigger>
+                <Button variant="outline">Change Username</Button>
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[380px]">
                 <DialogHeader>
-                    <DialogTitle>Disable 2FA</DialogTitle>
+                    <DialogTitle>Change Username</DialogTitle>
                     <DialogDescription>
-                        Enter your code to disable 2fa - disabling 2fa will make your account vulnerable to brute force attacks.
+                        Choose a new username.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -77,21 +69,17 @@ function Disable2FA({ open, setOpen, setChecked }) {
                 <div className="grid gap-4 py-4">
 
                     <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="2fa-code">Authentication Code</Label>
+
+                        <Label htmlFor="2fa-code">New Username</Label>
                         <Input
                             id="2fa-code"
                             type="text"
-                            placeholder="123456"
-                            value={code}
+                            placeholder="johndoe@gmail.com"
+                            value={username}
                             onChange={(e) => {
                                 const value = e.target.value;
-
-                                // 1. Regex checks if value contains ONLY digits or is empty
-                                // 2. Checks if length is 6 or less
-                                if (/^\d*$/.test(value) && value.length <= 6) {
-                                    setCode(value);
-                                    if (error) setError("");
-                                }
+                                setUsername(value)
+                                if (error) setError("");
                             }}
                             className={`text-center tracking-widest text-lg ${error ? "border-red-500 focus-visible:ring-red-500" : ""
                                 }`}
@@ -110,10 +98,7 @@ function Disable2FA({ open, setOpen, setChecked }) {
                         <div>
                             <Button
                                 onClick={() => {
-                                    setQRCode("");
-                                    setCode("")
                                     setError("")
-                                    setChecked(true)
                                     setOpen(false);
                                 }}
                                 variant="outline">
@@ -121,8 +106,8 @@ function Disable2FA({ open, setOpen, setChecked }) {
                             </Button>
                         </div>
                         <div>
-                            <Button onClick={verifyCode}>
-                                Verify & Disable
+                            <Button onClick={makeChange}>
+                                Change Username
                             </Button>
                         </div>
                     </div>
@@ -132,4 +117,4 @@ function Disable2FA({ open, setOpen, setChecked }) {
     )
 }
 
-export default Disable2FA;
+export default ChangeUsername;
