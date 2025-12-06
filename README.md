@@ -57,6 +57,8 @@ Security logs for auditing
 
 Data backups for recovery
 
+Brute force prevention
+
 ## Acknowledgements
 
 The information for Louisiana Creole was gathered from the following sources:
