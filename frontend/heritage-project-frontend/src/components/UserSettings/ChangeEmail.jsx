@@ -45,26 +45,37 @@ function ChangeEmail({ }) {
     }, [])
 
     const makeChange = async () => {
-        if (code.length < 6) {
+        // 1. Check 2FA Code length if enabled
+        if (is2FAEnabled && code.length < 6) {
             setError("Invalid code. Code must be a 6 digit number.")
             return
         }
 
+        // 2. Check if email is empty
         if (email.length === 0) {
-            setError("email may not be empty.")
+            setError("Email may not be empty.")
+            return
+        }
+
+        // 3. NEW: Validate Email Format using Regex
+        // This checks for: chars + @ + chars + . + chars
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email)) {
+            setError("Please enter a valid email address (e.g. user@example.com).")
             return
         }
 
         try {
-            const response = await api.post(`/accounts/update_vital_user_info/`,
+            const response = await api.put(`/accounts/update_vital_user_info/`,
                 {
                     code: code,
                     email: email
                 })
             const data = response.data
             console.log("Email Change response was:", response)
+
             if (!data.success) {
-                //error ask to redo
+                // Backend returned success:False (likely invalid 2FA)
                 setError("Invalid code. Please try again.")
             } else {
                 console.log("SUCCESS validating 2FA!")
@@ -72,10 +83,17 @@ function ChangeEmail({ }) {
                 setCode("")
                 setError("")
                 setVerified(true)
+                setOpen(false) // Close the dialog on success
             }
         } catch (error) {
             console.error("Error validating 2FA or email:", error)
-            setError("Server error. Please try again.")
+
+            // Check if the backend sent a specific error message (e.g., email already taken)
+            if (error.response && error.response.data && error.response.data.email) {
+                setError(error.response.data.email[0])
+            } else {
+                setError("Server error. Please try again.")
+            }
         }
     }
 
