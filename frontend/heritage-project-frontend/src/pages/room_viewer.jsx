@@ -62,6 +62,7 @@ const RoomViewer = () => {
           Debug.error(
             "Viewing page reached and room data has editing_mode set to true"
           );
+          navigate(-1)
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);
