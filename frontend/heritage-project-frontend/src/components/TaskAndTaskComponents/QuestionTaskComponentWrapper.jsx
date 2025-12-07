@@ -165,13 +165,11 @@ const QuestionTaskComponentWrapper = forwardRef(
         </CardContent>
         {!isEditing && (
           <CardFooter className="flex flex-col md:flex-row justify-between items-center gap-2">
-            <Button
-              variant="default"
-              onClick={handleSubmit}
-              disabled={taskStatus === statusTypes.COMPLE}
-            >
-              Submit
-            </Button>
+            {taskStatus !== statusTypes.COMPLE && (
+              <Button variant="default" onClick={handleSubmit}>
+                Submit
+              </Button>
+            )}
 
             {!isCorrect && attemptsLeft === 0 && parsedJsonData.hint && (
               <p className="text-sm text-muted-foreground mt-2 md:mt-0">

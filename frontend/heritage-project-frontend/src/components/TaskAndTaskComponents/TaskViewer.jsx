@@ -5,6 +5,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
+import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { update_task_progress } from "@/services/room";
 import {
@@ -72,7 +73,7 @@ const TaskViewer = forwardRef(
       try {
         const payload = { status: statusTypes.COMPLE };
         const room_complete = await update_task_progress(taskID, payload);
-        setTaskStatus(statusTypes.COMPLE)
+        setTaskStatus(statusTypes.COMPLE);
         if (room_complete) {
           setBadgeAwardOpen(true);
         }
@@ -119,18 +120,21 @@ const TaskViewer = forwardRef(
           {/* NEW CHECKBOX + MODAL */}
           {noQuestionComponent && (
             <>
-              <div className="mt-4 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`complete-${taskID}`}
-                  onChange={async (e) => {
-                    if (e.target.checked) {
-                      await onStaticTaskComponentComplete();
-                    }
-                  }}
-                />
-                <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
-              </div>
+                <div className="mt-4">
+      <Button
+        variant="secondary"
+        className="flex items-center gap-2"
+        onClick={async () => {
+          await onStaticTaskComponentComplete();
+        }}
+        disabled={taskStatus === statusTypes.COMPLE}
+      >
+        ✓ Mark as Complete
+      </Button>
+    </div>
+
+    <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
+    </Dialog>
               <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
                 <DialogPortal>
                   <DialogOverlay className="fixed inset-0 bg-black/50 z-[1000]" />

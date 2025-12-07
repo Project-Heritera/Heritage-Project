@@ -11,9 +11,8 @@ function getProgressColor(progress) {
 
 export default function CourseCard({ title, description, href, progress, imageLink, courseId, navLink }) {
   const color = getProgressColor(progress);
-  console.log("Course id is:", courseId)
   return (
-    <Link to={navLink || `/c/${courseId || "#"}`}>
+    <Link to={navLink || null}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
