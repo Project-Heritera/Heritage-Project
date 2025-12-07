@@ -3,7 +3,6 @@ import RoomProgress from "./RoomProgress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom"
 const RoomCard = ({ title, description, imageLink, navigateLink, progress }) => {
-    console.log("Image is:", imageLink)
     return (
         <Link to={navigateLink || "#"} className="block group">
             <div className="
