@@ -39,6 +39,9 @@ start_project.sh
 ```
 
 After that, signup as a new user, and explore our courses!
+### You can also use out existing user  
+* username: William
+* password: heritage
 
 ## Tech Stack and APIs
 
