@@ -1,10 +1,8 @@
 @echo off
 cd /d "%~dp0"
 
-:: Create virtual environment if it doesn't exist
-if not exist Heritage-Project (
-    python -m venv Heritage-Project
-)
+:: Create virtual environment
+python -m venv Heritage-Project
 
 :: Activate virtual environment
 call Heritage-Project\Scripts\activate
