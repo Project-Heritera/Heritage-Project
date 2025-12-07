@@ -38,7 +38,6 @@ export async function create_room(course_id, section_id, create_room_data) {
 export async function get_room_data(room_id) {
 	try {
 		const response = await api.get(`website/rooms/${room_id}/`);
-		Debug.log('room fetch successful', response.data);
 		return response.data
 	} 
 	catch (error) {
@@ -144,14 +143,10 @@ export async function get_task_progress_for_room(course_id, section_id, room_id)
 }
 export async function update_task_progress(task_id, updated_task_progress_data){
  try {
-        console.log(
-          "update task progress payload",
-          updated_task_progress_data
-        );
+ 
         // call the backend and wait for the response
 		const response = await api.put(`website/tasks/${task_id}/update_progress/`, updated_task_progress_data)
         // check if all tasks in the room are completed
-        console.log("response",response.data)
         if (response.data?.room_completed) {
 			return true
         }

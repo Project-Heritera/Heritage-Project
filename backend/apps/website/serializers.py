@@ -203,9 +203,8 @@ class RoomSerializer(serializers.ModelSerializer):
     created_on = serializers.DateTimeField(read_only=True)
     last_updated = serializers.DateTimeField(required=False)
     image = serializers.ImageField(required=False, allow_null=True)
-    badge = serializers.PrimaryKeyRelatedField(
-        queryset=Badge.objects.all(), required=False, allow_null=True
-    )
+    badge = BadgeSerializer(read_only=True)
+
 
     class Meta:
         model = Room

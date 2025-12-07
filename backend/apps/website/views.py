@@ -68,48 +68,34 @@ def update_task_progress(request, task_id):
     user = request.user
     task = get_object_or_404(Task, id=task_id)
 
-    # Get or create progress record for this user & task
-    # If already created, this will not replace missing fields
-    # i.e. if you only give status, attempts/metadata will stay the same
     progress, created = ProgressOfTask.objects.get_or_create(
         user=user, task=task, defaults={"status": Status.NOSTAR, "attempts": 0}
     )
 
-    room_completed = False
-    section_completed = False
-    course_completed = False
-
-    # dont work
-    room = Room.objects.filter(id=task.room_id).user_progress_percent(user).first()
-    room_prog = room.progress_percent
-    section = Section.objects.filter(id=task.room.section_id).user_progress_percent(user).first()
-    section_prog = section.progress_percent
-    course = Course.objects.filter(id=task.room.course_id).user_progress_percent(user).first()
-    course_prog = course.progress_percent
-    if room_prog == 100:
-        room_completed = True
-    if section_prog == 100:
-        section_completed = True
-    if course_prog == 100:
-        course_completed = True
-
-    # Feed existing instance + incoming update data into serializer
+    # Validate and save before computing completion!
     serializer = ProgressOfTaskSerializer(progress, data=request.data, partial=True)
-
-    # Validate incoming data
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Save the update
     serializer.save()
 
-    return Response({
-        **serializer.data,
-        "room_completed": room_completed,
-        "section_completed": section_completed,
-        "course_completed": course_completed,
-        }, 
-        status=status.HTTP_200_OK
+    # Now compute progress using latest data
+    room = Room.objects.filter(id=task.room_id).user_progress_percent(user).first()
+    section = Section.objects.filter(id=task.room.section_id).user_progress_percent(user).first()
+    course = Course.objects.filter(id=task.room.course_id).user_progress_percent(user).first()
+
+    room_completed = room.progress_percent == 100
+    section_completed = section.progress_percent == 100
+    course_completed = course.progress_percent == 100
+
+    return Response(
+        {
+            **serializer.data,
+            "room_completed": room_completed,
+            "section_completed": section_completed,
+            "course_completed": course_completed,
+        },
+        status=status.HTTP_200_OK,
     )
 
 

@@ -68,7 +68,7 @@ const QuestionTaskComponentWrapper = forwardRef(
 
     //for badge award
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleSubmit = async () => {
       if (
@@ -82,8 +82,6 @@ const QuestionTaskComponentWrapper = forwardRef(
       }
       const result = questionComponentRef.current.checkIfCorrect();
       setTaskStatus(result);
-      console.log("result is ", result);
-      console.log("jfieljf ", statusTypes.COMPLE);
 
       if (result === statusTypes.COMPLE) {
         setIsCorrect(true);
@@ -94,26 +92,14 @@ const QuestionTaskComponentWrapper = forwardRef(
         }
       }
       try {
-        //update task progress
-        const update_task_progress_payload = {
-          status: result,
-          attempts: attemptsLeft,
-        };
-        // call the backend and wait for the response
-        const room_completed = await update_task_progress(
-          taskID,
-          update_task_progress_payload
-        );
-        if (room_completed == true) {
-          // display award badge modal
+        const payload = { status: statusTypes.COMPLE };
+        const room_complete = await update_task_progress(taskID, payload);
+        setTaskStatus(statusTypes.COMPLE);
+        if (room_complete) {
           setBadgeAwardOpen(true);
-        } else if (room_completed == false) {
-          return;
-        } else {
-          Debug.error("Failed to update task progress", error);
         }
       } catch {
-        Debug.error("Failed to update task progress");
+        console.log("Failed to update task progress");
       }
     };
 
