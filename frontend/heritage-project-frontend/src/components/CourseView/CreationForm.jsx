@@ -99,7 +99,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
   const onClose = () => {
     setOpen(false);
     //force refresh to display updated content
-    window.location.reload();
   }
   const handleCreateSection = async (data) => {
     let badge_status;
