@@ -70,7 +70,6 @@ export async function get_room_data(room_id) {
 export async function save_room(course_id, section_id, room_id, new_room_data) {
 	try {
 		const response = await api.patch(`website/rooms/${room_id}/save/`, new_room_data);
-		Debug.log('room save successful', response.data);
 		return response.data
 	} 
 	catch (error) {
@@ -94,7 +93,6 @@ export async function save_room(course_id, section_id, room_id, new_room_data) {
 export async function publish_room(room_id, publish_room_data) { 
 	try {
 		const response = await api.patch(`website/rooms/${room_id}/publish/`,publish_room_data);
-		Debug.log('room save successful', response.data);
 		return response.data
 	} 
 	catch (error) {

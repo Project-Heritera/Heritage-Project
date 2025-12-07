@@ -42,7 +42,6 @@ const TaskComponent = forwardRef(function TaskComponent(
 
   // Serialization function exposed to parent
   function serializeInternal() {
-    console.log("inside of task component serialize");
     if (!childRef.current?.serialize) {
       console.warn("Child component has no serialize method");
       return null;

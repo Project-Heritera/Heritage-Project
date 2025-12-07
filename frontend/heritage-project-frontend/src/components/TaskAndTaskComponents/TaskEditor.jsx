@@ -42,8 +42,6 @@ const TaskEditor = forwardRef(
           components: Array.isArray(components) ? components : [],
         };
 
-        console.log("inside TaskEditor.serialize()", t);
-
         return t;
       },
     }));
