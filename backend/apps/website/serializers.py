@@ -203,8 +203,13 @@ class RoomSerializer(serializers.ModelSerializer):
     created_on = serializers.DateTimeField(read_only=True)
     last_updated = serializers.DateTimeField(required=False)
     image = serializers.ImageField(required=False, allow_null=True)
-    badge = BadgeSerializer(read_only=True)
 
+    # Write-only field to set badge via ID
+    badge_id = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), write_only=True, required=False
+    )
+    # Read-only field to return full badge object
+    badge = BadgeSerializer(read_only=True)
 
     class Meta:
         model = Room
@@ -224,6 +229,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "last_updated",
             "image",
             "badge",
+            "badge_id",
         ]
         read_only_fields = [
             "course_id",
@@ -232,10 +238,10 @@ class RoomSerializer(serializers.ModelSerializer):
             "creator",
             "created_on",
             "can_edit",
+            "badge",
         ]
 
     def validate(self, attrs):
-        """Ensure visibility consistency with parent course/section."""
         attrs = super().validate(attrs)
         visibility = attrs.get("visibility", getattr(self.instance, "visibility", None))
         section = attrs.get("section", getattr(self.instance, "section", None))
@@ -256,9 +262,12 @@ class RoomSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        badge = validated_data.pop("badge", None)  # this will be a Badge instance from PK
+        # Handle badge_id separately
+        badge = validated_data.pop("badge_id", None)
         tasks_data = validated_data.pop("tasks", [])
+
         room = Room.objects.create(**validated_data)
+
         if badge:
             room.badge = badge
             room.save(update_fields=["badge"])
@@ -268,36 +277,31 @@ class RoomSerializer(serializers.ModelSerializer):
 
         return room
 
-    # this also means the frontend must send *all* the data back, not just the stuff thats changed
+    @transaction.atomic
     def update(self, instance, validated_data):
-        badge = validated_data.pop("badge", None)
+        badge = validated_data.pop("badge_id", None)
         tasks_data = validated_data.pop("tasks", [])
 
         if badge:
             instance.badge = badge
-        # update main fields, ensures we only del/replace *after* the db has been updated with most recent changes
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # if PATCH did not include tasks → keep existing tasks
         if tasks_data is None:
             return instance
 
-        # Otherwise: update tasks one by one
         existing_tasks = {task.id: task for task in instance.tasks.all()}
 
         for task in tasks_data:
             task_id = task.get("task_id")
-
             if task_id and task_id in existing_tasks:
-                # update existing task
                 TaskSerializer(existing_tasks[task_id],
-                            data=task,
-                            partial=True,
-                            context=self.context).save()
+                               data=task,
+                               partial=True,
+                               context=self.context).save()
             else:
-                # create a new task
                 TaskSerializer(context=self.context).create({**task, "room": instance})
 
         return instance
@@ -307,22 +311,19 @@ class RoomSerializer(serializers.ModelSerializer):
 # -------------------------------
 class SectionSerializer(serializers.ModelSerializer):
     course_id = serializers.PrimaryKeyRelatedField(source="course", read_only=True)
-    section_id = serializers.IntegerField(
-        source="id", read_only=True
-    )  # Changed from PK field for clarity
+    section_id = serializers.IntegerField(source="id", read_only=True)
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
     image = serializers.ImageField()
     is_published = serializers.BooleanField(default=True)
-    # Accept either a nested badge dict or a badge PK
-    badge = serializers.PrimaryKeyRelatedField(
-        queryset=Badge.objects.all(), required=False, allow_null=True
-    )
 
+    badge_id = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    badge = BadgeSerializer(read_only=True)  # GET returns full badge
 
     class Meta:
         model = Section
-
         fields = [
             "course_id",
             "section_id",
@@ -335,34 +336,24 @@ class SectionSerializer(serializers.ModelSerializer):
             "created_on",
             "image",
             "badge",
+            "badge_id",
         ]
-        read_only_fields = ["course_id", "section_id", "creator", "created_on"]
+        read_only_fields = ["course_id", "section_id", "creator", "created_on", "badge"]
 
     def validate(self, attrs):
-        """Ensure visibility consistency with the parent course."""
         attrs = super().validate(attrs)
-
-        # Determine current/new visibility and parent course
         visibility = attrs.get("visibility", getattr(self.instance, "visibility", None))
         course = attrs.get("course", getattr(self.instance, "course", None))
-
         course_visibility = getattr(course, "visibility", None)
 
-        # 1. Visibility Consistency Check
-        if visibility == VisibilityLevel.PUBLIC:
-            # A public section cannot exist under a non-public course.
-            if course_visibility and course_visibility != VisibilityLevel.PUBLIC:
-                raise ValidationError(
-                    "Public section cannot exist under a private course."
-                )
+        if visibility == VisibilityLevel.PUBLIC and course_visibility != VisibilityLevel.PUBLIC:
+            raise ValidationError("Public section cannot exist under a private course.")
 
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
-        """Creates a new Section instance."""
-        # NOTE: The parent 'course' field is usually passed in the view (as seen in create_section)
-        # However, if 'badge' data is sent, we need to handle it.
-        badge = validated_data.pop("badge", None) 
+        badge = validated_data.pop("badge_id", None)
         section = Section.objects.create(**validated_data)
 
         if badge:
@@ -371,18 +362,9 @@ class SectionSerializer(serializers.ModelSerializer):
 
         return section
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        """Updates an existing Section instance."""
-        # Pop nested data for manual update
-        badge_data = validated_data.pop("badge", None)
-
-        # Update main fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        # Handle nested Badge update or creation
-        if badge_data:
-            badge = validated_data.pop("badge", None)
+        badge = validated_data.pop("badge_id", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -393,29 +375,25 @@ class SectionSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 # -------------------------------
 # Course Serializer
 # -------------------------------
 class CourseSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(
-        source="id", read_only=True
-    )  # Changed from PK field for clarity
+    course_id = serializers.IntegerField(source="id", read_only=True)
     creator = serializers.StringRelatedField(read_only=True)
     created_on = serializers.DateTimeField(read_only=True)
     image = serializers.ImageField()
-    is_published = serializers.BooleanField(default=False)  # default to True
-    visibility = serializers.ChoiceField(
-        choices=VisibilityLevel.choices,
-        default=VisibilityLevel.PRIVATE
-    )
-    badge = serializers.PrimaryKeyRelatedField(
-        queryset=Badge.objects.all(), required=False, allow_null=True
-    )
+    is_published = serializers.BooleanField(default=False)
+    visibility = serializers.ChoiceField(choices=VisibilityLevel.choices, default=VisibilityLevel.PRIVATE)
 
+    badge_id = serializers.PrimaryKeyRelatedField(
+        queryset=Badge.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    badge = BadgeSerializer(read_only=True)
 
     class Meta:
         model = Course
-
         fields = [
             "course_id",
             "title",
@@ -427,31 +405,33 @@ class CourseSerializer(serializers.ModelSerializer):
             "created_on",
             "image",
             "badge",
+            "badge_id",
         ]
-        read_only_fields = ["course_id", "creator", "created_on"]
+        read_only_fields = ["course_id", "creator", "created_on", "badge"]
 
-    def validate(self, attrs):
-        """No visibility or permission checks needed here."""
-        attrs = super().validate(attrs)
-        return attrs
+    @transaction.atomic
+    def create(self, validated_data):
+        badge = validated_data.pop("badge_id", None)
+        course = Course.objects.create(**validated_data)
 
-def create(self, validated_data):
-    badge = validated_data.pop("badge", None)  # this will be a Badge instance from PK
-    course = Course.objects.create(**validated_data)
-    if badge:
-        course.badge = badge
-        course.save(update_fields=["badge"])
-    return course
+        if badge:
+            course.badge = badge
+            course.save(update_fields=["badge"])
 
+        return course
 
-def update(self, instance, validated_data):
-    badge = validated_data.pop("badge", None)
-    for attr, value in validated_data.items():
-        setattr(instance, attr, value)
-    if badge:
-        instance.badge = badge
-    instance.save()
-    return instance
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        badge = validated_data.pop("badge_id", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if badge:
+            instance.badge = badge
+
+        instance.save()
+        return instance
 
 
 from rest_framework import serializers
