@@ -75,6 +75,7 @@ const RoomEditor = () => {
           Debug.error(
             "Editing page reached and room data doesn't have editing_mode set to true"
           );
+          navigate(-1)
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);

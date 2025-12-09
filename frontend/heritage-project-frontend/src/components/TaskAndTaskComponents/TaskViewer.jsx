@@ -57,7 +57,7 @@ const TaskViewer = forwardRef(
 
     // store canonical status key in state (e.g. 'COMPLE')
     const [taskStatus, setTaskStatusState] = useState(
-      getStatusKey(initialStatus) ?? "NOSTAR"
+      getStatusKey(initialStatus) ?? statusTypes.NOSTAR
     );
 
     // Expose a setter that accepts either display or key and normalizes to the canonical key
@@ -70,11 +70,10 @@ const TaskViewer = forwardRef(
 
     const onStaticTaskComponentComplete = async () => {
       try {
-        const payload = { status: "COMPLE" };
-        const success = await update_task_progress(taskID, payload);
-        setTaskStatus("COMPLE");
-
-        if (success === true) {
+        const payload = { status: statusTypes.COMPLE };
+        const room_complete = await update_task_progress(taskID, payload);
+        setTaskStatus(statusTypes.COMPLE)
+        if (room_complete) {
           setBadgeAwardOpen(true);
         }
       } catch {
@@ -84,8 +83,11 @@ const TaskViewer = forwardRef(
 
     //check if any task components are question types
     useEffect(() => {
+      const questionTypes = Object.keys(taskComponentTypes).filter(
+        (key) => taskComponentTypes[key].category === "Question"
+      );
       const hasQuestion = taskComponents.some((tc) =>
-        ["OPTION", "FILL", "MATCH"].includes(tc.type)
+        questionTypes.includes(tc.type)
       );
       setNoQuestionComponent(!hasQuestion);
     }, [taskComponents]);
@@ -143,7 +145,7 @@ const TaskViewer = forwardRef(
                         if (window.history.length > 1) {
                           navigate(-1);
                         } else {
-                          navigate("/courses"); 
+                          navigate("/courses");
                         }
                       }}
                     />
@@ -155,7 +157,7 @@ const TaskViewer = forwardRef(
         </>
       );
 
-      if (taskStatus === "COMPLE") {
+      if (taskStatus === statusTypes.COMPLE) {
         return (
           <div className="relative pt-10">
             <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">
@@ -167,7 +169,7 @@ const TaskViewer = forwardRef(
         );
       }
 
-      if (taskStatus === "INCOMP") {
+      if (taskStatus === statusTypes.INCOMP) {
         return (
           <div className="relative pt-10">
             <div className="absolute top-2 right-2 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-lg shadow-md text-sm font-semibold">

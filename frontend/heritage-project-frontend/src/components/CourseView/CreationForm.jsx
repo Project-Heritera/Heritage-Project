@@ -63,7 +63,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       form_data.append("title", data.badge_title);
       form_data.append("description", data.badge_description);
       if (data.badge_icon && data.badge_icon[0]) {
-        form_data.append("icon", data.badge_icon[0]);
+        form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
     } catch (err) {
@@ -79,7 +79,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
         publish_data.append("image", data.image[0]);
       }
       if (badge_status && badge_status.badge_id) {
-        publish_data.append("badge", badge_status.badge_id);
+        publish_data.append("badge_id", badge_status.badge_id);
       }
       const course_status = await create_course(publish_data);
       setIsCreated(true);
@@ -99,7 +99,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
   const onClose = () => {
     setOpen(false);
     //force refresh to display updated content
-    window.location.reload();
   }
   const handleCreateSection = async (data) => {
     let badge_status;
@@ -108,7 +107,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       form_data.append("title", data.badge_title);
       form_data.append("description", data.badge_description);
       if (data.badge_icon && data.badge_icon[0]) {
-        form_data.append("icon", data.badge_icon[0]);
+        form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
     } catch (err) {
@@ -125,7 +124,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
         publish_data.append("image", data.image[0]);
       }
       if (badge_status && badge_status.badge_id) {
-        publish_data.append("badge", badge_status.badge_id);
+        publish_data.append("badge_id", badge_status.badge_id);
       }
       const section_status = await create_section(course_id, publish_data);
       setIsCreated(true);
@@ -144,10 +143,11 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
     let badge_status;
     try {
       const form_data = new FormData();
+      console.log(data.badge_icon)
       form_data.append("title", data.badge_title);
       form_data.append("description", data.badge_description);
-      if (data.badge_icon && data.badge_icon[0]) {
-        form_data.append("icon", data.badge_icon[0]);
+      if (data.badge_icon && data.badge_icon) {
+        form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
     } catch (err) {
@@ -166,7 +166,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
         publish_data.append("image", data.image[0]);
       }
       if (badge_status && badge_status.badge_id) {
-        publish_data.append("badge", badge_status.badge_id);
+        publish_data.append("badge_id", badge_status.badge_id);
       }
       console.log("Calling create room with course id:", course_id)
       const room_status = await create_room(

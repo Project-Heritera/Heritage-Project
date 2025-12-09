@@ -122,7 +122,7 @@ export default function Home() {
                 {/* Optional: Show this if they have NO streak */}
                 {user && user.streak === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Start a lesson to earn a streak!
+                    Achievements Coming Soon...
                   </p>
                 )}
               </div>
