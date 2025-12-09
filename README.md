@@ -25,6 +25,7 @@ We are a team of LSU Computer Science undergraduate students, and are establishi
 - Badges - users can show off their progress to others.
 
 ## How to run
+### ⚠ Ensure You're In a python virtual environment when running the following commands 
 
 After installing this repository, in a terminal, if you use Windows, run this command (or double click the file):
 
