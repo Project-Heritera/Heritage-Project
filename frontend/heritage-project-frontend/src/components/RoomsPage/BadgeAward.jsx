@@ -25,8 +25,6 @@ BadgeAward.propTypes = {
 function BadgeAward({ badge_title, badge_image_url, onClose }) {
   const navigate = useNavigate();
 
- 
-
   return (
     <div className="p-6 text-center shadow-lg">
       <CardHeader>
@@ -38,7 +36,10 @@ function BadgeAward({ badge_title, badge_image_url, onClose }) {
       <CardHeader>
         <CardContent>
           <Avatar>
-            <AvatarImage src={badge_image_url} className="rounded-full max-w-44 max-h-44 mx-auto"/>
+            <AvatarImage
+              src={badge_image_url}
+              className="rounded-full  max-h-44 mx-auto"
+            />
             <AvatarFallback>Badge Icon</AvatarFallback>
           </Avatar>
         </CardContent>
@@ -47,14 +48,11 @@ function BadgeAward({ badge_title, badge_image_url, onClose }) {
         <CardDescription>You Earned A Badge For {badge_title}</CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-center">
-        <Button
-          variant="destructive"
-          onClick={onClose}
-        >
+        <Button variant="destructive" onClick={onClose}>
           Return To Course Page
         </Button>
       </CardFooter>
-      </div>
+    </div>
   );
 }
 
