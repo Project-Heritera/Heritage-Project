@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import BadgeAward from "@/components/RoomsPage/BadgeAward";
 import api from "@/services/api";
 //Define AuthLogin component
 const AuthLogin = () => {

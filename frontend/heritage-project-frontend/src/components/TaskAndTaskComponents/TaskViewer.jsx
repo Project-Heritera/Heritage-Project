@@ -28,6 +28,7 @@ const TaskViewer = forwardRef(
       initialAttempts = 1,
       initialMetadata = {},
       taskID,
+      badge_id,
       badge_title,
       badge_image_url,
     },
@@ -95,6 +96,7 @@ const TaskViewer = forwardRef(
     const contextValues = {
       taskStatus,
       setTaskStatus,
+      badge_id,
       badge_title,
       badge_image_url,
     };
@@ -138,6 +140,7 @@ const TaskViewer = forwardRef(
                     <DialogTitle></DialogTitle>
 
                     <BadgeAward
+                    badge_id={badge_id}
                       badge_title={badge_title}
                       badge_image_url={badge_image_url}
                       onClose={() => {
