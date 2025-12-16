@@ -5,6 +5,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
+import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { update_task_progress } from "@/services/room";
 import {
@@ -72,7 +73,7 @@ const TaskViewer = forwardRef(
       try {
         const payload = { status: statusTypes.COMPLE };
         const room_complete = await update_task_progress(taskID, payload);
-        setTaskStatus(statusTypes.COMPLE)
+        setTaskStatus(statusTypes.COMPLE);
         if (room_complete) {
           setBadgeAwardOpen(true);
         }
@@ -120,16 +121,18 @@ const TaskViewer = forwardRef(
           {noQuestionComponent && (
             <>
               <div className="mt-4 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`complete-${taskID}`}
-                  onChange={async (e) => {
-                    if (e.target.checked) {
+                <Button
+                  disabled={taskStatus === statusTypes.COMPLE}
+                  onClick={async () => {
+                    if (taskStatus !== statusTypes.COMPLE) {
                       await onStaticTaskComponentComplete();
                     }
                   }}
-                />
-                <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
+                >
+                  {taskStatus === statusTypes.COMPLE
+                    ? "Completed"
+                    : "Mark as Complete"}
+                </Button>
               </div>
               <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
                 <DialogPortal>

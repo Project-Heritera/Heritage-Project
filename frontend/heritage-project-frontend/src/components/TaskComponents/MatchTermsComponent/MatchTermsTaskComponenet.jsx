@@ -29,13 +29,13 @@ const MatchTermsTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
 
     const selectedAnswerChoice = Object.keys(userAnswers).map(Number);
 
-    if (selectedAnswerChoice.length === 0) return statusTypes.INCOMP;
+    if (selectedAnswerChoice.length === 0) return statusTypes.NOSTAR;
 
     const allCorrect = selectedAnswerChoice.every((id) =>
       choiceArray.find((c) => c.id === id)?.correct
     );
 
-    return allCorrect ? statusTypes.COMPLE : statusTypes.INCORR;
+    return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
   },
 }));
   // Initialize component

@@ -87,14 +87,15 @@ const QuestionTaskComponentWrapper = forwardRef(
         setIsCorrect(true);
       } else if (result === statusTypes.INCOMP) {
         setIsCorrect(false);
+        console.log("setting number of attempts lower")
         if (attemptsLeft > 0) {
           setAttemptsLeft((prev) => prev - 1);
         }
       }
       try {
-        const payload = { status: statusTypes.COMPLE };
+        const payload = { status: result };
         const room_complete = await update_task_progress(taskID, payload);
-        setTaskStatus(statusTypes.COMPLE);
+        setTaskStatus(result);
         if (room_complete) {
           setBadgeAwardOpen(true);
         }
@@ -152,7 +153,7 @@ const QuestionTaskComponentWrapper = forwardRef(
             </div>
           ) : (
             <div className="text-sm text-muted-foreground">
-              Number of attempts: {numberOfAttempts}
+              Attempts Left: {attemptsLeft}
             </div>
           )}
         </CardHeader>
