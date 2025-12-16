@@ -34,7 +34,6 @@ const AuthLogin = () => {
           setAuthData(data)
           return
         }
-        showError("Login success", "success");
         Debug.log("Login success:", data);
         setUsername("");
         setPassword("");
