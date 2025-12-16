@@ -26,3 +26,13 @@ export async function create_badge(create_badge_data) {
 		throw(error);
 	}
 }
+export async function add_badge_to_user(badge_id){
+	try {
+		const response = await api.get(`website/badges/${badge_id}/award_badge/`);
+		Debug.log('badge assign successful', response.data);
+		return response.data
+	} 
+	catch (error) {
+		throw(error);
+	}
+}

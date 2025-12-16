@@ -14,6 +14,7 @@ import { Image } from "@radix-ui/react-avatar";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useErrorStore } from "@/stores/ErrorStore";
 import { publish_room } from "@/services/room";
+import { add_badge_to_user } from "@/services/badge";
 import { Debug } from "@/utils/debugLog";
 
 BadgeAward.propTypes = {
@@ -22,8 +23,20 @@ BadgeAward.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-function BadgeAward({ badge_title, badge_image_url, onClose }) {
+function BadgeAward({ badge_id, badge_title, badge_image_url, onClose }) {
   const navigate = useNavigate();
+  
+  //makes a call to api to add badge to userbadge model
+  const handleClose =() =>{
+    try {
+      assign_badge = add_badge_to_user(badge_id)
+    } catch (error) {
+     console.warn("Error Saving Badge to user") 
+    }
+    finally{
+      onClose()
+    }
+  }
 
   return (
     <div className="p-6 text-center shadow-lg">
@@ -48,7 +61,7 @@ function BadgeAward({ badge_title, badge_image_url, onClose }) {
         <CardDescription>You Earned A Badge For {badge_title}</CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-center">
-        <Button variant="destructive" onClick={onClose}>
+        <Button variant="destructive" onClick={handleClose}>
           Return To Course Page
         </Button>
       </CardFooter>
