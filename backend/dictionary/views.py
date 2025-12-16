@@ -287,3 +287,62 @@ def get_all_sources(request):
                    .order_by("text")
 
     return Response(all_sources, status=status.HTTP_200_OK)
+
+
+# ------------------------------------------------------------------
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get all headwords.",
+    description="Get only the headwords of all entries in the database.",
+    responses={
+        200: inline_serializer(
+            name="GetHeadwordsResponse",
+            fields={
+                "headwords": serializers.ListField(
+                    child=serializers.CharField()
+                )
+            }
+        ),
+        404: OpenApiResponse(description="Could not get headwords.")
+    }
+)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_headwords(request):
+    entries = Entry.objects.all()
+
+    serializer = EntrySerializer(entries, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get term data.",
+    description="Get the variants, definitions, sources and POS of a term.",
+    responses={
+        200: EntrySerializer(),
+        404: OpenApiResponse(description="Could not get entry.")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_term_data(request, term):
+    norm_term = normalize_text(term)
+
+    entry = Entry.objects.get(headword=norm_term) # how do i fuzzy match (remove accents from Entry headword field?)
+
+    if not entry.exists():
+        closest_match = norm_term #! CHANGE LATER
+        return Response(
+            {
+                "message": f"Could not find the term '{term}', did you mean '{closest_match}'?"
+            },
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    serializer = EntrySerializer(entry)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+

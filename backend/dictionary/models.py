@@ -2,14 +2,38 @@ from auditlog.registry import auditlog
 from django.db import models
 from simple_history.models import HistoricalRecords
 from heritage_project_backend.models import IPAddressHistoricalModel
+import unicodedata
+import re
+
+def normalize_headword(text):
+    """
+    Removes accents (diacritics) and converts text to lowercase.
+    e.g., 'François' -> 'francois'
+    """
+    # 1. Normalize characters (separates base character from diacritic)
+    normalized = unicodedata.normalize('NFD', text)
+
+    # 2. Filter out diacritics (Category 'Mn' - Mark, nonspacing)
+    # Also, ensure only printable ASCII characters remain for a clean result
+    ascii_safe = ''.join(c for c in normalized if not unicodedata.category(c) == 'Mn')
+
+    # 3. Convert to lowercase and strip leading/trailing whitespace
+    return ascii_safe.lower().strip()
+
 
 class Entry(models.Model):
     headword = models.CharField(max_length=255)
+    headword_normalized = models.CharField(max_length=255)
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
         managed = False  # Don't let Django try to create the table
         db_table = 'dictionary_entries'  # Must match your existing table name
+    
+    def save(self, *args, **kwargs):
+        # Ensure the field is updated before saving
+        self.headword_normalized = normalize_headword(self.headword)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.headword
