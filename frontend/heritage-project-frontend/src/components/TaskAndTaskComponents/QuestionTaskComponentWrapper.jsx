@@ -63,8 +63,13 @@ const QuestionTaskComponentWrapper = forwardRef(
     const [showHint, setShowHint] = useState(false);
     const questionComponentRef = useRef(null);
 
-    const { taskStatus, setTaskStatus, badge_title, badge_image_url } =
-      useContext(TaskGlobalContext); // states from task
+    const {
+      taskStatus,
+      setTaskStatus,
+      badge_id,
+      badge_title,
+      badge_image_url,
+    } = useContext(TaskGlobalContext); // states from task
 
     //for badge award
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
@@ -87,14 +92,15 @@ const QuestionTaskComponentWrapper = forwardRef(
         setIsCorrect(true);
       } else if (result === statusTypes.INCOMP) {
         setIsCorrect(false);
+        console.log("setting number of attempts lower")
         if (attemptsLeft > 0) {
           setAttemptsLeft((prev) => prev - 1);
         }
       }
       try {
-        const payload = { status: statusTypes.COMPLE };
+        const payload = { status: result };
         const room_complete = await update_task_progress(taskID, payload);
-        setTaskStatus(statusTypes.COMPLE);
+        setTaskStatus(result);
         if (room_complete) {
           setBadgeAwardOpen(true);
         }
@@ -152,7 +158,7 @@ const QuestionTaskComponentWrapper = forwardRef(
             </div>
           ) : (
             <div className="text-sm text-muted-foreground">
-              Number of attempts: {numberOfAttempts}
+              Attempts Left: {attemptsLeft}
             </div>
           )}
         </CardHeader>
@@ -184,9 +190,8 @@ const QuestionTaskComponentWrapper = forwardRef(
           <DialogPortal>
             <DialogOverlay className="fixed inset-0 bg-black/50 z-[1000]" />
             <DialogContent className="fixed top-1/2 left-1/2 z-[1001] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white dark:bg-gray-800">
-              <DialogTitle></DialogTitle>
-
               <BadgeAward
+                badge_id={badge_id}
                 badge_title={badge_title}
                 badge_image_url={badge_image_url}
                 onClose={() => {

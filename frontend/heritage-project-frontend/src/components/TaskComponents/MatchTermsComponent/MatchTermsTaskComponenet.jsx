@@ -29,13 +29,13 @@ const MatchTermsTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
 
     const selectedAnswerChoice = Object.keys(userAnswers).map(Number);
 
-    if (selectedAnswerChoice.length === 0) return statusTypes.INCOMP;
+    if (selectedAnswerChoice.length === 0) return statusTypes.NOSTAR;
 
     const allCorrect = selectedAnswerChoice.every((id) =>
       choiceArray.find((c) => c.id === id)?.correct
     );
 
-    return allCorrect ? statusTypes.COMPLE : statusTypes.INCORR;
+    return allCorrect ? statusTypes.COMPLE : statusTypes.INCOMP;
   },
 }));
   // Initialize component
@@ -114,12 +114,12 @@ useEffect(() => {
             .map(([_, val]) => val);
 
           return (
-            <div key={idx} className="flex items-center gap-4">
+            <div key={idx} className="flex items-center gap-4 bg-white text-black dark:bg-gray-800 dark:text-white">
               <span className="w-1/3">{term}</span>
               <select
                 value={userAnswers[idx] ?? ""}
                 onChange={(e) => handleChange(idx, e.target.value)}
-                className="border p-2 rounded w-1/3"
+                className="border p-2 rounded w-1/3 dark:bg-gray-800 dark:text-white"
               >
                 <option value="" disabled>
                   Select...

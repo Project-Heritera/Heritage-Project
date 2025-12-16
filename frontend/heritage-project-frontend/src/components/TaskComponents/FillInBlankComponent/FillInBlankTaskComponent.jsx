@@ -28,9 +28,9 @@ const FillInBlankTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
     },
 
     checkIfCorrect: () => {
-      if (userInput.trim() === "") return statusTypes.INCOMP;
+      if (userInput.trim() === "") return statusTypes.NOSTAR;
       if (userInput.trim().toLowerCase() === answer.trim().toLowerCase()) return statusTypes.COMPLE;
-      return statusTypes.INCORR;
+      return statusTypes.INCOMP;
     },
   }));
 
