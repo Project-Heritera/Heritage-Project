@@ -2,11 +2,11 @@
 // used for the special character toolbar component
 const LANGUAGE = Object.freeze({
   CREOLE: {
-    label: "creole",
+    label: "Creole",
     specialLetterSet: ["è", "é", "ò", "â", "ê", "î", "ô", "û"],
   },
   HAWAIIAN: {
-    label: "hawaiian",
+    label: "Hawaiian",
     specialLetterSet: [],
   },
 });
