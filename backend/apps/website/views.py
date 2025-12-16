@@ -13,7 +13,7 @@ from rest_framework import serializers
 import json
 
 # Import the utility function to generate the serializer
-from .serializers import get_historical_serializer
+from .serializers import TagSerializer, get_historical_serializer
 
 from .permissions import user_has_access
 from .serializers import (
@@ -130,6 +130,33 @@ def get_task_progress_for_room(request, course_id, section_id, room_id):
 
     # Serialize and return the data
     serializer = ProgressOfTaskSerializer(progress_entries, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# -------------------------------
+# Tag-related API calls
+# -------------------------------
+@extend_schema(
+    tags=["Tags"],
+    summary="Get all tags",
+    description="Gets all of the tags currently in the database.",
+    responses={
+        200: TagSerializer,
+        204: OpenApiResponse(description="No tags found."),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_tags(request):
+    tags = Tag.objects.all()
+
+    # If the user has no badges → return 204 No Content
+    if not tags.exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # Serialize and return the data
+    serializer = TagSerializer(tags, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -21,6 +21,14 @@ from .models import (
 )
 
 # -------------------------------
+# Tag Serializer
+# -------------------------------
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ["name"]
+
+# -------------------------------
 # Report Serializer
 # -------------------------------
 class ReportSerializer(serializers.ModelSerializer):
