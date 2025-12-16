@@ -271,7 +271,7 @@ def get_headwords(request):
 @extend_schema(
     tags=["Dictionary"],
     summary="Get term data.",
-    description="Get the variants, definitions, sources and POS of a term. Also returns a closest match if entry is not found based on Levenshtein distance, with a threshold of 80.",
+    description="Get the variants, definitions, sources and POS of a term. Also returns a closest match if entry is not found based on Levenshtein distance, with a threshold of 80. Important note: It may and often will return multiple entries because they share the same headword, unfortunately these cannot be combined in the DB because they have different variants, and so aren't the same word.",
     responses={
         200: EntrySerializer(),
         404: OpenApiResponse(description="Could not find term 'term'. Did you mean 'closest match'?")
@@ -283,44 +283,35 @@ def get_term_data(request, term):
     # Normalize the user's input
     norm_term = aggressive_normalize(term)
 
-    # --- Attempt 1: Exact Match using Python Cache ---
-    # 1. Check if the normalized input exists as a key in the cache
-    if norm_term in NORMALIZED_HEADWORDS_CACHE:
-        # 2. Get the ORIGINAL headword from the cache value
-        original_headword = NORMALIZED_HEADWORDS_CACHE[norm_term]
-        
-        # 3. Use the original headword to fetch the entry from the database
-        try:
-            entry = Entry.objects.get(headword=original_headword)
-            serializer = EntrySerializer(entry)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Entry.DoesNotExist:
-            # Should not happen if cache is built correctly, but safety first
-            pass 
+    entry = Entry.objects.filter(headword=norm_term)
+    serializer = EntrySerializer(entry, many=True)
 
-    # --- Attempt 2: Fuzzy Search (Suggestion) ---
-    closest_match = find_closest_match(term) 
-
-    if closest_match:
-        return Response(
-            {"message": f"Could not find the term '{term}'. Did you mean '{closest_match}'?"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    else:
-        return Response(
-            {"message": f"Could not find the term '{term}'."},
-            status=status.HTTP_404_NOT_FOUND
-        )
+    if entry:
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+    else:
+        closest_match = find_closest_match(term) 
+
+        if closest_match:
+            return Response(
+                {"message": f"Could not find the term '{term}'. Did you mean '{closest_match}'?"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        else:
+            return Response(
+                {"message": f"Could not find the term '{term}'."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 
 @extend_schema(
     tags=["Dictionary"],
     summary="Get n terms.",
     description="Get terms starting at cursor and up to the limit. For example, ?cursor=bon&limit=50 will return bon + the next 49 words.",
-    parameters={
+    parameters=[
         OpenApiParameter("cursor", str, OpenApiParameter.QUERY),
         OpenApiParameter("limit", str, OpenApiParameter.QUERY)
-    },
+    ],
     responses={
         200: EntrySerializer(many=True),
         404: OpenApiResponse(description="No terms found with given cursor or limit.")
@@ -328,5 +319,5 @@ def get_term_data(request, term):
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_term_data(request):
+def get_n_terms(request):
     return Response(status=status.HTTP_200_OK)
