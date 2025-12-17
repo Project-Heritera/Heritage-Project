@@ -242,7 +242,7 @@ def get_term_exact_data(request, term):
 @permission_classes([IsAuthenticated])
 def get_n_terms(request):
     cursor = request.GET.get('cursor', '').strip()
-    limit = request.GET.get('limit', '')
+    limit = int(request.GET.get('limit', ''))
     query = request.GET.get('q', '').strip()
     search_definitions = 'search_definitions' in request.GET
     whole_word = 'whole_word' in request.GET
@@ -350,6 +350,18 @@ def get_n_terms(request):
 
     processed_results.sort(key=lambda e: (e.headword or "").lower())
 
+    # 1. Determine the start index based on the 'cursor' string
+    try:
+        # This assumes 'cursor' matches an entry's headword or unique identifier
+        start_index = next(i for i, e in enumerate(processed_results) if e.headword == cursor)
+    except (ValueError, StopIteration):
+        # Fallback to the beginning if the cursor is not found
+        start_index = 0
+
+    # 2. Slice from start_index up to the limit
+    # Note: start_index + limit is the exclusive stop index
+    limited_results = processed_results[start_index : start_index + limit]
+
     data = {
         'query': display_query,
         'search_definitions': search_definitions,
@@ -358,11 +370,11 @@ def get_n_terms(request):
         'search_examples': search_examples,
         'selected_pos': selected_pos,
         'selected_source': selected_source,
-        'result_count': len(processed_results),
-        'results': processed_results,
+        'result_count': len(limited_results),
+        'results': limited_results,
     }
 
-    data['results'] = EntrySerializer(processed_results, many=True).data
+    data['results'] = EntrySerializer(limited_results, many=True).data
 
     if not data['results']:
         return Response(data, status=status.HTTP_404_NOT_FOUND)
