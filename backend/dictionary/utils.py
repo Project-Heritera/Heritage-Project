@@ -7,42 +7,6 @@ from thefuzz import fuzz
 # Global cache: { 'normalized_word': 'Original Word with Accents' }
 NORMALIZED_HEADWORDS_CACHE = {} 
 
-# Minimum similarity score required to suggest a "close match"
-SIMILARITY_THRESHOLD = 80 
-
-# --- 2. Normalization Function ---
-
-def aggressive_normalize(text):
-    """
-    Performs aggressive normalization for dictionary lookups:
-    1. Case folding (lowercase).
-    2. Separates diacritics (accents) from base characters.
-    3. Removes all non-spacing (diacritic) marks.
-    4. Removes all non-alphanumeric characters (like dashes, apostrophes, etc.).
-    5. Collapses multiple spaces.
-    
-    Example: "résumé-writing" -> "resumewriting"
-    """
-    if not isinstance(text, str):
-        return ""
-        
-    # 1. Lowercase the entire string
-    text = text.lower()
-    
-    # 2. Normalize to NFKD form (separates base characters from diacritics)
-    text = unicodedata.normalize('NFKD', text)
-    
-    # 3. Keep only the base characters (ignoring any separated non-spacing marks)
-    # This removes accents/diacritics (e.g., 'é' becomes 'e')
-    text = "".join([c for c in text if not unicodedata.combining(c)])
-    
-    # 4. Remove all characters that are not letters or numbers (including dashes,
-    # spaces, punctuation, etc.) This makes "well-being" match "wellbeing".
-    text = re.sub(r'[^a-z0-9]', '', text)
-    
-    return text.strip()
-
-
 # --- 3. Cache Management Function ---
 
 def build_headword_cache():
@@ -61,7 +25,7 @@ def build_headword_cache():
         NORMALIZED_HEADWORDS_CACHE.clear()
         
         for headword in all_entries:
-            norm_word = aggressive_normalize(headword)
+            norm_word = headword.lower()
             # Store the original headword as the value, so we can return it to the user
             NORMALIZED_HEADWORDS_CACHE[norm_word] = headword
         
@@ -82,25 +46,24 @@ def find_closest_match(term):
     Returns: The original (un-normalized) headword string if score >= THRESHOLD, 
              otherwise None.
     """
-    norm_term = aggressive_normalize(term)
-    
+    build_headword_cache()
+
     best_score = 0
     closest_match_key = None
-    
+
     # Iterate over the normalized keys in the cache
     for normalized_key in NORMALIZED_HEADWORDS_CACHE.keys():
-        
         # token_sort_ratio is robust to different word ordering/spacing, 
         # which is useful if your aggressive_normalize didn't remove spaces.
         # Since we removed spaces, ratio() or partial_ratio() might also work well.
-        score = fuzz.token_sort_ratio(norm_term, normalized_key)
+        score = fuzz.token_sort_ratio(term, normalized_key)
         
         if score > best_score:
             best_score = score
             closest_match_key = normalized_key
-            
-    if best_score >= SIMILARITY_THRESHOLD and closest_match_key: 
-        # Return the *original* headword stored in the cache value
+
+    # Check if the best score meets your quality bar
+    if closest_match_key:
         return NORMALIZED_HEADWORDS_CACHE[closest_match_key]
     
     return None
