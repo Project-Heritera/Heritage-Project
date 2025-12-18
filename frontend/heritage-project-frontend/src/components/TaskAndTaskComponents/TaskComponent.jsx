@@ -11,6 +11,7 @@ import {
 } from "react";
 import TextTaskComponent from "./TextComponent/TextTaskComponent";
 import { useNavigate } from "react-router-dom";
+import BadgeAward from "../RoomsPage/BadgeAward";
 import ImageTaskComponent from "../TaskComponents/ImageComponent/ImageTaskComponent";
 import QuestionTaskComponentWrapper from "./QuestionTaskComponentWrapper";
 import { taskComponentTypes } from "../../utils/taskComponentTypes";

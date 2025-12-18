@@ -6,7 +6,6 @@ import {
   ChevronUp,
   ChevronDown,
   Trash2,
-  Info,
 } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
@@ -76,7 +75,7 @@ const RoomEditor = () => {
           Debug.error(
             "Editing page reached and room data doesn't have editing_mode set to true"
           );
-          navigate(-1);
+          navigate(-1)
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);
@@ -122,6 +121,7 @@ const RoomEditor = () => {
     loadRoom();
   }, []);
 
+
   const addNewTask = () => {
     const newTask = {
       tags: ["Easy"],
@@ -163,33 +163,33 @@ const RoomEditor = () => {
   // Function to serialize everything to ever exist
   const serializeAllTasks = async () => {
     try {
-      const updatedRoomData = {
-        title: roomTitle,
-        can_edit: true,
-        description: roomDesc,
-        metadata: {},
-        visibility: roomVisibility,
-        tasks: [],
-      };
+    const updatedRoomData = {
+      title: roomTitle,
+      can_edit: true,       
+      description: roomDesc,
+      metadata: {},          
+      visibility: roomVisibility,
+      tasks: [],             
+    };
 
-      // Serialize tasks and components
-      for (const taskId in taskRefs.current) {
-        const taskRef = taskRefs.current[taskId];
-        if (taskRef?.serialize) {
-          const serializedTask = taskRef.serialize();
-          updatedRoomData.tasks.push(serializedTask);
-        }
+    // Serialize tasks and components
+    for (const taskId in taskRefs.current) {
+      const taskRef = taskRefs.current[taskId];
+      if (taskRef?.serialize) {
+        const serializedTask = taskRef.serialize();
+        updatedRoomData.tasks.push(serializedTask);
       }
+    }
 
-      console.log("updated room", updatedRoomData);
+    console.log("updated room", updatedRoomData);
 
-      // Make request to overwrite room
-      const room_status = await save_room(
-        course_id,
-        section_id,
-        room_id,
-        updatedRoomData
-      );
+    // Make request to overwrite room
+    const room_status = await save_room(
+      course_id,
+      section_id,
+      room_id,
+      updatedRoomData
+    );
       return room_status;
     } catch (err) {
       showError(
@@ -229,23 +229,12 @@ const RoomEditor = () => {
                   <p className="text-sm text-muted-foreground italic">
                     Created By: {roomCreator}
                   </p>
-                  <CardDescription className="text-base mb-3"></CardDescription>
-                  <Button asChild variant="outline" className="mb-3 gap-2">
-                    <a
-                      href="/tutorials/making_content/creating_tasks"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      How to Make a Room
-                      <Info className="h-4 w-4" />
-                    </a>
-                  </Button>
                 </div>
                 <Button onClick={serializeAllTasks} size="lg" className="gap-2">
                   <Save className="w-4 h-4" />
                   Save Room
                 </Button>
-                <Button
+                 <Button
                   variant="secondary"
                   size="lg"
                   onClick={() => setPublishModalOpen(true)}
@@ -254,7 +243,7 @@ const RoomEditor = () => {
                 </Button>
               </div>
             </CardHeader>
-
+          
             <Separator />
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 gap-4">
@@ -271,19 +260,15 @@ const RoomEditor = () => {
             </CardContent>
           </Card>
 
-          <Modal
-            isOpen={publishModalOpen}
-            onClose={() => {
-              navigate(-1);
-            }}
-          >
-            <PublishRoomForm
-              room_id={room_id}
-              onClose={() => {
-                navigate(-1);
-              }}
+   <Modal
+          isOpen={publishModalOpen}
+          onClose={() => {navigate(-1)}}
+        >
+          <PublishRoomForm
+            room_id={room_id}
+            onClose={() => {navigate(-1)}}
             />
-          </Modal>
+        </Modal>
           {/* Tasks Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
