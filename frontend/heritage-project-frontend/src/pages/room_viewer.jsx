@@ -249,6 +249,7 @@ const RoomViewer = () => {
                       initialAttempts={task.progress?.attempts ?? 0}
                       initialMetadata={task.progress?.metadata || {}}
                       taskID={task.task_id}
+                      tags={task.tags}
                       badge_id={badge_id}
                       badge_title={badge_title}
                       badge_image_url={badge_image_url}
