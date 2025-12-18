@@ -1,65 +1,178 @@
-from django.db.models import Q, Prefetch
+import re
+from django.db.models import Q, Prefetch, Case, When, Value, IntegerField
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, inline_serializer
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-import unicodedata
-import re
-
+from .utils import find_closest_match, strip_accents, whole_word_match
 from .serializers import EntrySerializer, POSSerializer, SourceSerializer
 from .models import Entry, Variant, Source, POS
-
-# --- Utility Functions ---
-def normalize_text(text):
-    """Normalize text to NFD (decomposed) form."""
-    return unicodedata.normalize('NFD', text or '')
-
-def strip_accents(text):
-    """Remove all accent marks from the text."""
-    text = normalize_text(text)
-    return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
-
-def whole_word_match(text, search, match_accents):
-    """
-    Return True if `text` contains a word that exactly equals `search`,
-    respecting `match_accents` toggle, using the same logic as the highlight filter.
-    """
-    if not text or not search:
-        return False
-
-    # Normalize text and search if we ignore accents
-    if not match_accents:
-        # Create normalized (accent-stripped) text and map back to original
-        normalized_chars = []
-        for ch in text:
-            nfd = unicodedata.normalize('NFD', ch)
-            for c in nfd:
-                if unicodedata.category(c) != 'Mn':
-                    normalized_chars.append(c)
-        text_to_search = ''.join(normalized_chars)
-        search_text = strip_accents(search)
-    else:
-        text_to_search = text
-        search_text = search
-
-    # Case-insensitive match
-    text_to_search = text_to_search.lower()
-    search_text = search_text.lower()
-
-    # Match as whole words using regex
-    try:
-        pattern = fr"\b{re.escape(search_text)}\b"
-        return bool(re.search(pattern, text_to_search, flags=re.UNICODE))
-    except re.error:
-        return False
 
 
 @extend_schema(
     tags=["Dictionary"],
-    summary="Search dictionary for a word",
-    description="Searches the dictionary with relevant filters and options.",
+    summary="Get all POS for dropdown.",
+    description="Get all unique the POS options for the dropdown. Does not filter out based on the current query.",
+    responses={
+        200: POSSerializer(many=True)
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_all_pos(request):
+    all_pos = POS.objects.exclude(part_of_speech__isnull=True) \
+                   .exclude(part_of_speech="") \
+                   .values_list("part_of_speech", flat=True) \
+                   .distinct() \
+                   .order_by("part_of_speech") \
+
+    return Response(all_pos, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get all sources for dropdown.",
+    description="Get all the unique sources options for the dropdown. Does not filter out based on the current query.",
+    responses={
+        200: SourceSerializer(many=True)
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_all_sources(request):
+    all_sources = Source.objects.exclude(text__isnull=True) \
+                   .exclude(text="") \
+                   .values_list("text", flat=True) \
+                   .distinct() \
+                   .order_by("text")
+
+    return Response(all_sources, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get all headwords.",
+    description="Get only the headwords of all entries in the database.",
+    responses={
+        200: inline_serializer(
+            name="GetHeadwordsResponse",
+            fields={
+                "headwords": serializers.ListField(
+                    child=serializers.CharField()
+                )
+            }
+        ),
+        404: OpenApiResponse(description="Could not get headwords.")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_headwords(request):
+    entries = Entry.objects.all()
+
+    serializer = EntrySerializer(entries, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def get_vowel_regex(term):
+    # Map base vowels to their possible accented versions
+    vowel_map = {
+        'a': '[aàáâãäå]',
+        'e': '[eèéêëœ]',
+        'i': '[iìíîï]',
+        'o': '[oòóôõöøœ]',
+        'u': '[uùúûü]',
+        'y': '[yýÿ]',
+        'n': '[nñ]',
+        'c': '[cç]'
+    }
+    
+    # 1. Strip existing accents and lowercase to get the "base" string
+    base_term = strip_accents(term).lower()
+    
+    # 2. Build the regex pattern
+    pattern = ""
+    for char in base_term:
+        pattern += vowel_map.get(char, re.escape(char))
+    
+    # Use ^ and $ to ensure we match the whole word, not just parts of it
+    return f"^{pattern}$"
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get term data.",
+    description="Get the variants, definitions, sources and POS of a term. It will return first any exact match of the headword followed by any entries with variants that match the term (ignoring accents and case). Also returns a closest match if entry is not found. The closest match is based on Levenshtein distance. Important note: It may and often will return multiple entries because they share the same headword, unfortunately these cannot be combined in the DB because they have different variants and etymologies, and so aren't the same word (compare English 'check~cheque' (for money) vs. 'check' (to verify)).",
+    responses={
+        200: EntrySerializer(many=True),
+        404: OpenApiResponse(description="Could not find term 'term'. Did you mean 'closest match'?")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_term_data(request, term):
+    norm_term = strip_accents(term).lower()
+    regex_pattern = get_vowel_regex(term)
+    
+    entries = Entry.objects.filter(
+        Q(headword=term) | 
+        Q(headword__iregex=regex_pattern) | 
+        Q(variants__text__iregex=regex_pattern)
+    ).annotate(
+        # Create a temporary priority field: 1 for exact match, 2 for others
+        priority=Case(
+            When(headword=term, then=Value(1)),
+            default=Value(2),
+            output_field=IntegerField(),
+        )
+    ).order_by('priority', 'headword').distinct()
+    
+    if entries.exists():
+        serializer = EntrySerializer(entries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    else:
+        closest_match = find_closest_match(term)
+        return Response(
+            {"message": f"Could not find the term '{term}'. Did you mean '{closest_match}'?"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get term exact data.",
+    description="Get the variants, definitions, sources and POS of a term. Only will return terms that exactly match (accents, case, etc.).",
+    responses={
+        200: EntrySerializer(many=True),
+        404: OpenApiResponse(description="Could not find term 'term'. Did you mean 'closest match'?")
+    }
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_term_exact_data(request, term):
+    entries = Entry.objects.filter(headword=term)
+    
+    if entries.exists():
+        serializer = EntrySerializer(entries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    else:
+        closest_match = find_closest_match(term)
+        return Response(
+            {"message": f"Could not find the term '{term}'. Did you mean '{closest_match}'?"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Get n terms",
+    description="Get terms starting at cursor and up to the limit. For example, ?cursor=bon&limit=50 will return bon + the next 49 words.",
     parameters=[
+        OpenApiParameter("cursor", str, OpenApiParameter.QUERY),
+        OpenApiParameter("limit", int, OpenApiParameter.QUERY),
         OpenApiParameter("q", str, OpenApiParameter.QUERY, description="Search query"),
         OpenApiParameter("search_definitions", bool, OpenApiParameter.QUERY),
         OpenApiParameter("whole_word", bool, OpenApiParameter.QUERY),
@@ -93,6 +206,8 @@ def whole_word_match(text, search, match_accents):
         200: inline_serializer(
             name="SearchDictRequest",
             fields={
+                'cursor': serializers.CharField(),
+                'limit': serializers.IntegerField(),
                 'query': serializers.CharField(),
                 'search_definitions': serializers.BooleanField(), # headword ~ Creole, definitions ~ English/French
                 'whole_word': serializers.BooleanField(),
@@ -119,12 +234,15 @@ def whole_word_match(text, search, match_accents):
                 'result_count': serializers.IntegerField(),
                 'results': EntrySerializer(many=True)
             }
-        )
+        ),
+        404: OpenApiResponse(description="No terms found with given parameters.")
     }
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def search_dict(request):
+def get_n_terms(request):
+    cursor = request.GET.get('cursor', '').strip()
+    limit = int(request.GET.get('limit', ''))
     query = request.GET.get('q', '').strip()
     search_definitions = 'search_definitions' in request.GET
     whole_word = 'whole_word' in request.GET
@@ -232,6 +350,18 @@ def search_dict(request):
 
     processed_results.sort(key=lambda e: (e.headword or "").lower())
 
+    # 1. Determine the start index based on the 'cursor' string
+    try:
+        # This assumes 'cursor' matches an entry's headword or unique identifier
+        start_index = next(i for i, e in enumerate(processed_results) if e.headword == cursor)
+    except (ValueError, StopIteration):
+        # Fallback to the beginning if the cursor is not found
+        start_index = 0
+
+    # 2. Slice from start_index up to the limit
+    # Note: start_index + limit is the exclusive stop index
+    limited_results = processed_results[start_index : start_index + limit]
+
     data = {
         'query': display_query,
         'search_definitions': search_definitions,
@@ -240,50 +370,13 @@ def search_dict(request):
         'search_examples': search_examples,
         'selected_pos': selected_pos,
         'selected_source': selected_source,
-        'result_count': len(processed_results),
-        'results': processed_results,
+        'result_count': len(limited_results),
+        'results': limited_results,
     }
 
-    data['results'] = EntrySerializer(processed_results, many=True).data
+    data['results'] = EntrySerializer(limited_results, many=True).data
+
+    if not data['results']:
+        return Response(data, status=status.HTTP_404_NOT_FOUND)
 
     return Response(data, status=status.HTTP_200_OK)
-
-
-@extend_schema(
-    tags=["Dictionary"],
-    summary="Get all POS for dropdown.",
-    description="Get all unique the POS options for the dropdown. Does not filter out based on the current query.",
-    responses={
-        200: POSSerializer(many=True)
-    }
-)
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_all_pos(request):
-    all_pos = POS.objects.exclude(part_of_speech__isnull=True) \
-                   .exclude(part_of_speech="") \
-                   .values_list("part_of_speech", flat=True) \
-                   .distinct() \
-                   .order_by("part_of_speech") \
-
-    return Response(all_pos, status=status.HTTP_200_OK)
-
-
-@extend_schema(
-    tags=["Dictionary"],
-    summary="Get all sources for dropdown.",
-    description="Get all the unique sources options for the dropdown. Does not filter out based on the current query.",
-    responses={
-        200: SourceSerializer(many=True)
-    }
-)
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_all_sources(request):
-    all_sources = Source.objects.exclude(text__isnull=True) \
-                   .exclude(text="") \
-                   .values_list("text", flat=True) \
-                   .distinct() \
-                   .order_by("text")
-
-    return Response(all_sources, status=status.HTTP_200_OK)
