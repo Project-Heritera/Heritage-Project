@@ -6,6 +6,7 @@ import {
   useImperativeHandle,
 } from "react";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { useNavigate } from "react-router-dom";
 import { update_task_progress } from "@/services/room";
 import {
@@ -29,6 +30,7 @@ const TaskViewer = forwardRef(
       initialAttempts = 1,
       initialMetadata = {},
       taskID,
+      tags = [],
       badge_id,
       badge_title,
       badge_image_url,
@@ -40,9 +42,9 @@ const TaskViewer = forwardRef(
     //specifics for viewer
     const [attempts, setAttempts] = useState(initialAttempts);
     const [metadata, setMetadata] = useState(initialMetadata);
-    // NEW: No question component state
+    const [taskTags, setTaskTags] = useState(tags);
     const [noQuestionComponent, setNoQuestionComponent] = useState(false);
-    // BADGE MODAL
+    //for award badge modal
     const [badgeAwardOpen, setBadgeAwardOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -111,6 +113,16 @@ const TaskViewer = forwardRef(
     const renderContent = () => {
       const common = (
         <>
+          {taskTags && taskTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="font-semibold">Tags:</span>
+              {taskTags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
           <TaskBase
             components={taskComponents}
             isEditing={false}
@@ -143,7 +155,7 @@ const TaskViewer = forwardRef(
                     <DialogTitle></DialogTitle>
 
                     <BadgeAward
-                    badge_id={badge_id}
+                      badge_id={badge_id}
                       badge_title={badge_title}
                       badge_image_url={badge_image_url}
                       onClose={() => {
