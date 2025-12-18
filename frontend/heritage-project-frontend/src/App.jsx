@@ -18,6 +18,7 @@ import Signup from './pages/Signup'
 import About from './pages/contact.jsx'
 import UserSettings from "./pages/UserSettings"
 import Login2FA from "./pages/Login2FA"
+import TaskComponentTutorial from './pages/TaskComponentTutorial'
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
                 <Route path='/ce/:courseId' element={<CreationDashboard />}></Route>
                 <Route path='/settings' element={<UserSettings />} />
                 <Route path='/create' element={<CreatePage />} />
+                <Route path='/tutorials/making_content/creating_tasks' element={<TaskComponentTutorial />} />
+
               </Route>
             </Route>
           </Routes>
