@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import BadgeAward from "@/components/RoomsPage/BadgeAward";
 //Define AuthLogin component
 const AuthLogin = () => {
     const showError = useErrorStore((state) => state.showError);
