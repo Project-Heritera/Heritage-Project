@@ -6,7 +6,7 @@ import {
   ChevronUp,
   ChevronDown,
   Trash2,
-  Info
+  Info,
 } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
@@ -230,15 +230,17 @@ const RoomEditor = () => {
                     Created By: {roomCreator}
                   </p>
                   <CardDescription className="text-base mb-3"></CardDescription>
-                  <Button
-                    variant="outline"
-                    className="mb-3"
-                    onClick={() => navigate("/tutorials/making_content/creating_tasks")}
-                  >
-                  <p>How to Make a Room</p>
-                    <Info className="h-4 w-4" />
+                  <Button asChild variant="outline" className="mb-3 gap-2">
+                    <a
+                      href="/tutorials/making_content/creating_tasks"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      How to Make a Room
+                      <Info className="h-4 w-4" />
+                    </a>
                   </Button>
-               </div>
+                </div>
                 <Button onClick={serializeAllTasks} size="lg" className="gap-2">
                   <Save className="w-4 h-4" />
                   Save Room
