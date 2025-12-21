@@ -165,8 +165,6 @@ const RoomViewer = () => {
 
       Debug.log("Serialized Task Progress Data:", taskProgressData);
 
-      // TODO: Implement API call to save task progress
-      // Example: await save_task_progress(course_id, section_id, room_id, taskProgressData);
 
       return taskProgressData;
     } catch (err) {
@@ -183,7 +181,6 @@ const RoomViewer = () => {
     console.log("On submit hit");
     const result = await serializeAllTasks();
     Debug.log("Task submission result:", result);
-    // TODO: Show success message or navigate
   };
   return (
     <div className="relative min-h-screen w-full">

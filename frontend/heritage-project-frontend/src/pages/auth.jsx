@@ -34,7 +34,6 @@ const AuthLogin = () => {
           setAuthData(data)
           return
         }
-        showError("Login success", "success");
         Debug.log("Login success:", data);
         setUsername("");
         setPassword("");
@@ -93,7 +92,6 @@ const AuthLogin = () => {
   // Function to handle sign out
   const handleSignOut = async () => {
     try {
-      // TODO: send sign-out request to backend
       console.log("Signing out:", username);
       showError("Logout success", "success");
     } catch (error) {
