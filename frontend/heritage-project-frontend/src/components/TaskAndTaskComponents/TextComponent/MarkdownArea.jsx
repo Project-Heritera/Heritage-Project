@@ -45,25 +45,12 @@ const [content, setContent] = useState(initText);
         const text = textArea.value;
         //Retrieve highlighted text to edit and embed inside of wrap
         const selectedText = text.substring(start, end);
-        const prevText = text.substring(0, start);
-        const endText = text.substring(end);
-
-        //Create updated text: {text before highlight}{prefix}{highlightedtext}{suffix}{text after highlight}
-        let updatedText = null;
-        if (start === end) {
-            //Then just add the characters dont "wrap" since nothing highlight
-            updatedText = `${prefix}${suffix}`;
-            console.log("start is equal to end!");
-            console.log(prefix);
-            console.log(suffix);
-        } else {
-            console.log("Doing normal wrap!");
-            updatedText = `${prevText}${prefix}${selectedText}${suffix}${endText}`;
-        }
-        console.log(updatedText);
+        
+        const updatedText = `${text.substring(0, start)}${prefix}${selectedText}${suffix}${text.substring(end)}`;
 
         //Update text for editor and textarea
         setText(updatedText);
+        editor?.commands.setContent(updatedText);
 
         //Adjust cursor to be after what we just wrapped. Load after react rerender
         setTimeout(() => {
@@ -72,6 +59,14 @@ const [content, setContent] = useState(initText);
             textArea.selectionEnd = end + prefix.length;
         }, 0);
     }
+
+    const insertCharacter = (char) => {
+        if (isRenderd) {
+            editor?.chain().focus().insertContent(char).run();
+        } else {
+            wrapSelection(char, ""); // Insert char at cursor
+        }
+    };
 
     //Adds markdown notation that needs to be at the start of the current line like headers
     //lineMark is the notation you want to add
@@ -215,6 +210,7 @@ const [content, setContent] = useState(initText);
                 link,
                 blockquote,
                 getContent,
+                insertCharacter,
             })
         }
     }, [editor, setAreaApi, isRenderd])

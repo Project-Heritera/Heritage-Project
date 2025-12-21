@@ -43,6 +43,7 @@ const TextTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
       }
     }
   }, []);
+  
 
   return (
     <CardContent className="text-component">
