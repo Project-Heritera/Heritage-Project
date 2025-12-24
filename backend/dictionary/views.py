@@ -68,9 +68,10 @@ def get_all_sources(request):
 )
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_headwords(request):
-    entries = Entry.objects.all()
-
+def get_n_to_m_headwords(request, n, m):
+    if n > m or m > Entry.objects.count() or n < 0:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    entries = Entry.objects.all()[n:m]
     serializer = EntrySerializer(entries, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

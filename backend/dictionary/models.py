@@ -10,6 +10,7 @@ class Entry(models.Model):
     class Meta:
         managed = False  # Don't let Django try to create the table
         db_table = 'dictionary_entries'  # Must match your existing table name
+        ordering = ['headword']
 
     def __str__(self):
         return self.headword

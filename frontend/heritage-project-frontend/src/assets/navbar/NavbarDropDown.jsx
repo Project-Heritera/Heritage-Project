@@ -34,7 +34,6 @@ function NavbarDropDown() {
             try {
                 const response = await api.get("/accounts/user_info/")
                 const userData = response.data
-                console.log("user object is:", userData)
                 setUserObject(userData)
             } catch (error) {
                 console.error("Error geting user object: ", error)
