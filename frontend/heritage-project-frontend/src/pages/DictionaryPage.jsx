@@ -5,6 +5,8 @@ import { LANGUAGE } from "@/utils/languageChars";
 import { useErrorStore } from "@/stores/errorStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Languages } from "lucide-react";
+import { SpecialCharToolbar } from "@/components/SpecialCharacterToolbar";
 import {
   Select,
   SelectContent,
@@ -30,6 +32,7 @@ const DictionaryPage = () => {
   //for pagination
   const [entries, setEntries] = useState([]);
   const [page, setPage] = useState(1);
+  const [pageInput, setPageInput] = useState("1");
 
   //for searching
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,7 +40,7 @@ const DictionaryPage = () => {
     partOfSpeech: "",
   });
 
-  const [total, setTotal] = useState(0);
+  const [showSpecialChars, setShowSpecialChars] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -51,6 +54,11 @@ const DictionaryPage = () => {
     }
   }, [upperCaseLanguage]);
 
+  // Sync page input at bottom with page state
+  useEffect(() => {
+    setPageInput(page.toString());
+  }, [page]);
+
   //searching
   useEffect(() => {
     const fetchPage = async () => {
@@ -62,7 +70,6 @@ const DictionaryPage = () => {
         const res = await get_n_to_m_headwords(start, start + PAGE_SIZE);
 
         setEntries(res);
-        setTotal(res.length);
         setMessage(null);
       } catch {
         showError("Failed to fetch dictionary entries", "error");
@@ -78,14 +85,8 @@ const DictionaryPage = () => {
 
     setLoading(true);
     try {
-      const res = await get_term_data({
-        language,
-        term: searchTerm,
-        filters,
-      });
-
-      setEntries(res.data);
-      setTotal(res.data.length);
+      const res = await get_term_data(searchTerm);
+      setEntries(res);
       setMessage(res.message ?? null);
     } catch {
       showError("Search failed", "error");
@@ -96,6 +97,20 @@ const DictionaryPage = () => {
   const clearSearch = () => {
     setSearchTerm("");
     setPage(1);
+  };
+
+  const onSpecialCharacterInsert = (character) => {
+    setSearchTerm((prev) => prev + character);
+  };
+
+  const handlePageInputSubmit = () => {
+    const newPage = parseInt(pageInput, 10);
+    if (!isNaN(newPage) && newPage >= 1) {
+      setPage(newPage);
+    } else {
+      // Reset input to current page if invalid
+      setPageInput(page.toString());
+    }
   };
 
   return (
@@ -118,6 +133,13 @@ const DictionaryPage = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
             className="sm:flex-1"
           />
+          <Button
+            variant={showSpecialChars ? "destructive" : "outline"}
+            size="icon"
+            onClick={() => setShowSpecialChars((prev) => !prev)}
+          >
+            <Languages size={18} className="text-gray-800" />
+          </Button>
           <Button onClick={handleSearchSubmit}>Search</Button>
           {searchTerm && (
             <Button variant="ghost" onClick={clearSearch}>
@@ -125,6 +147,10 @@ const DictionaryPage = () => {
             </Button>
           )}
         </div>
+        {showSpecialChars && (
+          <SpecialCharToolbar onInsert={onSpecialCharacterInsert} />
+        )}
+        <div></div>
       </section>
 
       <section className="space-y-4">
@@ -222,13 +248,21 @@ const DictionaryPage = () => {
             <Pagination>
               <PaginationContent>
                 <PaginationPrevious
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
+                  onClick={() => {
+                    if (page > 1) setPage((p) => p - 1);
+                  }}
                 />
-                <PaginationNext
-                  disabled={page * PAGE_SIZE >= total}
-                  onClick={() => setPage((p) => p + 1)}
+                <Input
+                  type="number"
+                  min="1"
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handlePageInputSubmit()}
+                  onBlur={handlePageInputSubmit}
+                  className="w-16 text-center"
+                  aria-label="Current page"
                 />
+                <PaginationNext onClick={() => setPage((p) => p + 1)} />
               </PaginationContent>
             </Pagination>
           </div>
