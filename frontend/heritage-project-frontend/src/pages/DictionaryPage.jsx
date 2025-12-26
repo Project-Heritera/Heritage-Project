@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { get_n_to_m_headwords, get_term_data } from "@/services/dictionary";
+import {
+  get_n_to_m_headwords,
+  get_term_data,
+  get_definition_data,
+} from "@/services/dictionary";
 import { LANGUAGE } from "@/utils/languageChars";
 import { useErrorStore } from "@/stores/errorStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -36,6 +40,7 @@ const DictionaryPage = () => {
 
   //for searching
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState("term"); // 'term' or 'definition'
   const [filters, setFilters] = useState({
     partOfSpeech: "",
   });
@@ -85,7 +90,12 @@ const DictionaryPage = () => {
 
     setLoading(true);
     try {
-      const res = await get_term_data(searchTerm);
+      let res;
+      if (searchType === "definition") {
+        res = await get_definition_data(searchTerm);
+      } else {
+        res = await get_term_data(searchTerm);
+      }
       setEntries(res);
       setMessage(res.message ?? null);
     } catch {
@@ -126,6 +136,16 @@ const DictionaryPage = () => {
 
       <section className="rounded-lg border p-4 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Select value={searchType} onValueChange={setSearchType}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Search by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="term">Search by Term</SelectItem>
+              <SelectItem value="definition">Search by Definition</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Input
             placeholder="Search word..."
             value={searchTerm}
@@ -257,7 +277,9 @@ const DictionaryPage = () => {
                   min="1"
                   value={pageInput}
                   onChange={(e) => setPageInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handlePageInputSubmit()}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handlePageInputSubmit()
+                  }
                   onBlur={handlePageInputSubmit}
                   className="w-16 text-center"
                   aria-label="Current page"
