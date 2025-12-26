@@ -6,6 +6,7 @@ urlpatterns = [
     path("sources/", views.get_all_sources),
     path("get_n_to_m_headwords/<int:n>/<int:m>", views.get_n_to_m_headwords),
     path("headwords/<str:term>/data", views.get_term_data),
+    path("definitions/<str:term>/data", views.get_definition_data),
     path("headwords/<str:term>/exact/data", views.get_term_exact_data),
     path("n_words/", views.get_n_terms)
 ]

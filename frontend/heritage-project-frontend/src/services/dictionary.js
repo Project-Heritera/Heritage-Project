@@ -39,6 +39,15 @@ export async function get_term_data(term) {
   }
 }
 
+
+export async function get_definition_data(term) {
+  try {
+    const response = await api.get(`dictionary/definitions/${term}/data`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 export async function get_term_exact_data(term) {
   try {
     const response = await api.get(`dictionary/headwords/${term}/exact/data/`);

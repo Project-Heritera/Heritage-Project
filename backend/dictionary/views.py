@@ -1,6 +1,7 @@
 import re
 from django.db.models import Q, Prefetch, Case, When, Value, IntegerField
 from drf_spectacular.utils import (
+    extend_schema_view,
     OpenApiParameter,
     OpenApiResponse,
     extend_schema,
@@ -10,9 +11,10 @@ from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from thefuzz import fuzz
 from .utils import find_closest_match, strip_accents, whole_word_match
 from .serializers import EntrySerializer, POSSerializer, SourceSerializer
-from .models import Entry, Variant, Source, POS
+from .models import Definition, Entry, Variant, Source, POS
 
 
 @extend_schema(
@@ -179,6 +181,79 @@ def get_term_exact_data(request, term):
             },
             status=status.HTTP_404_NOT_FOUND,
         )
+
+
+@extend_schema(
+    tags=["Dictionary"],
+    summary="Search within definitions.",
+    description="Search for a term within the 'gloss' of all definitions using a regular expression. The search is case-insensitive and accent-insensitive. If no entries are found, it suggests entries for the closest matching headword. Returns up to 50 matching entries.",
+    responses={
+        200: EntrySerializer(many=True),
+        404: OpenApiResponse(
+            description="Could not find any definitions matching 'term'. Did you mean entries for 'closest_match'?"
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_definition_data(request, term):
+    # Build a regex pattern for case-insensitive and accent-insensitive search
+    regex_pattern = get_vowel_regex(term)
+
+    # Find entries that have a definition with a gloss matching the regex
+    entries = (
+        Entry.objects.filter(definitions__gloss__iregex=regex_pattern)
+        .order_by("headword")
+        .distinct()
+    )
+
+    # Limit to the top 50 results
+    top_50_entries = entries[:50]
+
+    if entries.exists():
+        serializer = EntrySerializer(top_50_entries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        # Fallback: Find the top 50 definitions with the closest matching gloss
+        matches = []
+        # Fetch only the necessary fields to optimize memory usage
+        all_definitions = Definition.objects.values("gloss", "entry_id")
+
+        for definition in all_definitions.iterator():
+            # token_set_ratio is good for finding a phrase within a larger text block
+            score = fuzz.token_set_ratio(term, definition["gloss"])
+            # A threshold of 60 is a decent starting point to avoid irrelevant results
+            if score > 60:
+                matches.append({"score": score, "entry_id": definition["entry_id"]})
+
+        if matches:
+            # Sort by score descending, then by entry_id to have a stable sort
+            matches.sort(key=lambda x: (x["score"], x["entry_id"]), reverse=True)
+
+            # Get unique entry IDs while preserving order of first appearance
+            seen_ids = set()
+            unique_ordered_ids = []
+            for match in matches:
+                if match["entry_id"] not in seen_ids:
+                    seen_ids.add(match["entry_id"])
+                    unique_ordered_ids.append(match["entry_id"])
+
+            # Limit to the top 50 unique entries
+            top_50_ids = unique_ordered_ids[:50]
+
+            # Preserve the sort order from the fuzzy match in the final queryset
+            preserved_order = Case(
+                *[When(pk=pk, then=pos) for pos, pk in enumerate(top_50_ids)]
+            )
+            suggested_entries = Entry.objects.filter(pk__in=top_50_ids).order_by(
+                preserved_order
+            )
+
+            serializer = EntrySerializer(suggested_entries, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # If no match is found at all, return an empty list with a 404.
+        return Response([], status=status.HTTP_404_NOT_FOUND)
 
 
 @extend_schema(
