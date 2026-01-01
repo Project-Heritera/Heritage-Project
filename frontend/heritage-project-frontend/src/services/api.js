@@ -1,5 +1,6 @@
 //This api provides an interceptor to the backend that all "apis" should use 
 import axios from "axios";
+import { Debug } from "@/utils/debugLog";
 
 import {ACCESS_TOKEN, REFRESH_TOKEN} from "./LocalStorage"
 
@@ -28,7 +29,7 @@ api.interceptors.request.use(
 //set up interceptor for inbound requests
 api.interceptors.response.use(
     (response) => {
-        console.log("Valid access token used");
+        Debug.log("Valid access token used");
         return response;
     },//Normal success so just return the response as is
     //Error occured so check token refresh

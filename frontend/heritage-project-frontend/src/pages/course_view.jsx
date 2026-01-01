@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Debug } from "@/utils/debugLog";
 import { List } from "lucide-react";
 import CourseCard from "../components/CourseViewer/CourseCard";
 import { Input } from "@/components/ui/input";
@@ -21,13 +22,12 @@ const CourseView = () => {
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true);
-    console.log("Retrieving coruses");
     const getCourses = async () => {
       try {
         const response = await api.get(`/website/courses/`);
         const courseList = response.data;
 
-        console.log("Loaded course list is:", courseList);
+        Debug.log("Loaded course list is:", courseList);
         setCourses(courseList || []);
       } catch (error) {
         console.error("Error retrieving courses:", error);

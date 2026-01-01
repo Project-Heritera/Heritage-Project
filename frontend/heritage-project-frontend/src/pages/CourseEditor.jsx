@@ -1,3 +1,4 @@
+import { Debug } from "@/utils/debugLog";
 import EditorSectionDropdown from "@/components/CourseEditor/EditorSectionDropdown";
 import { useParams } from "react-router-dom";
 import CourseCard from "@/components/CourseViewer/CourseCard";
@@ -24,12 +25,12 @@ function CreationDashboard() {
         //Get course data
         const courseResponse = await api.get(`/website/course/${courseId}/`)
         const courseData = courseResponse.data
-        console.log("Retrieved course data:", courseData)
+        Debug.log("Retrieved course data:", courseData)
         setCourseInfo(courseData)
         //Get sections
         const sectionsResponse = await api.get(`/website/courses/${courseId}/sections/`)
         const sectionsData = sectionsResponse.data
-        console.log("Retrieved course sections:", sectionsData)
+        Debug.log("Retrieved course sections:", sectionsData)
         setSections(sectionsData)
       } catch (error) {
         console.error("Error retrieving course sections: ", error)
