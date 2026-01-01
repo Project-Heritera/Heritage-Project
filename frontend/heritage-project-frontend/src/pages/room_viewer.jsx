@@ -1,5 +1,6 @@
 import { useEffect, backgroundImage, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { BookA } from "lucide-react";
 import {
   get_room_data,
   get_test_room_for_viewer,
@@ -64,7 +65,7 @@ const RoomViewer = () => {
           Debug.error(
             "Viewing page reached and room data has editing_mode set to true"
           );
-          navigate(-1)
+          navigate(-1);
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);
@@ -165,7 +166,6 @@ const RoomViewer = () => {
 
       Debug.log("Serialized Task Progress Data:", taskProgressData);
 
-
       return taskProgressData;
     } catch (err) {
       showError(
@@ -218,6 +218,18 @@ const RoomViewer = () => {
               <p className="text-sm italic text-muted-foreground">
                 Created by: {roomCreator}
               </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <Button asChild  className="mb-3 gap-2">
+                <a
+                  href="/dictionary/Creole"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Dictionary
+                  <BookA />
+                </a>
+              </Button>
             </div>
           </CardHeader>
         </Card>
