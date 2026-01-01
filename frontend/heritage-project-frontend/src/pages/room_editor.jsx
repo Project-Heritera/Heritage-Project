@@ -128,6 +128,8 @@ const RoomEditor = () => {
 
   const addNewTask = () => {
     const newTask = {
+      // Generate a unique temporary ID for the new task
+      task_id: `temp_${crypto.randomUUID()}`,
       tags: ["Easy"],
       task_components: [],
     };
@@ -181,6 +183,11 @@ const RoomEditor = () => {
         const taskRef = taskRefs.current[taskId];
         if (taskRef?.serialize) {
           const serializedTask = taskRef.serialize();
+          // If the task has a temporary ID (i.e., it's a new task),
+          // remove the task_id field before saving. The backend will assign a new one.
+          if (String(serializedTask.task_id).startsWith("temp_")) {
+            delete serializedTask.task_id;
+          }
           updatedRoomData.tasks.push(serializedTask);
         }
       }

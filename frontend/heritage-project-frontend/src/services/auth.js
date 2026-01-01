@@ -10,7 +10,6 @@ export async function login(username, password, authResponse) {
 		if (authResponse) {
 			response = authResponse
 		} else {
-			console.log("Using default login")
 			response = await api.post(`/accounts/login_step1/`, {
 				username,
 				password

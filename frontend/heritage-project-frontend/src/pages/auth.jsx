@@ -28,6 +28,14 @@ const AuthLogin = () => {
   const navigate = useNavigate();
   const performLogout = useLogout();
 
+
+  //if enter is pressed on username and passwrod inputs, trigger login
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
+
   async function handleLogin() {
     if (username && password) {
       try {
@@ -145,6 +153,7 @@ const AuthLogin = () => {
                   placeholder="your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={handleKeyPress}
                 />
               </div>
               <div></div>
@@ -157,6 +166,7 @@ const AuthLogin = () => {
                   placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleKeyPress}
                 />
               </div>
               <div className="flex items-center justify-between gap-2">
