@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import ReactSelectionPopup from "react-selection-popup";
 import {
   CirclePlus,
   List,
@@ -7,6 +8,7 @@ import {
   ChevronDown,
   Trash2,
   Info,
+  BookA
 } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
@@ -50,6 +52,8 @@ const RoomEditor = () => {
   const showError = useErrorStore((state) => state.showError);
   // Store refs for all task components
   const taskRefs = useRef({});
+  //for popup that triggers open in dictionary
+  const popupRef = useRef(null);
 
   useEffect(() => {
     const loadRoom = async () => {
@@ -200,12 +204,31 @@ const RoomEditor = () => {
       return null;
     }
   };
+  const handleSelect = (text, meta) => {
+    console.log("Selected text:", text);
+  };
 
   return (
     <div className="relative w-screen min-h-screen">
+      <ReactSelectionPopup
+        ref={popupRef}
+        onSelect={handleSelect}
+        selectionClassName="roomEditorBody"
+      >
+        <div>
+          <p>Popup Content</p>
+          <button
+            onClick={() => {
+              ref.current?.close();
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </ReactSelectionPopup>
       {/* Background layer: repeats infinitely */}
       <div
-        className="fixed inset-0 -z-10"
+        className="roomEditorBody fixed inset-0 -z-10"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           backgroundRepeat: "repeat", // repeats in both directions
@@ -240,6 +263,18 @@ const RoomEditor = () => {
                       <Info className="h-4 w-4" />
                     </a>
                   </Button>
+                  <div className="flex items-center justify-between">
+                    <Button asChild>
+                      <a
+                        href="/dictionary/Creole"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Dictionary
+                        <BookA />
+                      </a>
+                    </Button>
+                  </div>
                 </div>
                 <Button onClick={serializeAllTasks} size="lg" className="gap-2">
                   <Save className="w-4 h-4" />
