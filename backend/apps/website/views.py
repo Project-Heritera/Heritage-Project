@@ -425,30 +425,47 @@ def create_course(request):
 @permission_classes([IsAuthenticated])
 def publish_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    course.visibility = VisibilityLevel.PUBLIC
-    course.is_published = True
+
+    # Check if pending
+    if course.is_pending():
+        return Response({"messege": "Course is pending approval"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    course.request_publish()
     course.save()
     return Response({"messege": "Course publicized successfully"}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
     tags=["Courses"],
-    summary="Private a course",
-    description="Make the is_published=False and visibility=PRI for the course given.",
+    summary="Make a course private",
+    description="Sets the course and all of its sections and rooms to private. This action is cascaded down.",
     request=None,
     responses={
-        200: OpenApiResponse(description="Course privated successfully."),
-        404: OpenApiResponse(description="Could not get course.")
+        200: OpenApiResponse(description="Course and its contents set to private successfully."),
+        403: OpenApiResponse(description="You do not have permission to edit this course."),
+        404: OpenApiResponse(description="Could not get course."),
     },
 )
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def private_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    course.visibility = VisibilityLevel.PRIVATE
-    course.is_published = False
-    course.save()
-    return Response({"messege": "Course privated successfully"}, status=status.HTTP_200_OK)
+
+    # Security check: Only the creator or an editor can make a course private.
+    if not user_has_access(course, request.user, edit=True):
+        raise PermissionDenied("You do not have permission to edit this course.")
+
+    with transaction.atomic():
+        # Set the course to private
+        course.visibility = VisibilityLevel.PRIVATE
+        course.is_published = False
+        course.save(update_fields=["visibility", "is_published"])
+
+        # Cascade privacy to all child sections and rooms
+        course.sections.update(visibility=VisibilityLevel.PRIVATE, is_published=False)
+        course.rooms.update(visibility=VisibilityLevel.PRIVATE, is_published=False, can_edit=True)
+
+    return Response({"message": "Course and its contents have been made private."}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -1454,14 +1471,13 @@ def publish_room(request, room_id):
     if not room.tasks.exists():
         return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # publish, update visibility and is_published
-    room.visibility = VisibilityLevel.PUBLIC
-    room.is_published = True
-    room.can_edit = False
+    # Check if pending
+    if room.is_pending():
+        return Response({"messege": "Room is pending approval"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    room.request_publish()
     room.save(update_fields=["visibility", "can_edit", "is_published"])
 
-    room.section.visibility = VisibilityLevel.PUBLIC
-    room.section.is_published = True
 
     return Response(status=status.HTTP_200_OK)
 
