@@ -1,13 +1,19 @@
-#venv for python
+#python
 /venv
-#excldue __pycache__
+*/venv
 __pycache__/
+*.pyc
+*.pyo
+*__pycache__/
 
-# Dependencies
+
+#Docker
+*.dockerignore
+.dockerignore
+
+# NPM
 /node_modules
-
-# Vite build output
-/dist
+*node_modules
 
 # Log files
 npm-debug.log*
@@ -15,11 +21,12 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment variables
-.env*
-!.env.example
+.env
+*.env
+**/.env
+.env.*
+env/
 
 # Editor directories
-.vscode
-.idea
-backend/db.sqlite3
-backend/Heritage-Project
+*.vscode
+*.idea
