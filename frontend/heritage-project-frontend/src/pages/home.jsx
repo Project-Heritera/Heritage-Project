@@ -22,7 +22,6 @@ export default function Home() {
 
   useEffect(() => {
     setLoading(true);
-    console.log("Retrieving coruses");
     const getCourses = async () => {
       try {
         const response = await api.get(`/website/courses_progressed/`);

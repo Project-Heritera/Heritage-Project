@@ -16,10 +16,14 @@ pnpm-debug.log*
 
 # Environment variables
 .env*
-!.env.example
+.env
+*.env
+*.env*
+**/*.env
 
 # Editor directories
 .vscode
 .idea
 backend/db.sqlite3
 backend/Heritage-Project
+.vercel

@@ -23,6 +23,7 @@ class AccessLevel(models.TextChoices):
 
 class VisibilityLevel(models.TextChoices):
     PUBLIC = "PUB", _("PUBLIC")  # rn basically completely the same as is_published in functionality
+    PENDING = "PEN", _("PENDING")  # staging area where admin approves to make public 
     PRIVATE = "PRI", _("PRIVATE")
 
 
@@ -246,7 +247,41 @@ class UserBadge(models.Model):
         return f"{self.user}'s {self.badge}"
 
 
-class Course(models.Model):
+#for admins to review pending content and make public or delete
+class PublishableMixin(models.Model):
+    class Meta:
+        abstract = True
+    def request_publish(self):
+        """
+        Mark object as pending for review.
+        """
+        if self.is_published:
+            raise ValueError("Already published")
+        self.visibility = VisibilityLevel.PENDING
+        self.save()
+
+    def approve_publish(self):
+        """
+        Approve the object and make it public.
+        """
+        if not self.is_pending():
+            raise ValueError("Object is not pending for publication.")
+            
+        self.visibility = VisibilityLevel.PUBLIC
+        self.is_published = True
+
+        # If this is a Room, lock edit perms
+        if hasattr(self, "can_edit"):
+            self.can_edit = False
+
+        self.save()
+
+    def is_pending(self):
+        return self.visibility == VisibilityLevel.PENDING
+    def reject_publish(self):
+        self.delete()
+
+class Course(PublishableMixin, models.Model):
     badge = models.OneToOneField(
         Badge, on_delete=models.SET_NULL, null=True, blank=True, related_name="course"
     )
@@ -286,7 +321,7 @@ class Course(models.Model):
     objects = CourseQuerySet.as_manager()
 
 
-class Section(models.Model):
+class Section(PublishableMixin, models.Model):
     badge = models.OneToOneField(
         Badge, on_delete=models.SET_NULL, null=True, related_name="section"
     )
@@ -329,7 +364,7 @@ class Section(models.Model):
     objects = SectionQuerySet.as_manager()
 
 
-class Room(models.Model):
+class Room(PublishableMixin, models.Model):
     badge = models.OneToOneField(
         Badge, on_delete=models.SET_NULL, null=True, blank=True, related_name="room"
     )
@@ -468,6 +503,10 @@ class UserRoomAccessLevel(models.Model):
     def __str__(self):
         return f"{self.user.username if self.user else 'Unknown'} → {self.room.title if self.room else 'No Room'} ({self.access_level})"
 
+
+
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 class Status(models.TextChoices):
     NOSTAR = "NOSTAR", _("NOT STARTED")

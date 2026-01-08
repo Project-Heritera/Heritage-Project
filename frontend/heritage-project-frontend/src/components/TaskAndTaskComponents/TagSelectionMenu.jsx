@@ -15,7 +15,6 @@ export const TagSelectionMenu = ({ onSelect, onClose }) => {
   const fetchTags = async () => {
     setLoading(true);
     try {
-      console.log("make api call for tags")
       const data = await get_tags();
       const tagNames = data.map((tag) => tag.name);
       setTagCatalogue(tagNames);

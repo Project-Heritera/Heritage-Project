@@ -1,5 +1,6 @@
 //Handle what the buttons look like for toolbar
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Debug } from "@/utils/debugLog";
 import {
     Accordion,
     AccordionContent,
@@ -22,7 +23,7 @@ const EditorSectionDropdown = ({ title, description, sectionId, courseId }) => {
         try {
             const response = await api.get(`/website/sections/${sectionId}/rooms/`)
             const roomsData = response.data
-            console.log("Retrieved course rooms:", roomsData)
+            Debug.log("Retrieved course rooms:", roomsData)
             setRooms(roomsData)
         } catch (error) {
             console.error("Error retrieving course rooms: ", error)

@@ -14,7 +14,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.website.models import Course
+from apps.website.models import Course, VisibilityLevel
 from friendship.models import Block, Friend, FriendshipRequest, cache
 from apps.website.serializers import CourseSerializer
 from .serializer import (
@@ -363,9 +363,13 @@ def get_another_user_info(request, user_username):
 @permission_classes([IsAuthenticated])
 def get_courses_completed(request, user_username):
     user = get_object_or_404(User, username=user_username)
-
+ 
+    # 1. Use the custom manager method to get all courses the user can access.
+    # 2. Annotate the progress for that user.
+    # 3. Filter for courses where progress is 100%.
+    # 4. If the requestor is not the profile owner, filter to only show public courses.
     courses_completed = (
-        Course.objects.filter_by_user_access(user)
+        Course.objects.filter(visibility=VisibilityLevel.PUBLIC).filter_by_user_access(user)
         .user_progress_percent(user)
         .filter(progress_percent=100)
     )

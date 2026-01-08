@@ -1,3 +1,4 @@
+import { Debug } from "@/utils/debugLog";
 import EditorSectionDropdown from "@/components/CourseEditor/EditorSectionDropdown";
 import { useParams } from "react-router-dom";
 import CourseCard from "@/components/CourseViewer/CourseCard";
@@ -25,7 +26,7 @@ function CreatePage() {
         const response = await api.get(`/website/courses_contributed/`);
         const courseList = response.data;
 
-        console.log("Loaded course list is:", courseList);
+        Debug.log("Loaded course list is:", courseList);
         setCourses(courseList || []);
       } catch (error) {
         console.log("Error retrieving editable courses: ", error)
