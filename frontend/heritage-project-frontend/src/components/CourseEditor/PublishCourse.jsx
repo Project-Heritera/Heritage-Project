@@ -11,7 +11,12 @@ import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 
-function PublishCourse({ isPublished, courseId, onSuccess }) {
+function PublishCourse({
+  isPublished,
+  courseId,
+  onSuccess,
+  buttonSize = "default",
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [published, setPublished] = useState(isPublished);
@@ -48,7 +53,10 @@ function PublishCourse({ isPublished, courseId, onSuccess }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <div>
-          <Button className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Button
+            size={buttonSize}
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+          >
             {published ? "Make Private" : "Make Public"}
           </Button>
         </div>

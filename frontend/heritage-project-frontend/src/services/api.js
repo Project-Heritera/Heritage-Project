@@ -1,11 +1,12 @@
 //This api provides an interceptor to the backend that all "apis" should use 
 import axios from "axios";
+import { Debug } from "@/utils/debugLog";
 
 import {ACCESS_TOKEN, REFRESH_TOKEN} from "./LocalStorage"
 
 //Create api object and default link for it to backend.
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL_FOR_TEST//Link appended before all requests
+    baseURL: import.meta.env.VITE_API_URL
 })
 
 //Set up interceptor for outbound requests
@@ -28,7 +29,7 @@ api.interceptors.request.use(
 //set up interceptor for inbound requests
 api.interceptors.response.use(
     (response) => {
-        console.log("Valid access token used");
+        Debug.log("Valid access token used");
         return response;
     },//Normal success so just return the response as is
     //Error occured so check token refresh

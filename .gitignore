@@ -21,12 +21,15 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment variables
+.env*
 .env
 *.env
-**/.env
-.env.*
-env/
+*.env*
+**/*.env
 
 # Editor directories
 *.vscode
 *.idea
+.vercel
+backend/db.sqlite3
+backend/Heritage-Project

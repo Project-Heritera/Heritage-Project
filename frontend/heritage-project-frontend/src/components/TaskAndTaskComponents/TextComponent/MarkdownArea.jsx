@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import { Debug } from '@/utils/debugLog';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import { useState, useEffect, useRef } from 'react';
@@ -106,16 +107,16 @@ const [content, setContent] = useState(initText);
     const italicize = () => {
         if (isRenderd) {
             editor?.chain().focus().toggleItalic().run();
-            console.log("You did an renderd italazize!");
-            console.log(isRenderd);
+            Debug.log("You did an renderd italazize!");
+            Debug.log(isRenderd);
         } else {
             wrapSelection('*');
-            console.log("You did a non renderd italazize!");
+            Debug.log("You did a non renderd italazize!");
         }
     };
 
     const bulletpoint = () => {
-        console.log("You did a bulletpoint!");
+        Debug.log("You did a bulletpoint!");
         if (isRenderd) {
             editor?.chain().focus().toggleBulletList().run();   
         } else {

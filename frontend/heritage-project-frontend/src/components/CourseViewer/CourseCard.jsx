@@ -19,7 +19,6 @@ export default function CourseCard({
   navLink,
 }) {
   const color = getProgressColor(progress);
-  console.log("Course id is:", courseId);
   return (
     <Link to={navLink || `/c/${courseId || "#"}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">

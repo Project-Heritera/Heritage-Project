@@ -1,3 +1,5 @@
+import { Debug } from "@/utils/debugLog";
+import PublishCourse from "@/components/CourseEditor/PublishCourse";
 import EditorSectionDropdown from "@/components/CourseEditor/EditorSectionDropdown";
 import { useParams } from "react-router-dom";
 import CourseCard from "@/components/CourseViewer/CourseCard";
@@ -12,75 +14,97 @@ import ManageCard from "@/components/CourseEditor/ManageCard";
 //Displays a list of cours given a room
 function CreationDashboard() {
   const { courseId } = useParams();
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
-  const [sections, setSections] = useState([])
-  const [courseInfo, setCourseInfo] = useState(null)
+  const [sections, setSections] = useState([]);
+  const [courseInfo, setCourseInfo] = useState(null);
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
 
     const getData = async () => {
       try {
         //Get course data
-        const courseResponse = await api.get(`/website/course/${courseId}/`)
-        const courseData = courseResponse.data
-        console.log("Retrieved course data:", courseData)
-        setCourseInfo(courseData)
+        const courseResponse = await api.get(`/website/course/${courseId}/`);
+        const courseData = courseResponse.data;
+        Debug.log("Retrieved course data:", courseData);
+        setCourseInfo(courseData);
         //Get sections
-        const sectionsResponse = await api.get(`/website/courses/${courseId}/sections/`)
-        const sectionsData = sectionsResponse.data
-        console.log("Retrieved course sections:", sectionsData)
-        setSections(sectionsData)
+        const sectionsResponse = await api.get(
+          `/website/courses/${courseId}/sections/`
+        );
+        const sectionsData = sectionsResponse.data;
+        Debug.log("Retrieved course sections:", sectionsData);
+        setSections(sectionsData);
       } catch (error) {
-        console.error("Error retrieving course sections: ", error)
+        console.error("Error retrieving course sections: ", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
     getData();
-  }, [])
+  }, []);
 
   if (loading) {
-    return (<div>Loading...</div>)
+    return <div>Loading...</div>;
   }
 
   return (
-
     <div className="flex flex-col items-center w-full min-h-screen p-6 ">
       <div className="w-full max-w-[95%]">
         <h2 className="text-2xl font-bold tracking-tight mb-6">
           View and add to your course
         </h2>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Main div*/}
-          <div className="w-3/4">
+          <div className="w-full md:w-3/4 flex flex-col gap-6">
+            <PublishCourse
+              courseId={courseId}
+              isPublished={courseInfo.is_published}
+              buttonSize="lg"
+            />
             <div>
               <SectionsHolder>
-                {!loading && sections && sections.map((section) => (
-                  <EditorSectionDropdown key={section.title} title={section.title} description={section.description} sectionId={section.section_id} courseId={courseId} />
-                ))}
+                {!loading &&
+                  sections &&
+                  sections.map((section) => (
+                    <EditorSectionDropdown
+                      key={section.title}
+                      title={section.title}
+                      description={section.description}
+                      sectionId={section.section_id}
+                      courseId={courseId}
+                    />
+                  ))}
               </SectionsHolder>
             </div>
-            <div className="mt-6">
-              <CreationForm FormType={"Section"} course_id={courseId} submitCall={(newSection) => {
-                console.log("New section data is:", newSection)
-                newSection.progress_percent = 0
+            <CreationForm
+              FormType={"Section"}
+              course_id={courseId}
+              submitCall={(newSection) => {
+                console.log("New section data is:", newSection);
+                newSection.progress_percent = 0;
                 setSections((prevSections) => [...prevSections, newSection]);
-              }} />
-            </div>
+              }}
+            />
           </div>
           {/* Side div*/}
-          <div className="flex-1 flex flex-col gap-6">
-            <CourseCard title={courseInfo.title} description={courseInfo.description} progress={courseInfo.progress_percent} imageLink={`${courseInfo.image}`} />
-            <ManageCard courseId={courseId} isPublished={courseInfo.is_published}/>
+          <div className="w-full md:flex-1 flex flex-col gap-6">
+            <CourseCard
+              title={courseInfo.title}
+              description={courseInfo.description}
+              progress={courseInfo.progress_percent}
+              imageLink={`${courseInfo.image}`}
+            />
+            <ManageCard
+              courseId={courseId}
+              isPublished={courseInfo.is_published}
+            />
           </div>
         </div>
       </div>
-
-
     </div>
-  )
+  );
 }
 
 export default CreationDashboard;

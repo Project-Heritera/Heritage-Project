@@ -25,7 +25,7 @@ function handleSelectAnswerChoice(selectedID) {
 }
   
   function checkIfCorrect() {
-    if (selectedAnswerChoice === []) return statusTypes.INCOMP;
+    if (selectedAnswerChoice == []) return statusTypes.INCOMP;
 
     let correctAnswerChoices = [];
     for (const choice of choiceArray) {

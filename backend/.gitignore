@@ -1,0 +1,16 @@
+#env vars
+.env
+*.env
+*.env*
+**/*.env
+
+#python specifics
+__pycache__/
+**/__pycache__/
+
+#static files 
+*/static/
+*/staticfiles/
+
+#database
+*db.sqlite3

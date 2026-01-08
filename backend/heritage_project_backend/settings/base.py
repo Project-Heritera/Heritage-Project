@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,14 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-_4@zbow#8=+ab85)d-rdz6207iqf!o^88_w0-i)$uurg=674g&"
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = False  # overridden in dev
+ALLOWED_HOSTS = []  # overridden in dev/prod
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'heritage_project_backend.ip_middleware.RealIPMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "heritage_project_backend.urls"
@@ -87,16 +88,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "heritage_project_backend.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (  # tells django that the primary way it should identify a user is by looking for JWT req
@@ -131,28 +122,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-STATIC_URL = "static/"
 
 # Media files (user-uploaded files)
-# Ensure a leading and trailing slash so Django's static helper matches URLs correctly
 MEDIA_URL = "/images/"
 MEDIA_ROOT = BASE_DIR / "images"
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

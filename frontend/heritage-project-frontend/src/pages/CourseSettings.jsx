@@ -1,4 +1,5 @@
 import SectionDropdown from "@/components/RoomsPage/SectionDropdown";
+import { Debug } from "@/utils/debugLog";
 import { useParams } from "react-router-dom";
 import CourseCard from "@/components/CourseViewer/CourseCard";
 import { progress } from "framer-motion";
@@ -43,15 +44,15 @@ function CourseDashboard() {
           `/accounts/another_user_info/${ownerName}`
         );
         setOwner(courseOwner.data);
-        console.log("Course owner is:", courseOwner);
-        console.log("Retrieved course data:", courseData);
+        Debug.log("Course owner is:", courseOwner);
+        Debug.log("Retrieved course data:", courseData);
         setCourseInfo(courseData);
         //Get sections
         const sectionsResponse = await api.get(
           `/website/courses/${courseId}/sections/`
         );
         const sectionsData = sectionsResponse.data;
-        console.log("Retrieved course sections:", sectionsData);
+        Debug.log("Retrieved course sections:", sectionsData);
         setSections(sectionsData);
         //Get contributors
         const usersResponse = await api.get(
