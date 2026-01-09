@@ -8,7 +8,7 @@ class Entry(models.Model):
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
-        managed = False  # Don't let Django try to create the table
+        managed = True  # Don't let Django try to create the table
         db_table = 'dictionary_entries'  # Must match your existing table name
         ordering = ['headword']
 
@@ -22,7 +22,7 @@ class Variant(models.Model):
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
-        managed = False  # Don't let Django try to create the table
+        managed = True  # Don't let Django try to create the table
         db_table = 'variants'  # Must match your existing table name
 
     def __str__(self):
@@ -38,7 +38,7 @@ class Source(models.Model):
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
-        managed = False  # Don't let Django try to create the table
+        managed = True  # Don't let Django try to create the table
         db_table = 'sources'  # Must match your existing table name
 
     def __str__(self):
@@ -53,11 +53,11 @@ class Definition(models.Model):
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="definitions")
     def_number = models.PositiveIntegerField()
     gloss = models.TextField()
-    examples = models.TextField(blank=True)
+    examples = models.TextField(blank=True, null=True)
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
-        managed = False  # Don't let Django try to create the table
+        managed = True  # Don't let Django try to create the table
         db_table = 'definitions'  # Must match your existing table name
 
     def __str__(self):
@@ -70,7 +70,7 @@ class POS(models.Model):
     history = HistoricalRecords(bases=[IPAddressHistoricalModel])
 
     class Meta:
-        managed = False  # Don't let Django try to create the table
+        managed = True  # Don't let Django try to create the table
         db_table = 'entry_parts_of_speech'  # Must match your existing table name
 
     def __str__(self):

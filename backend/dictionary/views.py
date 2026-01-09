@@ -217,9 +217,9 @@ def get_definition_data(request, term):
         # Fallback: Find the top 50 definitions with the closest matching gloss
         matches = []
         # Fetch only the necessary fields to optimize memory usage
-        all_definitions = Definition.objects.values("gloss", "entry_id")
+        all_definitions = list(Definition.objects.values("gloss", "entry_id"))
 
-        for definition in all_definitions.iterator():
+        for definition in all_definitions:
             # token_set_ratio is good for finding a phrase within a larger text block
             score = fuzz.token_set_ratio(term, definition["gloss"])
             # A threshold of 60 is a decent starting point to avoid irrelevant results
