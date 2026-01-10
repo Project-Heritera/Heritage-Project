@@ -30,7 +30,7 @@ function ProfileDisplay({ profImage, name, description, isOwner, viewUser }) {
     <ProfileDiv>
       <div className="profileDisplayDiv">
         <ProfileImage profileImage={currentImageUrl} />
-        <div className="profileDisplayInfoDiv">
+        <div className="profileDisplayInfoDiv overflow-hidden">
           <div className="flex flex-col ">
             {/* Actions and Title div*/}
             <div className="flex items-center">

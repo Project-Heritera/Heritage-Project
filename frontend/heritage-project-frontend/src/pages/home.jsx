@@ -3,13 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 // 1. ADD: Import Button and useNavigate
 import { Button } from "@/components/ui/button";
-import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import { Link } from "react-router-dom";
-
-// Helper for random progress
-const rand = () => Math.random().toFixed(2);
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -17,8 +13,6 @@ export default function Home() {
   const [username, setUsername] = useState(null);
   const [user, setUser] = useState(null);
 
-  // 2. ADD: Initialize the navigate hook
-  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -53,7 +47,7 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 m-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
           {/* 2-column course grid */}
           <div className="grid grid-cols-2 gap-4">

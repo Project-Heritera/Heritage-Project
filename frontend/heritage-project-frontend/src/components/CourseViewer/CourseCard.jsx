@@ -20,7 +20,12 @@ export default function CourseCard({
 }) {
   const color = getProgressColor(progress);
   return (
-    <Link to={navLink || `/c/${courseId || "#"}`}>
+    <Link
+      to={navLink || (courseId ? `/c/${courseId}` : "#")}
+      onClick={(e) => {
+        if (!navLink && !courseId) e.preventDefault();
+      }}
+    >
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -44,16 +49,16 @@ export default function CourseCard({
           </ScrollArea>
         </CardHeader>
 
-          {progress !== undefined && (
-        <CardContent>
+        {progress !== undefined && (
+          <CardContent>
             <div className="space-y-2">
               <Progress value={progress} indicatorColor={color} />
               <p className="text-sm text-muted-foreground">
                 {Math.ceil(progress)}% complete
               </p>
             </div>
-        </CardContent>
-          )}
+          </CardContent>
+        )}
       </Card>
     </Link>
   );

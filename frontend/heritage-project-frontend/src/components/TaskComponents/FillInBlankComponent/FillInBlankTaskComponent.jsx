@@ -8,12 +8,7 @@ import statusTypes from "@/utils/statusTypes";
 import { Button } from "@/components/ui/button";
 import { Languages } from "lucide-react";
 import { SpecialCharToolbar } from "@/components/SpecialCharacterToolbar";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -89,7 +84,7 @@ const FillInBlankTaskComponent = forwardRef(({ jsonData, isEditing }, ref) => {
             size="icon"
             onClick={() => setShowSpecialChars((prev) => !prev)}
           >
-            <Languages size={18} className="text-gray-800" />
+            <Languages size={18} className="lucide-icon text-gray-800" />
           </Button>
         </div>
       </CardHeader>
