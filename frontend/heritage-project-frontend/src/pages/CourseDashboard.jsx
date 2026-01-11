@@ -56,7 +56,7 @@ function CourseDashboard() {
           Track your progress and continue your learning path
         </h2>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col-reverse md:flex-row gap-6 items-start">
           {/* Main div*/}
           <div className="w-3/4">
             <SectionsHolder>

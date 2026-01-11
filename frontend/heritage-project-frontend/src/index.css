@@ -177,3 +177,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+.lucide-icon {
+  stroke: currentColor; /* ensures tailwind text color controls stroke */
+}
+
+.dark .lucide-icon {
+  stroke: white; /* overrides color only in dark mode */
+}

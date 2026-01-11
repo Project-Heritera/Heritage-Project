@@ -56,8 +56,8 @@ return (
           Course List
         </h1>
       </div>
-      <div className="flex flex-row justify-between items-center w-full">
-        <div className="w-[20%] min-w-[300px]">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
+        <div>
           <LocalSearchBar onSearchChange={setFilterQuery} />
         </div>
         <div className="create-course">

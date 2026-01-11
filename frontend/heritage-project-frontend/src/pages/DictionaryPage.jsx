@@ -76,6 +76,8 @@ const DictionaryPage = () => {
 
         setEntries(res);
         setMessage(null);
+        //set view to top of page
+        window.scrollTo(0, 0);
       } catch {
         showError("Failed to fetch dictionary entries", "error");
       } finally {
@@ -158,7 +160,7 @@ const DictionaryPage = () => {
             size="icon"
             onClick={() => setShowSpecialChars((prev) => !prev)}
           >
-            <Languages size={18} className="text-gray-800" />
+            <Languages size={18} className="lucide-icon text-gray-800" />
           </Button>
           <Button onClick={handleSearchSubmit}>Search</Button>
           {searchTerm && (
@@ -174,6 +176,34 @@ const DictionaryPage = () => {
       </section>
 
       <section className="space-y-4">
+        {/* Pagination */}
+        {!searchTerm && (
+          <div className="flex justify-center pb-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationPrevious
+                  onClick={() => {
+                    if (page > 1) setPage((p) => p - 1);
+                  }}
+                />
+                <Input
+                  type="number"
+                  min="1"
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handlePageInputSubmit()
+                  }
+                  onBlur={handlePageInputSubmit}
+                  className="w-16 text-center"
+                  aria-label="Current page"
+                />
+                <PaginationNext onClick={() => setPage((p) => p + 1)} />
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         {message && (
           <div className="rounded-md border bg-muted p-3 text-sm">
             {message}

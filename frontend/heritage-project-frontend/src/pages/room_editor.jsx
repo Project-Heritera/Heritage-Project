@@ -8,10 +8,11 @@ import {
   ChevronDown,
   Trash2,
   Info,
-  BookA
+  BookA,
 } from "lucide-react";
 import "../styles/pages/room_editor.css";
 import TaskEditor from "../components/TaskAndTaskComponents/TaskEditor";
+import { Debug } from "@/utils/debugLog";
 import { useErrorStore } from "../stores/ErrorStore";
 import { useParams, useNavigate } from "react-router-dom";
 import { get_room_data, get_test_room, save_room } from "../services/room";
@@ -250,28 +251,37 @@ const RoomEditor = () => {
           {/* Header Card */}
           <Card>
             <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-4xl mb-2">{roomTitle}</CardTitle>
-                  <CardDescription className="text-base mb-3">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
+                {/* Left content */}
+                <div className="flex-1 flex flex-col gap-2">
+                  <CardTitle className="text-3xl sm:text-4xl mb-2">
+                    {roomTitle}
+                  </CardTitle>
+                  <CardDescription className="text-base mb-1">
                     {roomDesc}
                   </CardDescription>
-                  <p className="text-sm text-muted-foreground italic">
+                  <p className="text-sm text-muted-foreground italic mb-2">
                     Created By: {roomCreator}
                   </p>
-                  <CardDescription className="text-base mb-3"></CardDescription>
-                  <Button asChild variant="outline" className="mb-3 gap-2">
-                    <a
-                      href="/tutorials/making_content/creating_tasks"
-                      target="_blank"
-                      rel="noopener noreferrer"
+
+                  {/* Links */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mb-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="mb-2 sm:mb-0 gap-2"
                     >
-                      How to Make a Room
-                      <Info className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  <div className="flex items-center justify-between">
-                    <Button asChild>
+                      <a
+                        href="/tutorials/making_content/creating_tasks"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        How to Make a Room
+                        <Info className="h-4 w-4" />
+                      </a>
+                    </Button>
+
+                    <Button asChild variant="outline" className="gap-2">
                       <a
                         href="/dictionary/Creole"
                         target="_blank"
@@ -283,17 +293,25 @@ const RoomEditor = () => {
                     </Button>
                   </div>
                 </div>
-                <Button onClick={serializeAllTasks} size="lg" className="gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Room
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={() => setPublishModalOpen(true)}
-                >
-                  Publish Room
-                </Button>
+
+                {/* Right action buttons */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    onClick={serializeAllTasks}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save Room
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => setPublishModalOpen(true)}
+                  >
+                    Publish Room
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 
