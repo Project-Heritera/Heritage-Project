@@ -54,7 +54,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
     } else if (FormType == "Room") {
       return handleCreateRoom(data);
     }
-  };
+      };
 
   const handleCreateCourse = async (data) => {
     let badge_status;
@@ -87,7 +87,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       if (submitCall) {
         submitCall(course_status);
       }
-      navigate(`/ce/${course_status.course_id}`);
+      navigate(`/ce/${course_status.course_id}`)
       return course_status;
     } catch (err) {
       Debug.error("Error in course creation:", err);
@@ -99,7 +99,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
   const onClose = () => {
     setOpen(false);
     //force refresh to display updated content
-  };
+  }
   const handleCreateSection = async (data) => {
     let badge_status;
     try {
@@ -182,18 +182,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       return null;
     }
   };
-  const getFormTypeExplanation = () => {
-    switch (FormType) {
-      case "Course":
-        return "A course is the largest unit of content. It represents a full subject area and usually exists for each language or culture. Example: Haitian Creole, Standard Hawaiian.";
-      case "Section":
-        return "A section is a focused part of a course that groups related topics and learning goals. Sections typically contain problem sets and lessons centered around a theme. Examples: Introduction to culture and history; Greetings and noun phrases; Verb phrases and sentence structures; Common statements and foods; Technology-related vocabulary";
-      case "Room":
-        return "A room contains one or more tasks that users complete to practice or apply what’s covered in a section. Rooms should stay focused and concise, usually under 10 tasks, and fully align with the section’s topic. Example: In a Verb Phrases and Sentence Structure section, rooms might include: Verb phrase structure; Basic verb vocabulary; Asking questions Forming complex sentences";
-      default:
-        return "";
-    }
-  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -222,7 +211,6 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
           <>
             <DialogHeader>
               <DialogTitle>Create {FormType}</DialogTitle>
-              <DialogDescription>{getFormTypeExplanation()}</DialogDescription>
               <DialogDescription>
                 Fill in the details below to create a new {FormType}.
               </DialogDescription>
@@ -230,19 +218,19 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="title">{FormType} Title</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  placeholder="Enter Title"
+                  placeholder="Title"
                   {...register("title", { required: true, maxLength: 100 })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{FormType} Description</Label>
+                <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
-                  placeholder="Enter Description"
+                  placeholder="Description"
                   {...register("description", {
                     required: true,
                     maxLength: 225,
@@ -251,26 +239,10 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image">{FormType} Image</Label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept=".jpg, .jpeg, .png"
-                  {...register("image")}
-                />
-              </div>
-              <DialogHeader>
-                <DialogDescription>
-                  Fill in the details below to create a new badge for the{" "}
-                  {FormType}.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-2">
                 <Label htmlFor="badge_title">Badge Title</Label>
                 <Input
                   id="badge_title"
-                  placeholder="Enter Title"
+                  placeholder="Badge Title"
                   {...register("badge_title", {
                     required: true,
                     maxLength: 225,
@@ -282,7 +254,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                 <Label htmlFor="badge_description">Badge Description</Label>
                 <Input
                   id="badge_description"
-                  placeholder="Enter Description"
+                  placeholder="Badge Description"
                   {...register("badge_description", {
                     required: true,
                     maxLength: 225,
@@ -299,6 +271,17 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                   {...register("badge_icon")}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="image">{FormType} Image</Label>
+                <Input
+                  id="image"
+                  type="file"
+                  accept=".jpg, .jpeg, .png"
+                  {...register("image")}
+                />
+              </div>
+
               <DialogFooter className="flex flex-row justify-between gap-2 mt-4">
                 <Button
                   type="button"

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import BadgeAward from "@/components/RoomsPage/BadgeAward";
 import api from "@/services/api";
 import { useLogout } from "@/services/logout";
 //Define AuthLogin component

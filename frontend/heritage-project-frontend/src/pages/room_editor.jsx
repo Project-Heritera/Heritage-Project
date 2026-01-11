@@ -81,7 +81,7 @@ const RoomEditor = () => {
           Debug.error(
             "Editing page reached and room data doesn't have editing_mode set to true"
           );
-          navigate(-1);
+          navigate(-1)
         }
         if (room_data.title) {
           setRoomTitle(room_data.title);
@@ -127,6 +127,7 @@ const RoomEditor = () => {
     loadRoom();
   }, []);
 
+
   const addNewTask = () => {
     const newTask = {
       // Generate a unique temporary ID for the new task
@@ -170,14 +171,14 @@ const RoomEditor = () => {
   // Function to serialize everything to ever exist
   const serializeAllTasks = async () => {
     try {
-      const updatedRoomData = {
-        title: roomTitle,
-        can_edit: true,
-        description: roomDesc,
-        metadata: {},
-        visibility: roomVisibility,
-        tasks: [],
-      };
+    const updatedRoomData = {
+      title: roomTitle,
+      can_edit: true,       
+      description: roomDesc,
+      metadata: {},          
+      visibility: roomVisibility,
+      tasks: [],             
+    };
 
       // Serialize tasks and components
       for (const taskId in taskRefs.current) {
@@ -192,16 +193,17 @@ const RoomEditor = () => {
           updatedRoomData.tasks.push(serializedTask);
         }
       }
+    }
 
-      console.log("updated room", updatedRoomData);
+    console.log("updated room", updatedRoomData);
 
-      // Make request to overwrite room
-      const room_status = await save_room(
-        course_id,
-        section_id,
-        room_id,
-        updatedRoomData
-      );
+    // Make request to overwrite room
+    const room_status = await save_room(
+      course_id,
+      section_id,
+      room_id,
+      updatedRoomData
+    );
       return room_status;
     } catch (err) {
       showError(
@@ -314,7 +316,7 @@ const RoomEditor = () => {
                 </div>
               </div>
             </CardHeader>
-
+          
             <Separator />
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 gap-4">
@@ -331,19 +333,15 @@ const RoomEditor = () => {
             </CardContent>
           </Card>
 
-          <Modal
-            isOpen={publishModalOpen}
-            onClose={() => {
-              navigate(-1);
-            }}
-          >
-            <PublishRoomForm
-              room_id={room_id}
-              onClose={() => {
-                navigate(-1);
-              }}
+   <Modal
+          isOpen={publishModalOpen}
+          onClose={() => {navigate(-1)}}
+        >
+          <PublishRoomForm
+            room_id={room_id}
+            onClose={() => {navigate(-1)}}
             />
-          </Modal>
+        </Modal>
           {/* Tasks Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">

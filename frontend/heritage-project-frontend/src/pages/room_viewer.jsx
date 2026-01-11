@@ -28,8 +28,6 @@ const RoomViewer = () => {
   const [backgroundImage, setBackgroundImage] = useState(
     get_random_image_from_list()
   );
-
-  const [badge_id, set_badge_id] = useState("");
   const [badge_title, set_badge_title] = useState("");
   const [badge_image_url, set_badge_image_url] = useState("");
 
@@ -78,9 +76,6 @@ const RoomViewer = () => {
         }
         if (room_data.badge.title) {
           set_badge_title(room_data.badge.title);
-        }
-        if (room_data.badge.badge_id) {
-          set_badge_id(room_data.badge.badge_id);
         }
         if (room_data.description) {
           setRoomDesc(room_data.description);

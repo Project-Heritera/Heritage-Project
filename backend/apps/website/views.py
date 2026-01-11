@@ -206,7 +206,7 @@ def get_another_badges(request, user_username):
         404: OpenApiResponse(description="Could not get badge."),
     },
 )
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def award_badge(request, badge_id):
     user = request.user

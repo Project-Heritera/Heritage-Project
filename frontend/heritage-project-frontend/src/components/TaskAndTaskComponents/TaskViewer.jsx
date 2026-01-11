@@ -76,7 +76,7 @@ const TaskViewer = forwardRef(
       try {
         const payload = { status: statusTypes.COMPLE };
         const room_complete = await update_task_progress(taskID, payload);
-        setTaskStatus(statusTypes.COMPLE);
+        setTaskStatus(statusTypes.COMPLE)
         if (room_complete) {
           setBadgeAwardOpen(true);
         }
@@ -99,7 +99,6 @@ const TaskViewer = forwardRef(
     const contextValues = {
       taskStatus,
       setTaskStatus,
-      badge_id,
       badge_title,
       badge_image_url,
     };
@@ -135,18 +134,16 @@ const TaskViewer = forwardRef(
           {noQuestionComponent && (
             <>
               <div className="mt-4 flex items-center gap-2">
-                <Button
-                  disabled={taskStatus === statusTypes.COMPLE}
-                  onClick={async () => {
-                    if (taskStatus !== statusTypes.COMPLE) {
+                <input
+                  type="checkbox"
+                  id={`complete-${taskID}`}
+                  onChange={async (e) => {
+                    if (e.target.checked) {
                       await onStaticTaskComponentComplete();
                     }
                   }}
-                >
-                  {taskStatus === statusTypes.COMPLE
-                    ? "Completed"
-                    : "Mark as Complete"}
-                </Button>
+                />
+                <label htmlFor={`complete-${taskID}`}>Mark as Complete</label>
               </div>
               <Dialog open={badgeAwardOpen} onOpenChange={setBadgeAwardOpen}>
                 <DialogPortal>
