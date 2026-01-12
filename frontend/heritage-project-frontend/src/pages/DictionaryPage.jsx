@@ -6,7 +6,7 @@ import {
   get_definition_data,
 } from "@/services/dictionary";
 import { LANGUAGE } from "@/utils/languageChars";
-import { useErrorStore } from "@/stores/errorStore";
+import { useErrorStore } from "@/stores/ErrorStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Languages } from "lucide-react";
