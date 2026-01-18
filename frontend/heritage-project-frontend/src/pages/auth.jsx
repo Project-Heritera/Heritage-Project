@@ -219,7 +219,6 @@ const AuthLogin = () => {
               </div>
             </div>
           )}
-
           {/* Logged In View */}
           {isLoggedIn && !authData && (
             <div className="grid gap-4">
