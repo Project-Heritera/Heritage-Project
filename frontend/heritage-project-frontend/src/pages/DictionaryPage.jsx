@@ -6,7 +6,7 @@ import {
   get_definition_data,
 } from "@/services/dictionary";
 import { LANGUAGE } from "@/utils/languageChars";
-import { useErrorStore } from "@/stores/errorStore";
+import { useErrorStore } from "@/stores/ErrorStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Languages } from "lucide-react";
@@ -133,6 +133,9 @@ const DictionaryPage = () => {
         </h1>
         <p className="text-sm text-muted-foreground">
           Browse alphabetically or search for a word
+        </p>
+        <p className="text-sm text-muted-foreground">
+          More Languages coming soon...
         </p>
       </header>
 

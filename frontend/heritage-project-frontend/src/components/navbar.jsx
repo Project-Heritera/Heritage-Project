@@ -24,6 +24,7 @@ export default function Navbar() {
     { path: "/courses", label: "COURSES" },
     { path: "/create", label: "CREATE" },
     { path: "/about", label: "ABOUT" },
+    { path: "/dictionary/creole", label: "DICTIONARY" },
     { path: "/login", label: "LOGIN/SIGNUP" },
   ];
 
