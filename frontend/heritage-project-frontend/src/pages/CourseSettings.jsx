@@ -41,7 +41,7 @@ function CourseDashboard() {
         //get owner
         const ownerName = courseData.creator;
         const courseOwner = await api.get(
-          `/accounts/another_user_info/${ownerName}`
+          `/accounts/another_user_info/${ownerName}`,
         );
         setOwner(courseOwner.data);
         Debug.log("Course owner is:", courseOwner);
@@ -49,14 +49,14 @@ function CourseDashboard() {
         setCourseInfo(courseData);
         //Get sections
         const sectionsResponse = await api.get(
-          `/website/courses/${courseId}/sections/`
+          `/website/courses/${courseId}/sections/`,
         );
         const sectionsData = sectionsResponse.data;
         Debug.log("Retrieved course sections:", sectionsData);
         setSections(sectionsData);
         //Get contributors
         const usersResponse = await api.get(
-          `/website/get_course_editors/${courseId}/`
+          `/website/get_course_editors/${courseId}/`,
         );
         const usersData = usersResponse.data;
         console.log("Retrieved users:", usersData);
@@ -85,7 +85,7 @@ function CourseDashboard() {
         },
       });
       setUsers((prevUsers) =>
-        prevUsers.filter((u) => (u.user || u.username) !== usernameToRemove)
+        prevUsers.filter((u) => (u.user || u.username) !== usernameToRemove),
       );
       console.log("Username to remove is:", usernameToRemove);
     } catch (error) {
@@ -162,7 +162,7 @@ function CourseDashboard() {
                             console.log("New name is:", newName);
                             console.log("Old name is:", existingName);
                             return existingName === newName;
-                          })
+                          }),
                       );
 
                       // Return the combined list
@@ -189,7 +189,7 @@ function CourseDashboard() {
                     key={owner.user || owner.username}
                     username={owner.user || owner.username}
                     description={"Owner"}
-                    imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                    imageLink={`${import.meta.env.VITE_API_URL}${
                       owner.profile_pic
                     }`}
                   />
@@ -204,7 +204,7 @@ function CourseDashboard() {
                         ? () => removeUser(user.user || user.username)
                         : undefined
                     }
-                    imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                    imageLink={`${import.meta.env.VITE_API_URL}${
                       owner.profile_pic
                     }`}
                   />
