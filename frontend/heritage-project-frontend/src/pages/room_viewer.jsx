@@ -143,7 +143,7 @@ const RoomViewer = () => {
         setRoomData(room_data);
       } catch (err) {
         showError(
-          "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
+          "Error loading room contents into page. Please contact developer with any complaints to heriteraorg@gmail.com",
           "error"
         );
         Debug.error("Room exists, but Failed to load room data to page", err);
@@ -169,7 +169,7 @@ const RoomViewer = () => {
       return taskProgressData;
     } catch (err) {
       showError(
-        "Unable to save task progress. Please report this issue to ffronchetti@lsu.edu",
+        "Unable to save task progress. Please report this issue to heriteraorg@gmail.com",
         "error"
       );
       Debug.error("Error saving task progress:", err);
@@ -222,7 +222,7 @@ const RoomViewer = () => {
             <div className="flex items-center justify-between">
               <Button asChild  className="mb-3 gap-2">
                 <a
-                  href="/dictionary/Creole"
+                  href="/dictionary/creole"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -31,7 +31,7 @@ function UserSettings() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [tab, setTab] = useState("Security");
+  const [tab, setTab] = useState("Account Settings");
   const [enable2FAOpen, setEnable2FAOpen] = useState(false);
   const [disable2FAOpen, setDisable2FAOpen] = useState(false);
   const [username, setUsername] = useState("");

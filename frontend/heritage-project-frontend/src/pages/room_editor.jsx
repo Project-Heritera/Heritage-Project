@@ -118,7 +118,7 @@ const RoomEditor = () => {
         setRoomData(room_data);
       } catch (err) {
         showError(
-          "Error loading room contents into page. Please contact developer with any complaints to ffronchetti@lsu.edu",
+          "Error loading room contents into page. Please contact developer with any complaints to heriteraorg@gmail.com",
           "error"
         );
         Debug.error("Room exists, but Failed to load room data to page", err);
@@ -205,7 +205,7 @@ const RoomEditor = () => {
       return room_status;
     } catch (err) {
       showError(
-        "Unable to save room. Please report this issue to ffronchetti@lsu.edu",
+        "Unable to save room. Please report this issue to heriteraorg@gmail.com",
         "error"
       );
       Debug.error("Error at room.js or publish room api at backend:", err);
@@ -283,7 +283,7 @@ const RoomEditor = () => {
 
                     <Button asChild variant="outline" className="gap-2">
                       <a
-                        href="/dictionary/Creole"
+                        href="/dictionary/creole"
                         target="_blank"
                         rel="noopener noreferrer"
                       >

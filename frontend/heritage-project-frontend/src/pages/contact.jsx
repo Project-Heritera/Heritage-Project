@@ -154,7 +154,7 @@ export default function About() {
           <CardDescription className="text-primary">
             <p className="text-muted-foreground mb-4 text-base">
               Please reach out to us at{" "}
-              <a href="mailto:kle47@lsu.edu" className="text-primary underline">
+              <a href="heriteraorg@gmail.com" className="text-primary underline">
                 {" "}
                 this email
               </a>{" "}
