@@ -134,6 +134,9 @@ const DictionaryPage = () => {
         <p className="text-sm text-muted-foreground">
           Browse alphabetically or search for a word
         </p>
+        <p className="text-sm text-muted-foreground">
+          More Languages coming soon...
+        </p>
       </header>
 
       <section className="rounded-lg border p-4 space-y-4">

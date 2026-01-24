@@ -63,9 +63,7 @@ const SectionDropdown = ({ title, description, sectionId, courseId }) => {
                     navigateLink={`/r/${courseId}/${sectionId}/${room.room_id}`}
                     title={room.title}
                     description={room.description}
-                    imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${
-                      room.image
-                    }`}
+                    imageLink={`${import.meta.env.VITE_API_URL}${room.image}`}
                     progress={room.progress_percent}
                   />
                 );

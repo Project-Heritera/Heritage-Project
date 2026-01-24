@@ -13,7 +13,6 @@ export default function Home() {
   const [username, setUsername] = useState(null);
   const [user, setUser] = useState(null);
 
-
   useEffect(() => {
     setLoading(true);
     const getCourses = async () => {
@@ -41,13 +40,16 @@ export default function Home() {
   return (
     <div className="flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between m-4 " style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}>
+      <div
+        className="flex items-center justify-between m-4 "
+        style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
+      >
         <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
           Welcome back, {username}
         </h1>
       </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
         <div className="col-span-3">
           {/* 2-column course grid */}
           <div className="grid grid-cols-2 gap-4">
@@ -56,7 +58,8 @@ export default function Home() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>
-                      View your recent courses or navigate to the courses page to find a new course.
+                      View your recent courses or navigate to the courses page
+                      to find a new course.
                     </CardTitle>
                     <Link to={"/courses"}>
                       <Button>Browse Courses</Button>
@@ -71,7 +74,7 @@ export default function Home() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>
-                      Welcome to Vivan! Navigate to courses to get started.
+                      Welcome to Heritera! Navigate to courses to get started.
                     </CardTitle>
                     <Link to={"/courses"}>
                       <Button>Browse Courses</Button>
@@ -88,8 +91,7 @@ export default function Home() {
                   link=""
                   title={course.title}
                   description={course.description}
-                  imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image
-                    }`}
+                  imageLink={`${import.meta.env.VITE_API_URL}${course.image}`}
                   courseId={course.course_id}
                   progress={course.progress_percent}
                 />
@@ -100,8 +102,10 @@ export default function Home() {
 
         <div className="col-span-1 space-y-4">
           <Card className="p-4">
-            <CardHeader >
-              <CardTitle className="text-lg font-semibold">Achievments</CardTitle>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Achievments
+              </CardTitle>
               <div className="space-y-3">
                 {/* Only render if user exists AND streak is > 0 */}
                 {user && user.streak > 0 && (

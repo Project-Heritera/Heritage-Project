@@ -1,10 +1,10 @@
-//Handle what the cards look like fro individual rooms in the drop down.
+//Handle what the cards look like for individual rooms in the drop down.
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react"; // Assuming you use lucide-react (standard in shadcn)
 const RoomCard = ({ username, description, imageLink, navigateLink, onTrash }) => {
     return (
-        <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
             {/* Left Side: Avatar + Text */}
             <div className="flex items-center gap-4">
                 <Avatar className="h-10 w-10 border">

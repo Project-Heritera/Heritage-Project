@@ -54,7 +54,7 @@ function NavbarDropDown() {
       >
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>Navigate through Vivan</SheetDescription>
+          <SheetDescription>Navigate through Heritera</SheetDescription>
         </SheetHeader>
 
         {/* Add search bar */}
@@ -119,7 +119,7 @@ function NavbarDropDown() {
             <div className="flex items-center gap-3 mb-4 px-2">
               <Avatar>
                 <AvatarImage
-                  src={`${import.meta.env.VITE_API_URL_FOR_TEST}${
+                  src={`${import.meta.env.VITE_API_URL}${
                     userObject.profile_pic
                   }`}
                 />

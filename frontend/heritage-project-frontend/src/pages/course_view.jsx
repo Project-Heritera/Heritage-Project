@@ -18,7 +18,7 @@ const rand = () => Math.random().toFixed(2);
 const CourseView = () => {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
-  const [filterQuery, setFilterQuery] = useState("")
+  const [filterQuery, setFilterQuery] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true);
@@ -45,42 +45,42 @@ const CourseView = () => {
 
     return courseString.toLowerCase().includes(filterQuery.toLowerCase());
   });
-return (
-  <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
-    <div className="courses-view-header flex-col">
-      <div
-        className="flex items-center justify-between m-4"
-        style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
-      >
-        <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
-          Course List
-        </h1>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
-        <div>
-          <LocalSearchBar onSearchChange={setFilterQuery} />
+  return (
+    <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
+      <div className="courses-view-header flex-col">
+        <div
+          className="flex items-center justify-between m-4"
+          style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
+        >
+          <h1 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance">
+            Course List
+          </h1>
         </div>
-        <div className="create-course">
-          <CreationForm FormType={"Course"} />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
+          <div>
+            <LocalSearchBar onSearchChange={setFilterQuery} />
+          </div>
+          <div className="create-course">
+            <CreationForm FormType={"Course"} />
+          </div>
         </div>
       </div>
-    </div>
 
-    <div className="course-view-body-body grid grid-cols-3 gap-4">
-      {!loading &&
-        filteredCourses.map((course) => (
-          <CourseCard
-            key={course.title}
-            link=""
-            title={course.title}
-            description={course.description}
-            imageLink={`${import.meta.env.VITE_API_URL_FOR_TEST}${course.image}`}
-            courseId={course.course_id}
-            progress={course.progress_percent}
-          />
-        ))}
+      <div className="course-view-body-body grid grid-cols-3 gap-4">
+        {!loading &&
+          filteredCourses.map((course) => (
+            <CourseCard
+              key={course.title}
+              link=""
+              title={course.title}
+              description={course.description}
+              imageLink={`${import.meta.env.VITE_API_URL}${course.image}`}
+              courseId={course.course_id}
+              progress={course.progress_percent}
+            />
+          ))}
+      </div>
     </div>
-  </div>
-);
+  );
 };
 export default CourseView;

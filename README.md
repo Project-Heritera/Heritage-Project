@@ -1,6 +1,6 @@
-# Vivan - learn Louisianan Creole (and more!) in the modern day
+# Heritera - learn Louisianan Creole (and more!) in the modern day
 
-This is a web app that is originally bespoke-made for learning Louisianan Creole (Kouri-Vini), an endangered language in Louisiana, and has been expanded for other courses as well. Users can learn from a predefined set of courses, while also being able to customize and create courses of their own, and share it to the wider Vivan community.
+This is a web app that is originally bespoke-made for learning Louisianan Creole (Kouri-Vini), an endangered language in Louisiana, and has been expanded for other courses as well. Users can learn from a predefined set of courses, while also being able to customize and create courses of their own, and share it to the wider Heritera community.
 
 ## About our Team
 
