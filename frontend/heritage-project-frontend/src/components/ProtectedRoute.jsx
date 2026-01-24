@@ -5,7 +5,6 @@ import { Debug } from '../utils/debugLog';
 //ProtectedRoute is used lock down a route on the client side and redirect user to login page if not logged in
 const ProtectedRoute = () => {
     const token = localStorage.getItem(ACCESS_TOKEN)
-    Debug.log("Key being used for retrieval:", ACCESS_TOKEN);
     //Check if they have logged in yet
     if (!token) {
         console.log("User not logged in so redirect")

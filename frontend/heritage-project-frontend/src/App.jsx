@@ -25,17 +25,16 @@ function App() {
   return (
     <div>
       <div>
-
         <BrowserRouter>
           <Routes>
             {/*Public Routes*/}
             <Route path="/" element={<Layout />}>
-              <Route index element={<AuthLogin />} />
               <Route path='/login' element={<AuthLogin />} />
               <Route path='/signup' element={<Signup />} />
               {<Route path='/about' element={<About />} />}
               {/*Protected Routes*/}
               <Route element={<ProtectedRoute />}>
+                <Route index element={<Home />} />
                 <Route path='/home' element={<Home />} />
                 <Route path='/courses' element={<CourseView />} />
                 <Route path='/u/:username' element={<ProfilePage />}></Route>
@@ -48,8 +47,6 @@ function App() {
                 <Route path='/create' element={<CreatePage />} />
                 <Route path='/tutorials/making_content/creating_tasks' element={<TaskComponentTutorial />} />
                 <Route path='/dictionary/:language' element={<DictionaryPage />} />
-                
-
               </Route>
             </Route>
           </Routes>
