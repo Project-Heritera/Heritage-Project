@@ -120,7 +120,7 @@ export default function Signup() {
                     <div>
                         <CardHeader>
                             <CardTitle>Enable 2FA</CardTitle>
-                            <CardDescription>Welcome to vivan! — It is recommended that you enable 2FA security to avoid an attack on your account.</CardDescription>
+                            <CardDescription>Welcome to Heritera! — It is recommended that you enable 2FA security to avoid an attack on your account.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-4">

@@ -54,7 +54,7 @@ function NavbarDropDown() {
       >
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>Navigate through Vivan</SheetDescription>
+          <SheetDescription>Navigate through Heritera</SheetDescription>
         </SheetHeader>
 
         {/* Add search bar */}

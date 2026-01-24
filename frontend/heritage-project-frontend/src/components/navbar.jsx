@@ -5,13 +5,17 @@ import { LuScrollText } from "react-icons/lu";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
-
 
 export default function Navbar() {
   const location = useLocation();
-  const [open, setOpen] = useState(false); 
+  const [open, setOpen] = useState(false);
 
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
@@ -30,29 +34,30 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
-<div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
-
+      <div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
         <Link to="/home" className="flex items-center gap-2">
-                    {/* <LuScrollText className = "text-2xl" /> */}
+          {/* <LuScrollText className = "text-2xl" /> */}
 
-          <h1 className="text-3xl font-bold tracking-tight text-primary " style={{ fontFamily: "'Lobster Two', cursive" }}>
-
-            vivan
+          <h1
+            className="text-3xl font-bold tracking-tight text-primary "
+            style={{ fontFamily: "'Lobster Two', cursive" }}
+          >
+            heritera
           </h1>
         </Link>
 
         <div className="hidden md:flex flex-1 justify-center">
-          <ul className="flex items-center gap-2"> 
+          <ul className="flex items-center gap-2">
             {navLinks.map((link) => (
               <li key={link.path}>
                 <Button
                   asChild
-                  variant="ghost" 
+                  variant="ghost"
                   style={{ fontFamily: "'Zalando Sans Expanded'" }}
-                  className={`text-base font-medium h-auto px-4 py-2 ${ 
+                  className={`text-base font-medium h-auto px-4 py-2 ${
                     isActive(link.path)
-                      ? "text-primary hover:text-primary-foreground" 
-                      : "text-foreground hover:text-primary" 
+                      ? "text-primary hover:text-primary-foreground"
+                      : "text-foreground hover:text-primary"
                   }`}
                 >
                   <Link to={link.path}>{link.label}</Link>
@@ -62,10 +67,8 @@ export default function Navbar() {
           </ul>
         </div>
 
-        
-
         <div className="hover:cursor-pointer">
-          <NavbarDropDown/>
+          <NavbarDropDown />
         </div>
       </div>
     </nav>

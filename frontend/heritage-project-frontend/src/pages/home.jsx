@@ -74,7 +74,7 @@ export default function Home() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>
-                      Welcome to Vivan! Navigate to courses to get started.
+                      Welcome to Heritera! Navigate to courses to get started.
                     </CardTitle>
                     <Link to={"/courses"}>
                       <Button>Browse Courses</Button>

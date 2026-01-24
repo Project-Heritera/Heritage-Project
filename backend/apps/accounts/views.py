@@ -898,7 +898,7 @@ def generate_mfa_qr(request):
     totp_secret = pyotp.random_base32()
 
     totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(
-        name=user.email, issuer_name="Vivan"
+        name=user.email, issuer_name="Heritera"
     )
 
     # Generate QR code
