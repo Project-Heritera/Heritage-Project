@@ -133,9 +133,6 @@ function CourseDashboard() {
           <Button variant="" className="justify-start">
             Collaborators
           </Button>
-          <Button variant="ghost" className="justify-start">
-            Access
-          </Button>
         </nav>
 
         {/* 2. MAIN CONTENT: Flex-1 (Takes remaining space) */}
