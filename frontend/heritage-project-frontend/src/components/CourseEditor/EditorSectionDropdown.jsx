@@ -63,7 +63,7 @@ const EditorSectionDropdown = ({ title, description, sectionId, courseId }) => {
                   navigateLink={`/re/${courseId}/${sectionId}/${room.room_id}`}
                   title={room.title}
                   description={room.description}
-                  imageLink={`${import.meta.env.VITE_API_URL}${room.image}`}
+                  imageLink={room.image}
                   progress={room.progress_percent}
                 />
               ))}

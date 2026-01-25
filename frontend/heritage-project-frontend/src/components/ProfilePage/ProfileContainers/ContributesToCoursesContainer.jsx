@@ -39,7 +39,7 @@ function CoursesCompletedContainer({ username }) {
                         link={`/c/${course.course_id}`}
                         title={course.title}
                         description={course.description}
-                        imageLink={`${course.image}`}
+                        imageLink={course.image}
                         courseId={course.course_id}
                         progress={course.progress_percent}
                     />

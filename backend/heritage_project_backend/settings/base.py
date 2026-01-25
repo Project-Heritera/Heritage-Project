@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'dictionary',
     'auditlog',
     'simple_history',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -132,11 +133,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
-# Media files (user-uploaded files)
-MEDIA_URL = "/images/"
-MEDIA_ROOT = BASE_DIR / "images"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

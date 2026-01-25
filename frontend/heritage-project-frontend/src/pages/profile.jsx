@@ -34,7 +34,7 @@ function Profile() {
     return <div>Loading...</div>;
   }
 
-  const profPicLink = `${import.meta.env.VITE_API_URL}${userDataResponse.profile_pic}`;
+  const profPicLink = userDataResponse.profile_pic;
   const description = userDataResponse.description;
   console.log("Description is: ", description);
 

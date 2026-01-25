@@ -8,6 +8,12 @@ load_dotenv()
 
 DEBUG = False
 
+#store media in gcp bucket
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+GCP_BUCKET_NAME = os.environ.get("GCP_BUCKET_NAME") 
+MEDIA_URL = f"https://storage.googleapis.com/{GCP_BUCKET_NAME}/"
+
+
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
