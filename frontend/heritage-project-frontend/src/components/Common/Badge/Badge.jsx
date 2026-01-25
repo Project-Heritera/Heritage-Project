@@ -2,7 +2,7 @@ import { Card, CardContent, CardTitle, CardDescription } from "../../ui/card";
 import BadgeImage from "./BadgeImage";
 
 function Badge({ image, title, description }) {
-  const badgePicLink = `${import.meta.env.VITE_API_URL}${image}`;
+  const badgePicLink = {image};
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-2 p-0">

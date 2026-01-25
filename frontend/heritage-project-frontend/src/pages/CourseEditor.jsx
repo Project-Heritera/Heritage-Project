@@ -94,7 +94,7 @@ function CreationDashboard() {
               title={courseInfo.title}
               description={courseInfo.description}
               progress={courseInfo.progress_percent}
-              imageLink={`${courseInfo.image}`}
+              imageLink={courseInfo.image}
             />
             <ManageCard
               courseId={courseId}

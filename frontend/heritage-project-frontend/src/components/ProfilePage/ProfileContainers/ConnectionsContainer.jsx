@@ -36,7 +36,7 @@ function ConnectionsContainer({ username }) {
           <ConnectionProfile
             username={connection.username}
             key={connection.username}
-            picUrl={`${import.meta.env.VITE_API_URL}${connection.profile_pic}`}
+            picUrl={connection.profile_pic}
           ></ConnectionProfile>
         ))}
     </ProfileContainer>

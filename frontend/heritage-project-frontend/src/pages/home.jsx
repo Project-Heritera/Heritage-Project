@@ -91,7 +91,7 @@ export default function Home() {
                   link=""
                   title={course.title}
                   description={course.description}
-                  imageLink={`${import.meta.env.VITE_API_URL}${course.image}`}
+                  imageLink={course.image}
                   courseId={course.course_id}
                   progress={course.progress_percent}
                 />

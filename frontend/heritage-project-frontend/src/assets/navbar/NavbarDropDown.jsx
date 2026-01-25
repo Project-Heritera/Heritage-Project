@@ -118,11 +118,7 @@ function NavbarDropDown() {
             {/* Account Info */}
             <div className="flex items-center gap-3 mb-4 px-2">
               <Avatar>
-                <AvatarImage
-                  src={`${import.meta.env.VITE_API_URL}${
-                    userObject.profile_pic
-                  }`}
-                />
+                <AvatarImage src={userObject.profile_pic} />
                 <AvatarFallback>
                   {user && user.charAt(0).toUpperCase()}
                 </AvatarFallback>

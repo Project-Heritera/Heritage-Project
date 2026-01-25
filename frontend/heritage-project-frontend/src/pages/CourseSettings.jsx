@@ -186,9 +186,7 @@ function CourseDashboard() {
                     key={owner.user || owner.username}
                     username={owner.user || owner.username}
                     description={"Owner"}
-                    imageLink={`${import.meta.env.VITE_API_URL}${
-                      owner.profile_pic
-                    }`}
+                    imageLink={owner.profile_pic}
                   />
                 )}
                 {filteredUsers.map((user) => (
@@ -201,9 +199,7 @@ function CourseDashboard() {
                         ? () => removeUser(user.user || user.username)
                         : undefined
                     }
-                    imageLink={`${import.meta.env.VITE_API_URL}${
-                      owner.profile_pic
-                    }`}
+                    imageLink={owner.profile_pic}
                   />
                 ))}
               </div>
