@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { LuScrollText } from "react-icons/lu";
-
+import {ACCESS_TOKEN, REFRESH_TOKEN} from '../services/LocalStorage';
+import { Debug } from '../utils/debugLog';
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
+import AuthLogin from "@/pages/auth";
+
 
 export default function Navbar() {
   const location = useLocation();
@@ -32,6 +35,17 @@ export default function Navbar() {
     { path: "/login", label: "LOGIN/SIGNUP" },
   ];
 
+  // Filter out login if already logged in.
+  const filteredLinks = navLinks.filter(link => {
+    const token = localStorage.getItem(ACCESS_TOKEN)
+    Debug.log("Key being used for retrieval:", ACCESS_TOKEN);
+    // Check if the link is login and if they have logged in yet (have a token)
+    if (link.path === "/login" && token) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
       <div className="w-full flex items-center justify-between min-h-[60px] px-8 sm:px-6">
@@ -47,8 +61,8 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex flex-1 justify-center">
-          <ul className="flex items-center gap-2">
-            {navLinks.map((link) => (
+          <ul className="flex items-center gap-2"> 
+            {filteredLinks.map((link) => (
               <li key={link.path}>
                 <Button
                   asChild

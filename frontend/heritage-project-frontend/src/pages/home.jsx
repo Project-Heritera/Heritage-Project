@@ -104,7 +104,7 @@ export default function Home() {
           <Card className="p-4">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
-                Achievments
+                Achievements
               </CardTitle>
               <div className="space-y-3">
                 {/* Only render if user exists AND streak is > 0 */}
