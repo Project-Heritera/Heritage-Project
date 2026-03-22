@@ -6,8 +6,8 @@ import { create_course } from "@/services/course";
 import { create_section } from "@/services/section";
 import { create_room } from "../../services/room";
 import { create_badge } from "@/services/badge";
-import { useErrorStore } from "../../stores/ErrorStore";
 import { useNavigate } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 
 // UI Imports
 import {
@@ -32,17 +32,20 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
     formState: { errors },
     control, // Kept in case you add useFieldArray back later
     reset, // Useful to reset form on close
+    setError,
   } = useForm();
 
   const [isCreated, setIsCreated] = useState(false);
-  const showError = useErrorStore((state) => state.showError);
 
   // Reset form when modal closes
   const handleOpenChange = (isOpen) => {
     setOpen(isOpen);
     if (!isOpen) {
       // Optional: Reset logic here if needed
-      setTimeout(() => setIsCreated(false), 300);
+      setTimeout(() => {
+        setIsCreated(false);
+        reset();
+      }, 300);
     }
   };
 
@@ -66,9 +69,12 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
         form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
+      if (!badge_status || !badge_status.badge_id) {
+        throw new Error("Failed to create badge");
+      }
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Badge");
+      setError("root", { message: ("Failed to Create Badge") });
       return null;
     }
     try {
@@ -91,7 +97,9 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       return course_status;
     } catch (err) {
       Debug.error("Error in course creation:", err);
-      showError("Failed to Create Course");
+      setError("root", {
+        message: ("Failed to Create Course"),
+      });
       return null;
     }
   };
@@ -99,6 +107,10 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
   const onClose = () => {
     setOpen(false);
     //force refresh to display updated content
+    setTimeout(() => {
+      setIsCreated(false);
+      reset();
+    }, 300);
   };
   const handleCreateSection = async (data) => {
     let badge_status;
@@ -110,9 +122,12 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
         form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
+      if (!badge_status || !badge_status.badge_id) {
+        throw new Error("Failed to create badge");
+      }
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Badge");
+      setError("root", { message: ("Failed to Create Badge") });
       return null;
     }
     try {
@@ -134,7 +149,9 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       return section_status;
     } catch (err) {
       Debug.error("Error in section creation:", err);
-      showError("Failed to Create Section");
+      setError("root", {
+        message: ("Failed to Create Section"),
+      });
       return null;
     }
   };
@@ -145,13 +162,16 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       const form_data = new FormData();
       form_data.append("title", data.badge_title);
       form_data.append("description", data.badge_description);
-      if (data.badge_icon && data.badge_icon) {
+      if (data.badge_icon && data.badge_icon[0]) {
         form_data.append("image", data.badge_icon[0]);
       }
       badge_status = await create_badge(form_data);
+      if (!badge_status || !badge_status.badge_id) {
+        throw new Error("Failed to create badge");
+      }
     } catch (err) {
       Debug.error("Error in badge creation:", err);
-      showError("Failed to Create Badge");
+      setError("root", { message: ("Failed to Create Badge") });
       return null;
     }
     try {
@@ -169,7 +189,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       const room_status = await create_room(
         course_id,
         section_id,
-        publish_data
+        publish_data,
       );
       setIsCreated(true);
       if (submitCall) {
@@ -178,7 +198,7 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
       return room_status;
     } catch (err) {
       Debug.error("Error in room creation:", err);
-      showError("Failed to Create Room");
+      setError("root", { message: ("Failed to Create Room") });
       return null;
     }
   };
@@ -299,6 +319,14 @@ function CreationForm({ FormType, course_id, section_id, submitCall }) {
                   {...register("badge_icon")}
                 />
               </div>
+              {errors.root && (
+                <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-400 rounded-lg p-4 mt-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="text-sm font-medium leading-relaxed break-words">
+                    {errors.root.message}
+                  </div>
+                </div>
+              )}
               <DialogFooter className="flex flex-row justify-between gap-2 mt-4">
                 <Button
                   type="button"

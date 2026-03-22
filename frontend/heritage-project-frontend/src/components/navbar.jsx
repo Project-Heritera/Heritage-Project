@@ -32,19 +32,9 @@ export default function Navbar() {
     { path: "/create", label: "CREATE" },
     { path: "/about", label: "ABOUT" },
     { path: "/dictionary/creole", label: "DICTIONARY" },
-    { path: "/login", label: "LOGIN/SIGNUP" },
   ];
 
-  // Filter out login if already logged in.
-  const filteredLinks = navLinks.filter(link => {
-    const token = localStorage.getItem(ACCESS_TOKEN)
-    Debug.log("Key being used for retrieval:", ACCESS_TOKEN);
-    // Check if the link is login and if they have logged in yet (have a token)
-    if (link.path === "/login" && token) {
-      return false;
-    }
-    return true;
-  });
+
 
   return (
     <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
@@ -62,7 +52,7 @@ export default function Navbar() {
 
         <div className="hidden md:flex flex-1 justify-center">
           <ul className="flex items-center gap-2"> 
-            {filteredLinks.map((link) => (
+            {navLinks.map((link) => (
               <li key={link.path}>
                 <Button
                   asChild
