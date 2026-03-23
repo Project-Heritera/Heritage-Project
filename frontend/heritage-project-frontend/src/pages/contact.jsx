@@ -36,7 +36,7 @@ export default function About() {
           <Link to="/login">
             <Button
               size="lg"
-              className="text-2xl font-bold px-12 py-8 shadow-lg hover:scale-105 transition-transform duration-200"
+              className="w-56 text-2xl font-bold py-8 shadow-lg hover:scale-105 transition-transform duration-200 border-4 border-transparent"
             >
               Login
             </Button>
@@ -45,7 +45,7 @@ export default function About() {
             <Button
               size="lg"
               variant="outline"
-              className="text-2xl font-bold px-12 py-8 border-4 shadow-lg hover:scale-105 transition-transform duration-200"
+              className="w-56 text-2xl font-bold py-8 border-4 shadow-lg hover:scale-105 transition-transform duration-200"
             >
               Sign Up
             </Button>
