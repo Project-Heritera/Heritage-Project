@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { LuScrollText } from "react-icons/lu";
-
+import {ACCESS_TOKEN, REFRESH_TOKEN} from '../services/LocalStorage';
+import { Debug } from '../utils/debugLog';
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import NavbarDropDown from "@/assets/navbar/NavbarDropDown";
+import AuthLogin from "@/pages/auth";
+
 
 export default function Navbar() {
   const location = useLocation();
@@ -29,8 +32,9 @@ export default function Navbar() {
     { path: "/create", label: "CREATE" },
     { path: "/about", label: "ABOUT" },
     { path: "/dictionary/creole", label: "DICTIONARY" },
-    { path: "/login", label: "LOGIN/SIGNUP" },
   ];
+
+
 
   return (
     <nav className="w-full bg-background border-b sticky top-0 left-0 right-0 z-50 min-h-[60px]">
@@ -47,7 +51,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex flex-1 justify-center">
-          <ul className="flex items-center gap-2">
+          <ul className="flex items-center gap-2"> 
             {navLinks.map((link) => (
               <li key={link.path}>
                 <Button

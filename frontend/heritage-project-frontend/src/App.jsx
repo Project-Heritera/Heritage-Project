@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import Layout from './layout'
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import AuthLogin from './pages/auth'
-import Home from './pages/home'
-import CourseView from './pages/course_view'
-import RoomEditor from './pages/room_editor'
-import RoomViewer from './pages/room_viewer'
-import ProtectedRoute from './components/ProtectedRoute'
-import ErrorPopup from './components/ErrorPopup'
-import ProfilePage from './pages/profile.jsx'
-import CourseDashboard from './pages/CourseDashboard'
-import CourseSettings from './pages/CourseSettings'
-import CreationDashboard from './pages/CourseEditor'
-import CreatePage from './pages/CreatePage'
-import Signup from './pages/Signup'
-import About from './pages/contact.jsx'
-import UserSettings from "./pages/UserSettings"
-import Login2FA from "./pages/Login2FA"
-import TaskComponentTutorial from './pages/TaskComponentTutorial'
-import DictionaryPage from './pages/DictionaryPage'
+import { useEffect, useState } from "react";
+import "./App.css";
+import Layout from "./layout";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AuthLogin from "./pages/auth";
+import Home from "./pages/home";
+import CourseView from "./pages/course_view";
+import RoomEditor from "./pages/room_editor";
+import RoomViewer from "./pages/room_viewer";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorPopup from "./components/ErrorPopup";
+import ProfilePage from "./pages/profile.jsx";
+import CourseDashboard from "./pages/CourseDashboard";
+import CourseSettings from "./pages/CourseSettings";
+import CreationDashboard from "./pages/CourseEditor";
+import CreatePage from "./pages/CreatePage";
+import Signup from "./pages/Signup";
+import About from "./pages/contact.jsx";
+import UserSettings from "./pages/UserSettings";
+import TaskComponentTutorial from "./pages/TaskComponentTutorial";
+import DictionaryPage from "./pages/DictionaryPage";
+import NotFoundPage from "./pages/not_found_page";
 
 function App() {
   return (
@@ -29,25 +29,45 @@ function App() {
           <Routes>
             {/*Public Routes*/}
             <Route path="/" element={<Layout />}>
-              <Route path='/login' element={<AuthLogin />} />
-              <Route path='/signup' element={<Signup />} />
-              {<Route path='/about' element={<About />} />}
+              <Route index element={<About />} />
+              <Route path="/login" element={<AuthLogin />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/about" element={<About />} />
               {/*Protected Routes*/}
               <Route element={<ProtectedRoute />}>
-                <Route index element={<Home />} />
-                <Route path='/home' element={<Home />} />
-                <Route path='/courses' element={<CourseView />} />
-                <Route path='/u/:username' element={<ProfilePage />}></Route>
-                <Route path='/c/:courseId' element={<CourseDashboard />}></Route>
-                <Route path='/r/:course_id/:section_id/:room_id' element={<RoomViewer />}></Route>
-                <Route path='/re/:course_id/:section_id/:room_id' element={<RoomEditor />}></Route>
-                <Route path='/s/:courseId' element={<CourseSettings />}></Route>
-                <Route path='/ce/:courseId' element={<CreationDashboard />}></Route>
-                <Route path='/settings' element={<UserSettings />} />
-                <Route path='/create' element={<CreatePage />} />
-                <Route path='/tutorials/making_content/creating_tasks' element={<TaskComponentTutorial />} />
-                <Route path='/dictionary/:language' element={<DictionaryPage />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/courses" element={<CourseView />} />
+                <Route path="/u/:username" element={<ProfilePage />}></Route>
+                <Route
+                  path="/c/:courseId"
+                  element={<CourseDashboard />}
+                ></Route>
+                <Route
+                  path="/r/:course_id/:section_id/:room_id"
+                  element={<RoomViewer />}
+                ></Route>
+                <Route
+                  path="/re/:course_id/:section_id/:room_id"
+                  element={<RoomEditor />}
+                ></Route>
+                <Route path="/s/:courseId" element={<CourseSettings />}></Route>
+                <Route
+                  path="/ce/:courseId"
+                  element={<CreationDashboard />}
+                ></Route>
+                <Route path="/settings" element={<UserSettings />} />
+                <Route path="/create" element={<CreatePage />} />
+                <Route
+                  path="/tutorials/making_content/creating_tasks"
+                  element={<TaskComponentTutorial />}
+                />
+                <Route
+                  path="/dictionary/:language"
+                  element={<DictionaryPage />}
+                />
               </Route>
+              {/*Not found page*/}
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
         </BrowserRouter>
@@ -57,4 +77,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

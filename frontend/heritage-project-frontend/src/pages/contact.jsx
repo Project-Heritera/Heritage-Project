@@ -1,4 +1,6 @@
-// This page is a static render for the application's "About Us" page.
+// This page serves as the landing and "About Us" page.
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 import {
   Card,
@@ -18,18 +20,37 @@ import {
 export default function About() {
   return (
     <div className="flex flex-col p-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <header className="text-center my-8">
+      {/* Landing Header */}
+      <header className="text-center my-12 flex flex-col items-center">
         <h1
-          className="scroll-m-20 text-4xl font-bold tracking-tight lg:text-5xl text-gray-900 dark:text-gray-100 font-ZalandoSansExpanded"
+          className="scroll-m-20 text-5xl font-bold tracking-tight lg:text-7xl text-gray-900 dark:text-gray-100 font-ZalandoSansExpanded mb-6"
           style={{ fontFamily: "'Zalando Sans Expanded', sans-serif" }}
         >
-          About Us
+          Welcome to Heritera
         </h1>
-        <p className="mt-4 text-xl text-muted-foreground">
+        <p className="text-xl text-muted-foreground max-w-2xl mb-8">
           Creating an environment to foster learning, preservation and
           development of cultural artifacts.
         </p>
+        <div className="flex gap-4">
+          <Link to="/login">
+            <Button
+              size="lg"
+              className="w-56 text-2xl font-bold py-8 shadow-lg hover:scale-105 transition-transform duration-200 border-4 border-transparent"
+            >
+              Login
+            </Button>
+          </Link>
+          <Link to="/signup">
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-56 text-2xl font-bold py-8 border-4 shadow-lg hover:scale-105 transition-transform duration-200"
+            >
+              Sign Up
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* --- Mission Section --- */}
@@ -154,7 +175,10 @@ export default function About() {
           <CardDescription className="text-primary">
             <p className="text-muted-foreground mb-4 text-base">
               Please reach out to us at{" "}
-              <a href="heriteraorg@gmail.com" className="text-primary underline">
+              <a
+                href="mailto:heriteraorg@gmail.com"
+                className="text-primary underline"
+              >
                 {" "}
                 this email
               </a>{" "}

@@ -22,6 +22,7 @@ function NavbarDropDown() {
   const user = localStorage.getItem(USER_NAME);
   const navigate = useNavigate();
   const [userObject, setUserObject] = useState(null);
+  const [open, setOpen] = useState(false);
   const performLogout = useLogout();
   const location = useLocation();
 
@@ -40,9 +41,12 @@ function NavbarDropDown() {
     };
     getUserData();
   }, [user, location]);
+  useEffect(() => {
+    setOpen(false);
+  }, [location]);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Menu className="" strokeWidth={2.5} />
       </SheetTrigger>
