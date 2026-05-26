@@ -66,7 +66,7 @@ const CourseView = () => {
         </div>
       </div>
 
-      <div className="course-view-body-body grid grid-cols-3 gap-4">
+      <div className="course-view-body-body grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {!loading &&
           filteredCourses.map((course) => (
             <CourseCard
@@ -77,6 +77,7 @@ const CourseView = () => {
               imageLink={course.image}
               courseId={course.course_id}
               progress={course.progress_percent}
+              navLink={`/ce/${course.course_id}`}
             />
           ))}
       </div>

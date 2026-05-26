@@ -1,5 +1,5 @@
 .profileImageContainer {
-    @apply w-[15%];
+    @apply w-full max-w-[10rem] flex-shrink-0 md:w-[15%] md:max-w-none;
 }
 
 .profileImage {
@@ -35,7 +35,7 @@
 }
 
 .profileSummaryDiv {
-    @apply flex justify-between
+    @apply flex flex-col gap-4 sm:flex-row sm:justify-between
 }
 
 .summaryIconCard {
@@ -47,11 +47,11 @@
 }
 
 .profileDisplayDiv {
-    @apply flex gap-x-8 items-center
+    @apply flex flex-col gap-6 items-center md:flex-row md:gap-x-8 md:items-center
 }
 
 .profileDisplayInfoDiv {
-    @apply flex flex-col gap-y-8 flex-1
+    @apply flex flex-col gap-y-8 flex-1 min-w-0 w-full
 }
 
 .profileContainerDiv {

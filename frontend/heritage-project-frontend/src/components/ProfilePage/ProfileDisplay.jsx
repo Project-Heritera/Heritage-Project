@@ -30,28 +30,27 @@ function ProfileDisplay({ profImage, name, description, isOwner, viewUser }) {
     <ProfileDiv>
       <div className="profileDisplayDiv">
         <ProfileImage profileImage={currentImageUrl} />
-        <div className="profileDisplayInfoDiv overflow-hidden">
-          <div className="flex flex-col ">
-            {/* Actions and Title div*/}
-            <div className="flex items-center">
+        <div className="profileDisplayInfoDiv">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
               <ProfileTitle username={name} />
-              {/* Display actions*/}
-              <div className="ml-auto">
-                {/* Handle whats displayed if users page is the owners*/}
-                {isOwner ? (
-                  //Viewing as owner
-                  <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl} />
-                ) : (
-                  //Viewing as outside viewer
-                  <ConnectionButton viewUser={viewUser} pageUser={name}/>
-                )}
-                <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
-              </div>
             </div>
-            {/* Display Description and profile summaries*/}
-            <div className="text-left">
-              <ProfileDescription description={currentBio}></ProfileDescription>
+            {/* Display actions*/}
+            <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
+              {/* Handle whats displayed if users page is the owners*/}
+              {isOwner ? (
+                //Viewing as owner
+                <ProfileEdit currentBio={currentBio} currentImageUrl={currentImageUrl} setCurrentBio={setCurrentBio} setCurrentImageUrl={setCurrentImageUrl} />
+              ) : (
+                //Viewing as outside viewer
+                <ConnectionButton viewUser={viewUser} pageUser={name}/>
+              )}
+              <ProfileDropDown items={dropDownMenu} menuTitle={"My Profile"} />
             </div>
+          </div>
+          {/* Display Description and profile summaries*/}
+          <div className="text-left">
+            <ProfileDescription description={currentBio}></ProfileDescription>
           </div>
           <ProfileSummary username={name}></ProfileSummary>
         </div>
