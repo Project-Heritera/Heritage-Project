@@ -49,15 +49,15 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 m-4">
-        <div className="col-span-3">
+      <div className="flex flex-col gap-4 m-4 lg:grid lg:grid-cols-4">
+        <div className="lg:col-span-3">
           {/* 2-column course grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {!loading && courses.length > 0 && (
-              <Card className="col-span-2">
+              <Card className="sm:col-span-2">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                    <CardTitle className="max-w-2xl">
                       View your recent courses or navigate to the courses page
                       to find a new course.
                     </CardTitle>
@@ -70,10 +70,10 @@ export default function Home() {
             )}
 
             {!loading && courses.length === 0 ? (
-              <Card className="col-span-2">
+              <Card className="sm:col-span-2">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                    <CardTitle className="max-w-2xl">
                       Welcome to Heritera! Navigate to courses to get started.
                     </CardTitle>
                     <Link to={"/courses"}>
@@ -100,7 +100,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="col-span-1 space-y-4">
+        <div className="space-y-4">
           <Card className="p-4">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
