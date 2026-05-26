@@ -6,20 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import SearchBar from "@/components/Common/Search/SearchBar";
 import api from "../services/api";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CreationForm from "@/components/CourseView/CreationForm";
-import { useParams } from "react-router-dom";
 import Modal from "@/components/Modal";
 import LocalSearchBar from "@/components/CourseEditDashboard/ContributorSearchBar";
-// Helper to generate a random progress value (0–1)
-const rand = () => Math.random().toFixed(2);
 
 const CourseView = () => {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
   const [filterQuery, setFilterQuery] = useState("");
-  const navigate = useNavigate();
   useEffect(() => {
     setLoading(true);
     const getCourses = async () => {
@@ -39,12 +34,32 @@ const CourseView = () => {
     getCourses();
   }, []);
 
-  const filteredCourses = courses.filter((course) => {
-    // safely get the string, checking both possible keys
-    const courseString = course.title || "";
+  const filteredCourses = courses
+    .map((course, index) => ({
+      course,
+      index,
+    }))
+    .filter(({ course }) => {
+      const courseString = course.title || "";
+      return courseString.toLowerCase().includes(filterQuery.toLowerCase());
+    })
+    .sort((a, b) => {
+      const tutorialTitle = "Vivan Tutorial";
+      const aIsTutorial = a.course.title === tutorialTitle;
+      const bIsTutorial = b.course.title === tutorialTitle;
+      const aIsComplete = Number(a.course.progress_percent) >= 100;
+      const bIsComplete = Number(b.course.progress_percent) >= 100;
 
-    return courseString.toLowerCase().includes(filterQuery.toLowerCase());
-  });
+      const aPriority = aIsTutorial ? (aIsComplete ? 2 : 0) : 1;
+      const bPriority = bIsTutorial ? (bIsComplete ? 2 : 0) : 1;
+
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+
+      return a.index - b.index;
+    })
+    .map(({ course }) => course);
   return (
     <div className="courses-view flex flex-col p-8 gap-4 min-h-screen">
       <div className="courses-view-header flex-col">
